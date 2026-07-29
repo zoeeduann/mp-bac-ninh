@@ -77,7 +77,7 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
         {isBacNinh ? (
           <Link
             href={locationPath(locale, currentLocation.slug)}
-            className="block leading-none"
+            className="flex items-center gap-3 leading-none"
             aria-label={currentLocation.name}
           >
             <Image
@@ -88,6 +88,15 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
               priority
               className="h-11 w-auto max-w-[180px] sm:h-12"
             />
+            <span aria-hidden="true" className="h-8 w-px bg-ink/25 sm:h-9" />
+            <span className="flex flex-col whitespace-nowrap leading-none">
+              <span className="font-serif text-[16px] font-medium tracking-[0.06em] text-ink sm:text-[18px]">
+                北宁善明
+              </span>
+              <span className="mt-1 font-sans text-[8px] font-medium tracking-[0.08em] text-ink-soft sm:text-[9px]">
+                Bac Ninh
+              </span>
+            </span>
           </Link>
         ) : currentLocation?.logo ? (
           <Link

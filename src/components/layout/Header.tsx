@@ -89,7 +89,7 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
               className="h-11 w-auto max-w-[180px] sm:h-12"
             />
             <span aria-hidden="true" className="h-8 w-px bg-ink/25 sm:h-9" />
-            <span className="flex flex-col whitespace-nowrap leading-none">
+            <span className="flex translate-y-[7px] flex-col whitespace-nowrap leading-none">
               <span className="font-serif text-[16px] font-medium tracking-[0.06em] text-ink sm:text-[18px]">
                 北宁善明
               </span>

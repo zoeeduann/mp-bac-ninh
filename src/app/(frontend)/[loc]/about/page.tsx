@@ -13,6 +13,7 @@ import { buildMetadata } from '@/lib/metadata'
 import { locationUrl } from '@/lib/site-config'
 import { locationSeoDescription, locationSeoKeywords } from '@/lib/seo'
 import { academyName } from '@/lib/short-name'
+import { getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
 import type { Media, Location } from '@/payload-types'
 
 export async function generateMetadata({
@@ -87,6 +88,8 @@ export default async function AboutPage({
 
   const heroImgUrl = mediaUrl(location.heroImage as any)
   const heroImgAlt = mediaAlt(location.heroImage as any, location.name)
+  const isBacNinh = location.slug === 'bac-ninh'
+  const bacNinhCopy = getBacNinhBrandCopy(locale)
 
   return (
     <div>
@@ -146,6 +149,12 @@ export default async function AboutPage({
             data={location.story}
             className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] max-w-prose mb-16"
           />
+        ) : isBacNinh ? (
+          <div className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] max-w-prose mb-16 space-y-6">
+            {bacNinhCopy.story.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
         ) : (
           <p className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] max-w-prose mb-16">
             {isZh
@@ -154,6 +163,44 @@ export default async function AboutPage({
           </p>
         )}
       </section>
+
+      {/* ─── BAC NINH LEARNING PATHS ─────────────── */}
+      {isBacNinh && (
+        <section className="px-[6vw] py-28 border-t border-hairline">
+          <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-8">
+            {bacNinhCopy.pathEyebrow}
+          </p>
+          <div className="max-w-3xl mb-16">
+            <h2
+              className="font-serif font-normal text-ink leading-[1.25] mb-6"
+              style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
+            >
+              {bacNinhCopy.pathHeading}
+            </h2>
+            <p className="font-sans text-[15px] text-ink-soft leading-[1.8] max-w-2xl">
+              {bacNinhCopy.pathIntro}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-14">
+            {bacNinhCopy.paths.map((path, index) => (
+              <article key={path.title} className="border-t border-hairline pt-7">
+                <p className="font-sans text-[11px] font-semibold tracking-[0.16em] text-sky mb-6">
+                  {String(index + 1).padStart(2, '0')}
+                </p>
+                <h3 className="font-serif text-[25px] font-normal text-ink mb-3">
+                  {path.title}
+                </h3>
+                <p className="font-serif text-[15px] text-ink-soft leading-[1.6] mb-5">
+                  {path.subtitle}
+                </p>
+                <p className="font-sans text-[14px] text-ink-soft leading-[1.8]">
+                  {path.description}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── TEAM SECTION ─────────────────────────── */}
       {location.team && location.team.length > 0 && (
@@ -239,6 +286,21 @@ export default async function AboutPage({
 
       {/* ─── INTERNATIONAL LINK ───────────────────── */}
       <section className="px-[6vw] py-24 border-t border-hairline">
+        {isBacNinh && (
+          <div className="max-w-3xl mb-10">
+            <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-8">
+              {bacNinhCopy.mpiEyebrow}
+            </p>
+            <h2 className="font-serif text-[clamp(26px,3.5vw,42px)] font-normal text-ink leading-[1.25] mb-7">
+              {bacNinhCopy.mpiHeading}
+            </h2>
+            <div className="font-sans text-[15px] text-ink-soft leading-[1.8] space-y-5">
+              {bacNinhCopy.mpiParagraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        )}
         <a
           href="https://mindfulpeace.org"
           target="_blank"

@@ -20,6 +20,7 @@ import { locationPath, locationUrl } from '@/lib/site-config'
 import { JsonLd } from '@/components/JsonLd'
 import { localBusinessJsonLd } from '@/lib/jsonld'
 import { locationSeoDescription, locationSeoKeywords } from '@/lib/seo'
+import { getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
 import type { Media, Activity, Journal } from '@/payload-types'
 
 export async function generateMetadata({
@@ -116,6 +117,8 @@ export default async function AcademyHomePage({
   const heroImgAlt = mediaAlt(location.heroImage as any, location.name)
   const academyShortName = shortName(location.city, location.name)
   const academyDisplayName = academyName(location.city, location.name)
+  const isBacNinh = location.slug === 'bac-ninh'
+  const bacNinhCopy = getBacNinhBrandCopy(locale)
 
   const businessJsonLd = localBusinessJsonLd({
     displayName: academyDisplayName,
@@ -303,6 +306,12 @@ export default async function AcademyHomePage({
               data={location.story}
               className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] mb-6"
             />
+          ) : isBacNinh ? (
+            <div className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] mb-6 space-y-5">
+              {bacNinhCopy.story.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
           ) : (
             <p className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] mb-6">
               {isZh
@@ -319,14 +328,17 @@ export default async function AcademyHomePage({
           {isZh && (
             <p className="font-serif text-[18px] text-ink-soft leading-[1.7]">
               {`${location.name}——${location.city}的修学空间。${
-                (location as any).signatureLine || '静坐、喝茶、读书、行走。'
+                (location as any).signatureLine ||
+                (isBacNinh ? bacNinhCopy.signature : '静坐、喝茶、读书、行走。')
               }`}
             </p>
           )}
           {!isZh && (
             <p className="font-serif text-[18px] text-ink-soft leading-[1.7]">
               {(location as any).signatureLine ||
-                `A quiet space for practice in ${location.city}. We sit, drink tea, read, and walk together.`}
+                (isBacNinh
+                  ? bacNinhCopy.signature
+                  : `A quiet space for practice in ${location.city}. We sit, drink tea, read, and walk together.`)}
             </p>
           )}
         </div>

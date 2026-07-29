@@ -66,6 +66,7 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
   ) ?? null
   const networkLocations = allLocations.filter((loc) => loc.isThailandNetwork)
   const isStandalone = currentLocation?.isThailandNetwork === false
+  const isBacNinh = currentLocation?.slug === 'bac-ninh'
 
   const navItems = buildNavItems(locale, currentLocation)
 
@@ -73,7 +74,22 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
     <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-[4vw] bg-paper border-b border-ink/10">
       {/* Left: brand + location chip */}
       <div className="flex items-center gap-5">
-        {currentLocation?.logo ? (
+        {isBacNinh ? (
+          <Link
+            href={locationPath(locale, currentLocation.slug)}
+            className="block leading-none"
+            aria-label={currentLocation.name}
+          >
+            <Image
+              src="/brand/mindful-peace-yard-logo.svg"
+              alt="静心小院 · Mindful Peace Yard"
+              width={256}
+              height={101}
+              priority
+              className="h-11 w-auto max-w-[180px] sm:h-12"
+            />
+          </Link>
+        ) : currentLocation?.logo ? (
           <Link
             href={locationPath(locale, currentLocation.slug)}
             className="block leading-none"

@@ -45,7 +45,7 @@ pnpm build
 ## Production environment
 
 Create the Vercel project from
-`zoeeduann/codexlearn`, then copy the shared production values
+`zoeeduann/mp-bac-ninh`, then copy the shared production values
 from the existing Thailand project and override these two variables:
 
 | Variable | Production value |

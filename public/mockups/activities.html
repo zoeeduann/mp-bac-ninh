@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>活动 · 心灯学堂 · 清迈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:    #F1ECE0;
+    --teak:     #3C2E22;
+    --cocoa:    #2A211A;
+    --smoke:    #7A6F62;
+    --moss:     #5C6A48;
+    --amber:    #A87544;
+    --hairline: rgba(42, 33, 26, 0.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--cocoa);
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ──────────────────────────────────────── */
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4vw;
+    background: rgba(241, 236, 224, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .brand-mark {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--cocoa);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .brand-mark .brand-en {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .location-chip-wrap { position: relative; }
+
+  .location-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    border: 1px solid rgba(42, 33, 26, 0.20);
+    border-radius: 100px;
+    padding: 0.28rem 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    transition: border-color 150ms, color 150ms;
+    white-space: nowrap;
+  }
+
+  .location-chip:hover { border-color: rgba(42, 33, 26, 0.38); color: var(--cocoa); }
+  .location-chip[data-open="true"] { border-color: var(--moss); color: var(--moss); }
+
+  .chip-arrow { font-size: 8px; transition: transform 150ms; }
+  .location-chip[data-open="true"] .chip-arrow { transform: rotate(180deg); }
+
+  .location-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 210px;
+    background: var(--cream);
+    border: 1px solid rgba(42, 33, 26, 0.15);
+    border-radius: 4px;
+    z-index: 200;
+    overflow: hidden;
+  }
+
+  .location-chip[data-open="true"] + .location-dropdown { display: block; }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.1rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    text-decoration: none;
+    transition: background 120ms, color 120ms;
+  }
+
+  .dropdown-item:hover { background: rgba(92, 106, 72, 0.06); color: var(--cocoa); }
+  .dropdown-item.current { color: var(--cocoa); }
+  .dropdown-check { font-size: 11px; color: var(--moss); }
+
+  .dropdown-divider { border: none; border-top: 1px solid var(--hairline); margin: 0; }
+
+  .dropdown-network {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.75rem 1.1rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--smoke);
+    text-decoration: none;
+    transition: background 120ms, color 120ms;
+  }
+
+  .dropdown-network:hover { background: rgba(92, 106, 72, 0.06); color: var(--cocoa); }
+
+  .main-nav { display: flex; align-items: center; gap: 2.4rem; list-style: none; }
+  .main-nav a {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--cocoa); text-decoration: none; transition: color 150ms;
+  }
+  .main-nav a:hover, .main-nav a.active { color: var(--moss); }
+
+  .header-right { display: flex; align-items: center; gap: 1.6rem; }
+
+  .lang-toggle {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--smoke); cursor: pointer; user-select: none; transition: color 150ms;
+  }
+  .lang-toggle:hover { color: var(--cocoa); }
+
+  .btn-book-pill {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cream); background: var(--amber);
+    border: none; border-radius: 100px;
+    padding: 0.45rem 1.2rem; text-decoration: none;
+    cursor: pointer; white-space: nowrap; transition: background 150ms;
+  }
+  .btn-book-pill:hover { background: var(--teak); }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 1.5px; background: var(--cocoa); }
+
+  .mobile-nav-overlay {
+    display: none; position: fixed; inset: 0;
+    background: var(--cream); z-index: 200;
+    flex-direction: column; align-items: flex-start;
+    justify-content: center; padding: 6vw 8vw;
+  }
+  .mobile-nav-overlay.open { display: flex; }
+  .mobile-nav-close {
+    position: absolute; top: 20px; right: 4vw;
+    font-size: 24px; color: var(--smoke);
+    cursor: pointer; background: none; border: none; line-height: 1;
+  }
+  .mobile-nav-overlay ul { list-style: none; display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem; }
+  .mobile-nav-overlay ul a { font-family: 'Noto Serif SC', serif; font-size: 28px; font-weight: 400; color: var(--cocoa); text-decoration: none; }
+
+  /* ─── PAGE HEADER BAND ────────────────────────────── */
+  .page-header {
+    padding: 8rem 6vw 4.5rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .page-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 1.2rem;
+  }
+
+  .page-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(28px, 4vw, 50px);
+    font-weight: 400; color: var(--cocoa);
+    line-height: 1.2; margin-bottom: 0.8rem;
+  }
+
+  .page-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 19px; color: var(--smoke);
+  }
+
+  /* ─── FILTER CHIPS ────────────────────────────────── */
+  .filters-bar {
+    padding: 2.5rem 6vw;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .chip {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 0.45rem 1rem;
+    border-radius: 100px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    color: var(--cocoa);
+    background: transparent;
+    border-color: rgba(42, 33, 26, 0.18);
+    transition: all 150ms;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .chip:hover { border-color: var(--moss); color: var(--moss); }
+  .chip.active { background: var(--amber); border-color: var(--amber); color: var(--cream); }
+
+  /* ─── VIEW TOGGLE ─────────────────────────────────── */
+  .view-toggle-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0;
+    padding-bottom: 2.5rem;
+  }
+
+  .view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .view-toggle-btn {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem 0;
+    position: relative;
+    transition: color 150ms;
+  }
+
+  .view-toggle-btn:hover { color: var(--cocoa); }
+
+  .view-toggle-btn.active {
+    color: var(--cocoa);
+  }
+
+  .view-toggle-btn.active::after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: var(--moss);
+    border-radius: 1px;
+  }
+
+  .view-toggle-sep {
+    display: inline-block;
+    width: 1px;
+    height: 14px;
+    background: var(--hairline);
+    margin: 0 1.75rem;
+    align-self: center;
+  }
+
+  /* ─── LIST VIEW ───────────────────────────────────── */
+  .list-view { display: block; }
+
+  /* ─── CALENDAR MONTH VIEW ─────────────────────────── */
+  .calendar-view { display: none; }
+  .calendar-view.visible { display: block; }
+
+  .cal-month-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .cal-month-label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+  }
+
+  .cal-month-label-zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--cocoa);
+  }
+
+  .cal-month-label-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--smoke);
+  }
+
+  .cal-month-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+  }
+
+  .cal-nav-btn {
+    background: none;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--moss);
+    cursor: pointer;
+    transition: border-color 150ms, color 150ms;
+    line-height: 1;
+  }
+
+  .cal-nav-btn:hover {
+    border-color: var(--moss);
+    color: var(--cocoa);
+  }
+
+  /* Month grid */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-top: 1px solid var(--hairline);
+    border-left: 1px solid var(--hairline);
+  }
+
+  .cal-weekday-header {
+    border-right: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    padding: 0.65rem 0.5rem 0.55rem;
+    text-align: center;
+  }
+
+  .cal-weekday-label {
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--smoke);
+  }
+
+  .cal-day-cell {
+    border-right: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    padding: 10px 12px 10px;
+    min-height: 80px;
+    vertical-align: top;
+    cursor: pointer;
+    transition: background 120ms;
+    position: relative;
+  }
+
+  .cal-day-cell:hover { background: rgba(92, 106, 72, 0.05); }
+  .cal-day-cell.selected { background: rgba(92, 106, 72, 0.09); }
+  .cal-day-cell.other-month { opacity: 0.38; }
+  .cal-day-cell.other-month:hover { background: rgba(92, 106, 72, 0.03); }
+
+  .cal-day-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--cocoa);
+    display: block;
+    margin-bottom: 5px;
+    line-height: 1;
+  }
+
+  .cal-day-cell.today-cell .cal-day-num::after {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: var(--moss);
+    border-radius: 50%;
+    margin-left: 3px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+
+  .cal-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 3px;
+  }
+
+  .cal-chip {
+    display: inline-block;
+    padding: 1px 5px;
+    font-size: 9px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    border-radius: 8px;
+    color: var(--cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    letter-spacing: 0.02em;
+    line-height: 1.55;
+  }
+
+  .cal-chip-gonxiu  { background: #A87544; }  /* 共修 — amber */
+  .cal-chip-chanjiu { background: #5C6A48; }  /* 禅修课 — moss */
+  .cal-chip-chahui  { background: #9c5f3c; }  /* 茶会 — terracotta */
+  .cal-chip-gongtang { background: #5a4030; } /* 工作坊 — dark teak */
+
+  /* Date detail panel */
+  .cal-detail-panel {
+    margin-top: 2.5rem;
+    padding: 2rem 2.5rem;
+    border-top: 1px solid var(--hairline);
+    display: none;
+  }
+
+  .cal-detail-panel.visible { display: block; }
+
+  .cal-detail-date {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--cocoa);
+    margin-bottom: 1.6rem;
+  }
+
+  .cal-detail-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2px;
+  }
+
+  /* ─── ACTIVITY GRID ───────────────────────────────── */
+  .grid-section { padding: 5rem 6vw 9rem; }
+
+  .grid-section-label {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 3rem;
+  }
+
+  .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-bottom: 5rem;
+  }
+
+  .activity-card { display: block; text-decoration: none; color: inherit; }
+
+  .activity-card-img {
+    width: 100%; aspect-ratio: 5/6;
+    object-fit: cover; display: block;
+    filter: saturate(0.85);
+  }
+
+  .activity-card-body {
+    padding: 1.4rem 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .card-date {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 0.6rem;
+  }
+
+  .card-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px; font-weight: 500;
+    color: var(--cocoa); margin-bottom: 0.45rem;
+  }
+
+  .card-desc { font-size: 13px; color: var(--smoke); margin-bottom: 1rem; line-height: 1.6; }
+
+  .link-moss { font-size: 12px; font-weight: 600; color: var(--moss); text-decoration: none; letter-spacing: 0.04em; transition: color 150ms; }
+  .link-moss:hover { color: var(--cocoa); }
+
+  /* ─── FOOTER ──────────────────────────────────────── */
+  .site-footer { background: var(--teak); color: var(--cream); padding: 6rem 6vw 2.5rem; }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 5rem;
+  }
+
+  .footer-brand p { font-family: 'Noto Serif SC', serif; font-size: 20px; font-weight: 400; color: var(--cream); margin-bottom: 1rem; }
+  .footer-brand span { font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 500; color: rgba(241, 236, 224, 0.55); line-height: 1.7; display: block; max-width: 28ch; }
+
+  .footer-col h4 { font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(241, 236, 224, 0.5); margin-bottom: 1.4rem; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+  .footer-col ul li a { font-size: 13px; color: rgba(241, 236, 224, 0.75); text-decoration: none; transition: color 150ms; }
+  .footer-col ul li a:hover { color: var(--cream); }
+  .footer-col ul li a.current-loc { color: rgba(241, 236, 224, 0.95); font-weight: 600; }
+
+  .footer-bottom { border-top: 1px solid rgba(241, 236, 224, 0.12); padding-top: 1.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; }
+  .footer-bottom p { font-size: 11px; color: rgba(241, 236, 224, 0.35); letter-spacing: 0.06em; }
+
+  /* ─── LANGUAGE TOGGLE ─────────────────────────────── */
+  body.lang-en .zh { display: none; }
+  body.lang-en .en { display: block; }
+  body.lang-zh .en { display: none; }
+  body.lang-zh .zh { display: block; }
+  body.lang-en .zh-inline { display: none; }
+  body.lang-en .en-inline { display: inline; }
+  body.lang-zh .en-inline { display: none; }
+  body.lang-zh .zh-inline { display: inline; }
+
+  /* ─── BOOKING MODAL ──────────────────────────────── */
+
+  .bm-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(42, 33, 26, 0.55);
+    z-index: 400; opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .bm-backdrop.bm-open { display: block; }
+  .bm-backdrop.bm-visible { opacity: 1; }
+
+  .bm-card {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, calc(-50% + 8px));
+    z-index: 401;
+    width: 90%; max-width: 540px;
+    max-height: 90vh; overflow-y: auto;
+    background: var(--cream);
+    border: 1px solid rgba(42, 33, 26, 0.18);
+    border-radius: 4px;
+    padding: 2.5rem 2.75rem;
+    opacity: 0;
+    transition: opacity 200ms ease, transform 200ms ease;
+    display: none;
+  }
+  .bm-card.bm-open { display: block; }
+  .bm-card.bm-visible { opacity: 1; transform: translate(-50%, -50%); }
+
+  .bm-close {
+    position: absolute; top: 1.1rem; right: 1.25rem;
+    background: none; border: none;
+    font-size: 18px; line-height: 1;
+    color: var(--smoke); cursor: pointer;
+    padding: 0.2rem 0.4rem; transition: color 150ms;
+  }
+  .bm-close:hover { color: var(--cocoa); }
+
+  .bm-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 0.7rem;
+  }
+  .bm-activity-name {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px; font-weight: 400;
+    color: var(--cocoa); line-height: 1.2; margin-bottom: 0.45rem;
+  }
+  .bm-session-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 14px;
+    color: var(--smoke); margin-bottom: 1.4rem; display: block;
+  }
+  .bm-divider { border: none; border-top: 1px solid var(--hairline); margin-bottom: 1.8rem; }
+
+  .bm-form { display: flex; flex-direction: column; gap: 1.6rem; }
+  .bm-field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .bm-label {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--smoke);
+  }
+  .bm-input, .bm-textarea {
+    font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 400;
+    color: var(--cocoa); background: transparent;
+    border: none; border-bottom: 1.5px solid rgba(42, 33, 26, 0.22);
+    outline: none; padding: 0.5rem 0; width: 100%;
+    transition: border-color 200ms; border-radius: 0;
+    -webkit-appearance: none; appearance: none;
+  }
+  .bm-input::placeholder, .bm-textarea::placeholder { color: rgba(122, 111, 98, 0.45); }
+  .bm-input:focus, .bm-textarea:focus { border-bottom-color: var(--moss); }
+  .bm-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  .bm-contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .bm-contact-note { font-size: 11px; color: var(--smoke); margin-top: 0.25rem; grid-column: 1 / -1; }
+
+  .bm-submit {
+    font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cream); background: var(--amber);
+    border: none; border-radius: 100px;
+    padding: 0.85rem 2.2rem; cursor: pointer; transition: background 150ms;
+    width: 100%; margin-top: 0.6rem;
+  }
+  .bm-submit:hover:not(:disabled) { background: var(--teak); }
+  .bm-submit:disabled { background: var(--moss); cursor: default; }
+
+  .bm-submit-note { font-size: 12px; color: var(--smoke); text-align: center; margin-top: 0.7rem; line-height: 1.5; }
+  .bm-wechat-alt {
+    margin-top: 1.6rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+    color: var(--smoke);
+    text-align: center;
+  }
+  .bm-wechat-id {
+    font-family: 'Manrope', monospace;
+    color: var(--cocoa);
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    margin-left: 0.3rem;
+  }
+
+  /* Calendar detail card action row */
+  .cal-card-actions { display: flex; align-items: center; gap: 1.2rem; margin-top: 0.75rem; flex-wrap: wrap; }
+  .btn-cal-book {
+    font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--cream); background: var(--amber);
+    border: none; border-radius: 100px;
+    padding: 0.45rem 1.1rem; cursor: pointer;
+    white-space: nowrap; transition: background 150ms;
+  }
+  .btn-cal-book:hover { background: var(--teak); }
+
+  @media (max-width: 600px) {
+    .bm-card { padding: 2rem 1.5rem; }
+    .bm-contact-row { grid-template-columns: 1fr; }
+  }
+
+  /* ─── RESPONSIVE ──────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .footer-grid { grid-template-columns: 1fr 1fr 1fr; gap: 3rem; }
+    .footer-brand { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 900px) {
+    .activity-grid { grid-template-columns: 1fr 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .footer-brand { grid-column: 1 / -1; }
+    .main-nav { display: none; }
+    .hamburger { display: flex; }
+    .brand-mark .brand-en { display: none; }
+  }
+
+  @media (max-width: 720px) {
+    .view-toggle { display: none; }
+    .calendar-view { display: none !important; }
+    .list-view { display: block !important; }
+  }
+
+  @media (max-width: 600px) {
+    .activity-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body class="lang-zh">
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" id="mobileNav">
+  <button class="mobile-nav-close" onclick="closeMobileNav()">✕</button>
+  <ul>
+    <li><a href="home.html" onclick="closeMobileNav()"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+    <li><a href="activities.html" onclick="closeMobileNav()"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+    <li><a href="#" onclick="closeMobileNav()"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+    <li><a href="#" onclick="closeMobileNav()"><span class="zh-inline">关于</span><span class="en-inline">About</span></a></li>
+    <li><a href="portal.html" onclick="closeMobileNav()"><span class="zh-inline">总门户</span><span class="en-inline">Network Home</span></a></li>
+  </ul>
+  <a class="btn-book-pill" href="book.html"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="header-left">
+    <a class="brand-mark" href="portal.html">
+      静心学堂 · 泰国<span class="brand-en">Mindfulpeace Academy Thailand</span>
+    </a>
+    <div class="location-chip-wrap">
+      <div class="location-chip" id="locationChip" onclick="toggleDropdown()" data-open="false">
+        ▸ 清迈 · 心灯<span class="chip-arrow">▾</span>
+      </div>
+      <div class="location-dropdown" id="locationDropdown">
+        <a class="dropdown-item" href="/bangkok"><span>曼谷 · 如如</span></a>
+        <a class="dropdown-item current" href="home.html">
+          <span>清迈 · 心灯</span>
+          <span class="dropdown-check">✓</span>
+        </a>
+        <a class="dropdown-item" href="/phuket"><span>普吉</span></a>
+        <hr class="dropdown-divider">
+        <a class="dropdown-network" href="portal.html">
+          ← <span class="zh-inline">返回总门户 / Network home</span><span class="en-inline">Network home</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <ul class="main-nav">
+      <li><a href="home.html"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+      <li><a href="activities.html" class="active"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+      <li><a href="#"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+      <li><a href="#"><span class="zh-inline">关于</span><span class="en-inline">About</span></a></li>
+    </ul>
+  </nav>
+  <div class="header-right">
+    <span class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</span>
+    <a class="btn-book-pill" href="book.html"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a>
+    <div class="hamburger" onclick="openMobileNav()"><span></span><span></span><span></span></div>
+  </div>
+</header>
+
+<!-- Page header band -->
+<div class="page-header">
+  <p class="page-eyebrow">
+    <span class="zh-inline">清迈心灯学堂 · 活动 / Activities</span>
+    <span class="en-inline">Chiang Mai Xindeng Academy · Activities</span>
+  </p>
+  <h1 class="page-title">
+    <span class="zh-inline">走入学堂的方式</span>
+    <span class="en-inline">Ways to join us</span>
+  </h1>
+  <p class="page-subtitle">
+    <span class="zh-inline">禅修、工作坊、茶会、共修——选一个适合你的节奏</span>
+    <span class="en-inline">Meditation, workshops, tea gatherings, community sits — find your pace</span>
+  </p>
+</div>
+
+<!-- Filter chips -->
+<div class="filters-bar">
+  <a class="chip active" href="#"><span class="zh-inline">全部</span><span class="en-inline">All</span></a>
+  <a class="chip" href="#"><span class="zh-inline">禅修课</span><span class="en-inline">Meditation</span></a>
+  <a class="chip" href="#"><span class="zh-inline">工作坊</span><span class="en-inline">Workshop</span></a>
+  <a class="chip" href="#"><span class="zh-inline">共修</span><span class="en-inline">Community</span></a>
+  <a class="chip" href="#"><span class="zh-inline">茶会</span><span class="en-inline">Tea</span></a>
+  <a class="chip" href="#"><span class="zh-inline">住山</span><span class="en-inline">Residential</span></a>
+  <a class="chip" href="#"><span class="zh-inline">正念活动</span><span class="en-inline">Mindful</span></a>
+</div>
+
+<!-- Activity grid (List + Calendar views) -->
+<div class="grid-section">
+
+  <!-- View toggle row -->
+  <div class="view-toggle-row">
+    <div class="view-toggle">
+      <button class="view-toggle-btn active" id="btnList" onclick="setView('list')">
+        <span class="zh-inline">列表</span><span class="en-inline">List</span>
+      </button>
+      <span class="view-toggle-sep"></span>
+      <button class="view-toggle-btn" id="btnCal" onclick="setView('calendar')">
+        <span class="zh-inline">日历</span><span class="en-inline">Calendar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div class="list-view" id="listView">
+    <p class="grid-section-label">
+      <span class="zh-inline">全部活动 · All Activities</span>
+      <span class="en-inline">All Activities · 全部活动</span>
+    </p>
+
+    <div class="activity-grid">
+
+    <a class="activity-card" href="activity-detail.html">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=700&q=75"
+        alt="禅修入门课">
+      <div class="activity-card-body">
+        <p class="card-date">5月 26日 · 09:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">禅修入门课</span><span class="en-inline">Introduction to Meditation</span></h3>
+        <p class="card-desc"><span class="zh-inline">适合初学者，以静坐与问答为主</span><span class="en-inline">For beginners — sitting, silence, and dialogue</span></p>
+        <a class="link-moss" href="activity-detail.html"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?auto=format&fit=crop&w=700&q=75"
+        alt="晨修共坐">
+      <div class="activity-card-body">
+        <p class="card-date">5月 29日 · 07:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">晨修共坐</span><span class="en-inline">Morning Sit</span></h3>
+        <p class="card-desc"><span class="zh-inline">每周共修，日出前开始，无需报名</span><span class="en-inline">Weekly community sit, before sunrise, drop-in welcome</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=700&q=75"
+        alt="经行练习">
+      <div class="activity-card-body">
+        <p class="card-date">5月 31日 · 08:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">经行练习</span><span class="en-inline">Walking Meditation</span></h3>
+        <p class="card-desc"><span class="zh-inline">学堂山径间的慢步正念练习</span><span class="en-inline">Slow, mindful walking on the hillside paths around the academy</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=700&q=75"
+        alt="正念书法">
+      <div class="activity-card-body">
+        <p class="card-date">5月 31日 · 14:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">正念书法</span><span class="en-inline">Mindful Calligraphy</span></h3>
+        <p class="card-desc"><span class="zh-inline">以笔墨为媒介，练习专注与临在</span><span class="en-inline">Using brush and ink as a medium for presence and focus</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=700&q=75"
+        alt="正念生活工作坊">
+      <div class="activity-card-body">
+        <p class="card-date">6月 9日 · 09:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">正念生活工作坊</span><span class="en-inline">Mindful Living Workshop</span></h3>
+        <p class="card-desc"><span class="zh-inline">将觉知带入日常：饮食、工作、睡眠</span><span class="en-inline">Bringing awareness to eating, working, and rest</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=700&q=75"
+        alt="林浴">
+      <div class="activity-card-body">
+        <p class="card-date">6月 12日 · 08:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">林浴漫行</span><span class="en-inline">Forest Bathing</span></h3>
+        <p class="card-desc"><span class="zh-inline">清迈山林间静步，以感官接触自然</span><span class="en-inline">A slow sensory walk through the Chiang Mai forest</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1542640244-7e672d6cef4e?auto=format&fit=crop&w=700&q=75"
+        alt="春季茶会">
+      <div class="activity-card-body">
+        <p class="card-date">6月 16日 · 15:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">春季茶会</span><span class="en-inline">Spring Tea Gathering</span></h3>
+        <p class="card-desc"><span class="zh-inline">围炉而坐，一盏茶，一段沉默</span><span class="en-inline">Around the fire, one cup of tea, one stretch of silence</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=700&q=75"
+        alt="正念烹饪">
+      <div class="activity-card-body">
+        <p class="card-date">6月 22日 · 10:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">正念烹饪</span><span class="en-inline">Mindful Cooking</span></h3>
+        <p class="card-desc"><span class="zh-inline">在备料与烹饪中练习专注与感恩</span><span class="en-inline">Presence in preparation — a cooking practice with awareness</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=700&q=75"
+        alt="独修">
+      <div class="activity-card-body">
+        <p class="card-date">7月 7日 · 整天 / Full day</p>
+        <h3 class="card-title"><span class="zh-inline">独修日</span><span class="en-inline">Solo Retreat Day</span></h3>
+        <p class="card-desc"><span class="zh-inline">一人一室，自安排修行，学堂提供空间</span><span class="en-inline">One room, one day — the academy holds the space, you hold the practice</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+  </div><!-- /.activity-grid -->
+  </div><!-- /.list-view -->
+
+  <!-- CALENDAR VIEW -->
+  <div class="calendar-view" id="calendarView">
+
+    <!-- Month header -->
+    <div class="cal-month-header">
+      <div class="cal-month-label">
+        <span class="cal-month-label-zh">5月 2026</span>
+        <span class="cal-month-label-en">May 2026</span>
+      </div>
+      <div class="cal-month-nav">
+        <button class="cal-nav-btn" onclick="console.log('prev month')" title="Previous month">←</button>
+        <button class="cal-nav-btn" onclick="console.log('next month')" title="Next month">→</button>
+      </div>
+    </div>
+
+    <!-- 7-column month grid -->
+    <div class="cal-grid" id="calGrid">
+      <!-- Weekday headers -->
+      <div class="cal-weekday-header"><span class="cal-weekday-label zh-inline">一</span><span class="cal-weekday-label en-inline">Mon</span></div>
+      <div class="cal-weekday-header"><span class="cal-weekday-label zh-inline">二</span><span class="cal-weekday-label en-inline">Tue</span></div>
+      <div class="cal-weekday-header"><span class="cal-weekday-label zh-inline">三</span><span class="cal-weekday-label en-inline">Wed</span></div>
+      <div class="cal-weekday-header"><span class="cal-weekday-label zh-inline">四</span><span class="cal-weekday-label en-inline">Thu</span></div>
+      <div class="cal-weekday-header"><span class="cal-weekday-label zh-inline">五</span><span class="cal-weekday-label en-inline">Fri</span></div>
+      <div class="cal-weekday-header"><span class="cal-weekday-label zh-inline">六</span><span class="cal-weekday-label en-inline">Sat</span></div>
+      <div class="cal-weekday-header"><span class="cal-weekday-label zh-inline">日</span><span class="cal-weekday-label en-inline">Sun</span></div>
+
+      <!-- Week 1: Apr 28–May 4 (Apr 28,29,30 are prev-month) -->
+      <div class="cal-day-cell other-month" data-date="2026-04-27"><span class="cal-day-num">28</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-04-28"><span class="cal-day-num">29</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-04-29"><span class="cal-day-num">30</span></div>
+      <div class="cal-day-cell" data-date="2026-05-01"><span class="cal-day-num">1</span></div>
+      <div class="cal-day-cell" data-date="2026-05-02"><span class="cal-day-num">2</span></div>
+      <div class="cal-day-cell" data-date="2026-05-03"><span class="cal-day-num">3</span></div>
+      <div class="cal-day-cell" data-date="2026-05-04"><span class="cal-day-num">4</span></div>
+
+      <!-- Week 2: May 5–11 -->
+      <div class="cal-day-cell" data-date="2026-05-05"><span class="cal-day-num">5</span></div>
+      <div class="cal-day-cell" data-date="2026-05-06"><span class="cal-day-num">6</span></div>
+      <div class="cal-day-cell" data-date="2026-05-07"><span class="cal-day-num">7</span></div>
+      <div class="cal-day-cell" data-date="2026-05-08"><span class="cal-day-num">8</span></div>
+      <div class="cal-day-cell" data-date="2026-05-09"><span class="cal-day-num">9</span></div>
+      <div class="cal-day-cell" data-date="2026-05-10"><span class="cal-day-num">10</span></div>
+      <div class="cal-day-cell" data-date="2026-05-11"><span class="cal-day-num">11</span></div>
+
+      <!-- Week 3: May 12–18 (today = May 12) -->
+      <div class="cal-day-cell today-cell" data-date="2026-05-12"><span class="cal-day-num">12</span></div>
+      <div class="cal-day-cell" data-date="2026-05-13"><span class="cal-day-num">13</span></div>
+      <div class="cal-day-cell" data-date="2026-05-14">
+        <span class="cal-day-num">14</span>
+        <div class="cal-chips">
+          <span class="cal-chip cal-chip-gonxiu zh-inline">晨修</span>
+          <span class="cal-chip cal-chip-gonxiu en-inline">Sit</span>
+        </div>
+      </div>
+      <div class="cal-day-cell" data-date="2026-05-15"><span class="cal-day-num">15</span></div>
+      <div class="cal-day-cell" data-date="2026-05-16"><span class="cal-day-num">16</span></div>
+      <div class="cal-day-cell" data-date="2026-05-17"><span class="cal-day-num">17</span></div>
+      <div class="cal-day-cell" data-date="2026-05-18">
+        <span class="cal-day-num">18</span>
+        <div class="cal-chips">
+          <span class="cal-chip cal-chip-chahui zh-inline">茶会</span>
+          <span class="cal-chip cal-chip-chahui en-inline">Tea</span>
+        </div>
+      </div>
+
+      <!-- Week 4: May 19–25 -->
+      <div class="cal-day-cell" data-date="2026-05-19"><span class="cal-day-num">19</span></div>
+      <div class="cal-day-cell" data-date="2026-05-20"><span class="cal-day-num">20</span></div>
+      <div class="cal-day-cell" data-date="2026-05-21">
+        <span class="cal-day-num">21</span>
+        <div class="cal-chips">
+          <span class="cal-chip cal-chip-gonxiu zh-inline">晨修</span>
+          <span class="cal-chip cal-chip-gonxiu en-inline">Sit</span>
+        </div>
+      </div>
+      <div class="cal-day-cell" data-date="2026-05-22"><span class="cal-day-num">22</span></div>
+      <div class="cal-day-cell" data-date="2026-05-23"><span class="cal-day-num">23</span></div>
+      <div class="cal-day-cell" data-date="2026-05-24"><span class="cal-day-num">24</span></div>
+      <div class="cal-day-cell" data-date="2026-05-25"><span class="cal-day-num">25</span></div>
+
+      <!-- Week 5: May 26–Jun 1 -->
+      <div class="cal-day-cell" data-date="2026-05-26">
+        <span class="cal-day-num">26</span>
+        <div class="cal-chips">
+          <span class="cal-chip cal-chip-chanjiu zh-inline">禅修</span>
+          <span class="cal-chip cal-chip-chanjiu en-inline">Med</span>
+        </div>
+      </div>
+      <div class="cal-day-cell" data-date="2026-05-27"><span class="cal-day-num">27</span></div>
+      <div class="cal-day-cell" data-date="2026-05-28">
+        <span class="cal-day-num">28</span>
+        <div class="cal-chips">
+          <span class="cal-chip cal-chip-gonxiu zh-inline">晨修</span>
+          <span class="cal-chip cal-chip-gonxiu en-inline">Sit</span>
+        </div>
+      </div>
+      <div class="cal-day-cell" data-date="2026-05-29"><span class="cal-day-num">29</span></div>
+      <div class="cal-day-cell" data-date="2026-05-30"><span class="cal-day-num">30</span></div>
+      <div class="cal-day-cell" data-date="2026-05-31"><span class="cal-day-num">31</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-06-01"><span class="cal-day-num">1</span></div>
+
+      <!-- Week 6: Jun 2–7 (all next-month) -->
+      <div class="cal-day-cell other-month" data-date="2026-06-02"><span class="cal-day-num">2</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-06-03"><span class="cal-day-num">3</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-06-04"><span class="cal-day-num">4</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-06-05"><span class="cal-day-num">5</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-06-06"><span class="cal-day-num">6</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-06-07"><span class="cal-day-num">7</span></div>
+      <div class="cal-day-cell other-month" data-date="2026-06-08"><span class="cal-day-num">8</span></div>
+    </div><!-- /.cal-grid -->
+
+    <!-- Detail panel (shown on cell click) -->
+    <div class="cal-detail-panel" id="calDetailPanel">
+      <p class="cal-detail-date" id="calDetailDate"></p>
+      <div class="cal-detail-cards" id="calDetailCards"></div>
+    </div>
+
+  </div><!-- /.calendar-view -->
+
+</div><!-- /.grid-section -->
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <p>静心学堂 · 泰国</p>
+      <span><span class="zh-inline">心灯学堂——清迈山间的修学空间。静坐、喝茶、行走。</span><span class="en-inline">Chiang Mai Xindeng Academy — a space for practice at the foot of the Chiang Mai hills.</span></span>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">导航</span><span class="en-inline">Navigate</span></h4>
+      <ul>
+        <li><a href="home.html"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+        <li><a href="activities.html"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+        <li><a href="#"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+        <li><a href="#"><span class="zh-inline">关于学堂</span><span class="en-inline">About</span></a></li>
+        <li><a href="book.html"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">联系</span><span class="en-inline">Contact</span></h4>
+      <ul>
+        <li><a href="#">Chiang Mai</a></li>
+        <li><a href="mailto:chiangmai@mindfulpeaceth.com">chiangmai@mindfulpeaceth.com</a></li>
+        <li>
+          <span class="zh-inline">微信号: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong></span>
+          <span class="en-inline">WeChat: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong></span>
+        </li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">网络 · The Network</span><span class="en-inline">The Network</span></h4>
+      <ul>
+        <li><a href="/bangkok"><span class="zh-inline">曼谷如如</span><span class="en-inline">Bangkok Ruru</span></a></li>
+        <li><a href="home.html" class="current-loc"><span class="zh-inline">清迈心灯 ✓</span><span class="en-inline">Chiang Mai Xindeng ✓</span></a></li>
+        <li><a href="/phuket"><span class="zh-inline">普吉</span><span class="en-inline">Phuket</span></a></li>
+        <li><a href="portal.html"><span class="zh-inline">总门户</span><span class="en-inline">Network Home</span></a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">相关</span><span class="en-inline">Related</span></h4>
+      <ul>
+        <li><a href="https://mindfulpeace.org" target="_blank">mindfulpeace.org</a></li>
+        <li><a href="#"><span class="zh-inline">正念平和国际协会</span><span class="en-inline">Mindfulpeace International</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 静心学堂 · 泰国 · Mindfulpeace Academy Thailand</p>
+    <p><span class="zh-inline">清迈 · 泰国</span><span class="en-inline">Chiang Mai · Thailand</span></p>
+  </div>
+</footer>
+
+<!-- Booking Modal -->
+<div class="bm-backdrop" id="bmBackdrop" onclick="closeBookingModal()"></div>
+<div class="bm-card" id="bmCard" role="dialog" aria-modal="true" aria-labelledby="bmActivityName">
+  <button class="bm-close" type="button" onclick="closeBookingModal()" aria-label="Close">✕</button>
+
+  <p class="bm-eyebrow">
+    <span class="zh-inline">预约 · BOOKING</span>
+    <span class="en-inline">预约 · BOOKING</span>
+  </p>
+  <h2 class="bm-activity-name" id="bmActivityName">
+    <span class="zh-inline" id="bmActivityNameZh"></span>
+    <span class="en-inline" id="bmActivityNameEn"></span>
+  </h2>
+  <span class="bm-session-line">
+    <span class="zh-inline" id="bmSessionZh"></span>
+    <span class="en-inline" id="bmSessionEn"></span>
+    <span class="zh-inline"> · </span><span class="en-inline"> · </span>
+    <span class="zh-inline" id="bmLocationZh"></span>
+    <span class="en-inline" id="bmLocationEn"></span>
+  </span>
+  <hr class="bm-divider">
+
+  <form class="bm-form" id="bmForm" onsubmit="handleModalSubmit(event)">
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmName">
+        <span class="zh-inline">姓名 / Name</span>
+        <span class="en-inline">Name · 姓名</span>
+      </label>
+      <input class="bm-input" type="text" id="bmName" name="name" autocomplete="name"
+        placeholder="你的名字 / Your name">
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label">
+        <span class="zh-inline">联系方式 / Contact</span>
+        <span class="en-inline">Contact · 联系方式</span>
+      </label>
+      <div class="bm-contact-row">
+        <div class="bm-field">
+          <label class="bm-label" for="bmEmail">
+            <span class="zh-inline">邮箱 / Email</span>
+            <span class="en-inline">Email · 邮箱</span>
+          </label>
+          <input class="bm-input" type="email" id="bmEmail" name="email" autocomplete="email"
+            placeholder="your@email.com">
+        </div>
+        <div class="bm-field">
+          <label class="bm-label" for="bmWechat">
+            <span class="zh-inline">微信 / WeChat</span>
+            <span class="en-inline">WeChat · 微信</span>
+          </label>
+          <input class="bm-input" type="text" id="bmWechat" name="wechat"
+            placeholder="WeChat ID">
+        </div>
+        <p class="bm-contact-note">
+          <span class="zh-inline">至少填一个 / fill at least one</span>
+          <span class="en-inline">fill at least one · 至少填一个</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmPhone">
+        <span class="zh-inline">电话 / Phone</span>
+        <span class="en-inline">Phone · 电话</span>
+      </label>
+      <input class="bm-input" type="tel" id="bmPhone" name="phone" autocomplete="tel"
+        placeholder="+66 / +86 ...">
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmGuests">
+        <span class="zh-inline">人数 / Guests</span>
+        <span class="en-inline">Guests · 人数</span>
+      </label>
+      <input class="bm-input" type="number" id="bmGuests" name="guests"
+        min="1" max="8" value="1" style="max-width:6rem;">
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmNotes">
+        <span class="zh-inline">备注 / Notes</span>
+        <span class="en-inline">Notes · 备注</span>
+      </label>
+      <textarea class="bm-textarea" id="bmNotes" name="notes" rows="3"
+        placeholder="任何需要告诉我们的 / Anything we should know (optional)"></textarea>
+    </div>
+
+    <div>
+      <button class="bm-submit" type="submit" id="bmSubmitBtn">
+        <span class="zh-inline">确认报名 / Confirm booking</span>
+        <span class="en-inline">Confirm booking · 确认报名</span>
+      </button>
+      <p class="bm-submit-note">
+        <span class="zh-inline">提交后我们会在 24 小时内通过邮件或微信跟你确认</span>
+        <span class="en-inline">Confirmation within 24h via email or WeChat</span>
+      </p>
+    </div>
+
+    <div class="bm-wechat-alt">
+      <span class="zh-inline">或直接添加学堂微信咨询: <strong class="bm-wechat-id">mp_chiangmai</strong></span>
+      <span class="en-inline">Or add the academy's WeChat directly: <strong class="bm-wechat-id">mp_chiangmai</strong></span>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  /* ── Language toggle ── */
+  function toggleLang() {
+    const body = document.body;
+    const btn = document.getElementById('langBtn');
+    if (body.classList.contains('lang-zh')) {
+      body.classList.replace('lang-zh', 'lang-en');
+      btn.textContent = '中';
+    } else {
+      body.classList.replace('lang-en', 'lang-zh');
+      btn.textContent = 'EN';
+    }
+  }
+
+  /* ── Mobile nav ── */
+  function openMobileNav() { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeMobileNav() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow = ''; }
+
+  /* ── Location dropdown ── */
+  function toggleDropdown() {
+    const chip = document.getElementById('locationChip');
+    const isOpen = chip.getAttribute('data-open') === 'true';
+    chip.setAttribute('data-open', isOpen ? 'false' : 'true');
+  }
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.location-chip-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('locationChip').setAttribute('data-open', 'false');
+    }
+  });
+
+  /* ── Booking Modal ── */
+  function openBookingModal(data) {
+    document.getElementById('bmActivityNameZh').textContent = data.activityZh;
+    document.getElementById('bmActivityNameEn').textContent = data.activityEn;
+    document.getElementById('bmSessionZh').textContent = data.sessionZh;
+    document.getElementById('bmSessionEn').textContent = data.sessionEn;
+    document.getElementById('bmLocationZh').textContent = data.locationZh;
+    document.getElementById('bmLocationEn').textContent = data.locationEn;
+    document.getElementById('bmForm').reset();
+    var btn = document.getElementById('bmSubmitBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<span class="zh-inline">确认报名 / Confirm booking</span><span class="en-inline">Confirm booking · 确认报名</span>';
+    var backdrop = document.getElementById('bmBackdrop');
+    var card = document.getElementById('bmCard');
+    backdrop.classList.add('bm-open');
+    card.classList.add('bm-open');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        backdrop.classList.add('bm-visible');
+        card.classList.add('bm-visible');
+      });
+    });
+  }
+
+  function closeBookingModal() {
+    var backdrop = document.getElementById('bmBackdrop');
+    var card = document.getElementById('bmCard');
+    backdrop.classList.remove('bm-visible');
+    card.classList.remove('bm-visible');
+    setTimeout(function() {
+      backdrop.classList.remove('bm-open');
+      card.classList.remove('bm-open');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBookingModal();
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('bmCard').addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+  });
+
+  function handleModalSubmit(e) {
+    e.preventDefault();
+    var btn = document.getElementById('bmSubmitBtn');
+    var isZh = document.body.classList.contains('lang-zh');
+    btn.textContent = isZh ? '已提交 / Submitted ✓' : 'Submitted ✓';
+    btn.disabled = true;
+    setTimeout(function() { closeBookingModal(); }, 1000);
+  }
+
+  /* ── List / Calendar view toggle ── */
+  function setView(view) {
+    const listView = document.getElementById('listView');
+    const calView  = document.getElementById('calendarView');
+    const btnList  = document.getElementById('btnList');
+    const btnCal   = document.getElementById('btnCal');
+
+    if (view === 'calendar') {
+      listView.style.display = 'none';
+      calView.style.display  = 'block';
+      calView.style.opacity  = '0';
+      btnList.classList.remove('active');
+      btnCal.classList.add('active');
+      requestAnimationFrame(function() {
+        calView.style.transition = 'opacity 200ms ease';
+        calView.style.opacity = '1';
+      });
+    } else {
+      calView.style.display  = 'none';
+      calView.style.opacity  = '0';
+      listView.style.display = 'block';
+      listView.style.opacity = '0';
+      btnCal.classList.remove('active');
+      btnList.classList.add('active');
+      requestAnimationFrame(function() {
+        listView.style.transition = 'opacity 200ms ease';
+        listView.style.opacity = '1';
+      });
+    }
+  }
+
+  /* ── Calendar cell click → detail panel ── */
+
+  // Activity data keyed by date string (YYYY-MM-DD)
+  // bookable:true means show 立即报名 button; sessionZh/En/locationZh/En feed the modal
+  var calActivities = {
+    '2026-05-14': [
+      {
+        date: '5月 14日 · 07:00 ICT',
+        titleZh: '晨修共坐', titleEn: 'Morning Sit',
+        descZh: '每周共修，日出前开始，无需报名',
+        descEn: 'Weekly community sit, before sunrise, drop-in welcome',
+        href: '#',
+        bookable: false
+      }
+    ],
+    '2026-05-18': [
+      {
+        date: '5月 18日 · 15:00 ICT',
+        titleZh: '春季茶会', titleEn: 'Spring Tea Gathering',
+        descZh: '围炉而坐，一盏茶，一段沉默',
+        descEn: 'Around the fire, one cup of tea, one stretch of silence',
+        href: '#',
+        bookable: true,
+        sessionZh: '5月 18日(周日) · 15:00–17:00 ICT',
+        sessionEn: 'Sun May 18 · 15:00–17:00 ICT',
+        locationZh: '心灯学堂 · 清迈',
+        locationEn: 'Xindeng Academy · Chiang Mai'
+      }
+    ],
+    '2026-05-21': [
+      {
+        date: '5月 21日 · 07:00 ICT',
+        titleZh: '晨修共坐', titleEn: 'Morning Sit',
+        descZh: '每周共修，日出前开始，无需报名',
+        descEn: 'Weekly community sit, before sunrise, drop-in welcome',
+        href: '#',
+        bookable: false
+      }
+    ],
+    '2026-05-26': [
+      {
+        date: '5月 26日 · 09:00 ICT',
+        titleZh: '禅修入门课', titleEn: 'Introduction to Meditation',
+        descZh: '适合初学者，以静坐与问答为主',
+        descEn: 'For beginners — sitting, silence, and dialogue',
+        href: 'activity-detail.html',
+        bookable: true,
+        sessionZh: '5月 26日(周一) · 09:00–11:00 ICT',
+        sessionEn: 'Mon May 26 · 09:00–11:00 ICT',
+        locationZh: '心灯学堂 · 清迈',
+        locationEn: 'Xindeng Academy · Chiang Mai'
+      }
+    ],
+    '2026-05-28': [
+      {
+        date: '5月 28日 · 07:00 ICT',
+        titleZh: '晨修共坐', titleEn: 'Morning Sit',
+        descZh: '每周共修，日出前开始，无需报名',
+        descEn: 'Weekly community sit, before sunrise, drop-in welcome',
+        href: '#',
+        bookable: false
+      }
+    ]
+  };
+
+  // Date label map
+  var dateLabelZh = {
+    '2026-05-14': '5月 14日 · 周三',
+    '2026-05-18': '5月 18日 · 周日',
+    '2026-05-21': '5月 21日 · 周三',
+    '2026-05-26': '5月 26日 · 周一',
+    '2026-05-28': '5月 28日 · 周三'
+  };
+  var dateLabelEn = {
+    '2026-05-14': 'Wed, 14 May',
+    '2026-05-18': 'Sun, 18 May',
+    '2026-05-21': 'Wed, 21 May',
+    '2026-05-26': 'Mon, 26 May',
+    '2026-05-28': 'Wed, 28 May'
+  };
+
+  var selectedCell = null;
+
+  function buildActivityCard(act) {
+    var bookBtn = '';
+    if (act.bookable) {
+      var modalCall = "openBookingModal({"
+        + "activityZh:'" + act.titleZh + "',"
+        + "activityEn:'" + act.titleEn + "',"
+        + "sessionZh:'" + act.sessionZh + "',"
+        + "sessionEn:'" + act.sessionEn + "',"
+        + "locationZh:'" + act.locationZh + "',"
+        + "locationEn:'" + act.locationEn + "'})";
+      bookBtn = '<button class="btn-cal-book" type="button" onclick="' + modalCall + '">'
+        + '<span class="zh-inline">立即报名</span>'
+        + '<span class="en-inline">Book</span>'
+        + '</button>';
+    }
+    var detailLink = act.href && act.href !== '#'
+      ? '<a class="link-moss" href="' + act.href + '"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>'
+      : '<span class="link-moss" style="cursor:default;opacity:0.5;"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></span>';
+
+    return '<div class="activity-card" style="text-decoration:none;color:inherit;">'
+      + '<div class="activity-card-body" style="border-top:1px solid var(--hairline);padding:1.4rem 0;">'
+      + '<p class="card-date">' + act.date + '</p>'
+      + '<h3 class="card-title">'
+        + '<span class="zh-inline">' + act.titleZh + '</span>'
+        + '<span class="en-inline">' + act.titleEn + '</span>'
+      + '</h3>'
+      + '<p class="card-desc">'
+        + '<span class="zh-inline">' + act.descZh + '</span>'
+        + '<span class="en-inline">' + act.descEn + '</span>'
+      + '</p>'
+      + '<div class="cal-card-actions">' + detailLink + bookBtn + '</div>'
+      + '</div></div>';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var cells = document.querySelectorAll('.cal-day-cell');
+    cells.forEach(function(cell) {
+      cell.addEventListener('click', function() {
+        var date = cell.getAttribute('data-date');
+        var panel = document.getElementById('calDetailPanel');
+        var panelDate = document.getElementById('calDetailDate');
+        var panelCards = document.getElementById('calDetailCards');
+
+        // Deselect previous
+        if (selectedCell) selectedCell.classList.remove('selected');
+
+        // If clicking same cell again, close panel
+        if (selectedCell === cell) {
+          selectedCell = null;
+          panel.classList.remove('visible');
+          return;
+        }
+
+        selectedCell = cell;
+        cell.classList.add('selected');
+
+        var activities = calActivities[date];
+        if (!activities || activities.length === 0) {
+          panel.classList.remove('visible');
+          return;
+        }
+
+        // Build date label (uses both zh/en spans so lang toggle works)
+        var zhLabel = dateLabelZh[date] || date;
+        var enLabel = dateLabelEn[date] || date;
+        panelDate.innerHTML = '<span class="zh-inline">' + zhLabel + '</span>'
+                            + '<span class="en-inline">' + enLabel + '</span>';
+
+        // Build cards
+        panelCards.innerHTML = activities.map(buildActivityCard).join('');
+
+        panel.classList.add('visible');
+
+        // Scroll panel into view smoothly
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    });
+  });
+</script>
+</body>
+</html>

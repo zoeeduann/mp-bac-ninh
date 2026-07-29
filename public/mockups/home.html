@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心灯学堂 · 清迈 — 首页 / Chiang Mai Xindeng Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:    #F1ECE0;
+    --teak:     #3C2E22;
+    --cocoa:    #2A211A;
+    --smoke:    #7A6F62;
+    --moss:     #5C6A48;
+    --amber:    #A87544;
+    --hairline: rgba(42, 33, 26, 0.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--cocoa);
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────── */
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4vw;
+    background: rgba(241, 236, 224, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .brand-mark {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--cocoa);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .brand-mark .brand-en {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  /* ─── LOCATION CHIP + DROPDOWN ───────────────────── */
+  .location-chip-wrap {
+    position: relative;
+  }
+
+  .location-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    border: 1px solid rgba(42, 33, 26, 0.20);
+    border-radius: 100px;
+    padding: 0.28rem 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    transition: border-color 150ms, color 150ms;
+    white-space: nowrap;
+  }
+
+  .location-chip:hover {
+    border-color: rgba(42, 33, 26, 0.38);
+    color: var(--cocoa);
+  }
+
+  .location-chip[data-open="true"] {
+    border-color: var(--moss);
+    color: var(--moss);
+  }
+
+  .chip-arrow {
+    font-size: 8px;
+    transition: transform 150ms;
+  }
+
+  .location-chip[data-open="true"] .chip-arrow {
+    transform: rotate(180deg);
+  }
+
+  .location-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 210px;
+    background: var(--cream);
+    border: 1px solid rgba(42, 33, 26, 0.15);
+    border-radius: 4px;
+    z-index: 200;
+    overflow: hidden;
+  }
+
+  .location-chip[data-open="true"] + .location-dropdown {
+    display: block;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.1rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    text-decoration: none;
+    transition: background 120ms, color 120ms;
+  }
+
+  .dropdown-item:hover {
+    background: rgba(92, 106, 72, 0.06);
+    color: var(--cocoa);
+  }
+
+  .dropdown-item.current {
+    color: var(--cocoa);
+  }
+
+  .dropdown-check {
+    font-size: 11px;
+    color: var(--moss);
+  }
+
+  .dropdown-divider {
+    border: none;
+    border-top: 1px solid var(--hairline);
+    margin: 0;
+  }
+
+  .dropdown-network {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.75rem 1.1rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--smoke);
+    text-decoration: none;
+    transition: background 120ms, color 120ms;
+  }
+
+  .dropdown-network:hover {
+    background: rgba(92, 106, 72, 0.06);
+    color: var(--cocoa);
+  }
+
+  .main-nav {
+    display: flex;
+    align-items: center;
+    gap: 2.4rem;
+    list-style: none;
+  }
+
+  .main-nav a {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cocoa);
+    text-decoration: none;
+    transition: color 150ms;
+  }
+
+  .main-nav a:hover { color: var(--moss); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.6rem;
+  }
+
+  .lang-toggle {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--smoke);
+    cursor: pointer;
+    user-select: none;
+    transition: color 150ms;
+  }
+
+  .lang-toggle:hover { color: var(--cocoa); }
+
+  .btn-book-pill {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: var(--amber);
+    border: none;
+    border-radius: 100px;
+    padding: 0.45rem 1.2rem;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 150ms;
+  }
+
+  .btn-book-pill:hover { background: var(--teak); }
+
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: var(--cocoa);
+  }
+
+  .mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--cream);
+    z-index: 200;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 6vw 8vw;
+  }
+
+  .mobile-nav-overlay.open { display: flex; }
+
+  .mobile-nav-close {
+    position: absolute;
+    top: 20px; right: 4vw;
+    font-size: 24px;
+    color: var(--smoke);
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+  }
+
+  .mobile-nav-overlay ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .mobile-nav-overlay ul a {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--cocoa);
+    text-decoration: none;
+  }
+
+  /* ─── HERO ────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    height: 100svh;
+    min-height: 560px;
+    overflow: hidden;
+  }
+
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    filter: saturate(0.88) brightness(0.92);
+  }
+
+  .hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(42, 33, 26, 0.62) 0%,
+      rgba(42, 33, 26, 0.18) 55%,
+      transparent 100%
+    );
+  }
+
+  .hero-content {
+    position: absolute;
+    left: 8%;
+    bottom: 12%;
+    max-width: 580px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(241, 236, 224, 0.75);
+    margin-bottom: 1.2rem;
+  }
+
+  .hero-title-zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 400;
+    color: var(--cream);
+    line-height: 1.1;
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(20px, 3vw, 40px);
+    font-weight: 400;
+    color: rgba(241, 236, 224, 0.88);
+    line-height: 1.2;
+    margin-bottom: 2.8rem;
+  }
+
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-primary {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: var(--amber);
+    border: none;
+    border-radius: 100px;
+    padding: 0.75rem 1.8rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 150ms;
+  }
+
+  .btn-primary:hover { background: var(--cocoa); }
+
+  .btn-ghost {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: transparent;
+    border: 1.5px solid rgba(241, 236, 224, 0.6);
+    border-radius: 100px;
+    padding: 0.75rem 1.8rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 150ms, color 150ms;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--cream);
+    color: var(--cream);
+  }
+
+  /* ─── SECTIONS ───────────────────────────────────── */
+  .section-pad {
+    padding: 9rem 6vw;
+  }
+
+  .section-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-bottom: 1.4rem;
+  }
+
+  .section-title-zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(24px, 3.2vw, 40px);
+    font-weight: 400;
+    color: var(--cocoa);
+    line-height: 1.3;
+    margin-bottom: 3.5rem;
+  }
+
+  /* ─── ACTIVITY CARDS ─────────────────────────────── */
+  .cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-bottom: 3.5rem;
+  }
+
+  .activity-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .activity-card-img {
+    width: 100%;
+    aspect-ratio: 5/6;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.85);
+  }
+
+  .activity-card-body {
+    padding: 1.4rem 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .card-date {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-bottom: 0.6rem;
+  }
+
+  .card-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--cocoa);
+    margin-bottom: 0.45rem;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--smoke);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .link-moss {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--moss);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 150ms;
+  }
+
+  .link-moss:hover { color: var(--cocoa); }
+
+  .view-all-wrap {
+    text-align: center;
+  }
+
+  /* ─── PULL QUOTE SECTION ─────────────────────────── */
+  .about-section {
+    padding: 9rem 6vw;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .about-inner {
+    max-width: 68ch;
+  }
+
+  .about-body-zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(17px, 2vw, 21px);
+    font-weight: 400;
+    color: var(--cocoa);
+    line-height: 1.85;
+    margin-bottom: 1.6rem;
+  }
+
+  .about-body-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--smoke);
+    line-height: 1.7;
+  }
+
+  /* ─── JOURNAL SECTION ────────────────────────────── */
+  .journal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-bottom: 3rem;
+  }
+
+  .journal-item img {
+    width: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.82);
+  }
+
+  .journal-item:first-child img { aspect-ratio: 3/4; }
+  .journal-item:nth-child(2) img { aspect-ratio: 1/1; }
+  .journal-item:last-child img { aspect-ratio: 4/3; align-self: center; }
+
+  .journal-caption {
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .journal-caption-date {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-bottom: 0.3rem;
+  }
+
+  .journal-caption-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    color: var(--cocoa);
+    margin-bottom: 0.4rem;
+  }
+
+  /* ─── FOOTER ─────────────────────────────────────── */
+  .site-footer {
+    background: var(--teak);
+    color: var(--cream);
+    padding: 6rem 6vw 2.5rem;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 5rem;
+  }
+
+  .footer-brand p {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 1rem;
+  }
+
+  .footer-brand span {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(241, 236, 224, 0.55);
+    line-height: 1.7;
+    display: block;
+    max-width: 28ch;
+  }
+
+  .footer-col h4 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(241, 236, 224, 0.5);
+    margin-bottom: 1.4rem;
+  }
+
+  .footer-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .footer-col ul li a {
+    font-size: 13px;
+    color: rgba(241, 236, 224, 0.75);
+    text-decoration: none;
+    transition: color 150ms;
+  }
+
+  .footer-col ul li a:hover { color: var(--cream); }
+
+  .footer-col ul li a.current-loc {
+    color: rgba(241, 236, 224, 0.95);
+    font-weight: 600;
+  }
+
+  .footer-bottom {
+    border-top: 1px solid rgba(241, 236, 224, 0.12);
+    padding-top: 1.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .footer-bottom p {
+    font-size: 11px;
+    color: rgba(241, 236, 224, 0.35);
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── LANGUAGE TOGGLE LOGIC ──────────────────────── */
+  body.lang-en .zh { display: none; }
+  body.lang-en .en { display: block; }
+  body.lang-zh .en { display: none; }
+  body.lang-zh .zh { display: block; }
+  body.lang-en .zh-inline { display: none; }
+  body.lang-en .en-inline { display: inline; }
+  body.lang-zh .en-inline { display: none; }
+  body.lang-zh .zh-inline { display: inline; }
+
+  /* ─── RESPONSIVE ─────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .footer-grid { grid-template-columns: 1fr 1fr 1fr; gap: 3rem; }
+    .footer-brand { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 900px) {
+    .cards-row { grid-template-columns: 1fr; gap: 4rem; }
+    .journal-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .footer-brand { grid-column: 1 / -1; }
+    .main-nav { display: none; }
+    .hamburger { display: flex; }
+    .hero-content { left: 6%; bottom: 10%; }
+  }
+
+  @media (max-width: 600px) {
+    .footer-grid { grid-template-columns: 1fr; }
+    .section-pad { padding: 5rem 5vw; }
+    .about-section { padding: 5rem 5vw; }
+    .hero-ctas { flex-direction: column; align-items: flex-start; }
+    .brand-mark .brand-en { display: none; }
+  }
+</style>
+</head>
+<body class="lang-zh">
+
+<!-- ─── MOBILE NAV OVERLAY ────────────────────────────── -->
+<div class="mobile-nav-overlay" id="mobileNav">
+  <button class="mobile-nav-close" onclick="closeMobileNav()">✕</button>
+  <ul>
+    <li><a href="home.html" onclick="closeMobileNav()"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+    <li><a href="activities.html" onclick="closeMobileNav()"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+    <li><a href="#" onclick="closeMobileNav()"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+    <li><a href="#" onclick="closeMobileNav()"><span class="zh-inline">关于</span><span class="en-inline">About</span></a></li>
+    <li><a href="portal.html" onclick="closeMobileNav()"><span class="zh-inline">总门户</span><span class="en-inline">Network Home</span></a></li>
+  </ul>
+  <a class="btn-book-pill" href="book.html" onclick="closeMobileNav()"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a>
+</div>
+
+<!-- ─── HEADER ───────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-left">
+    <a class="brand-mark" href="portal.html">
+      静心学堂 · 泰国<span class="brand-en">Mindfulpeace Academy Thailand</span>
+    </a>
+    <div class="location-chip-wrap">
+      <div class="location-chip" id="locationChip" onclick="toggleDropdown()" data-open="false">
+        ▸ 清迈 · 心灯<span class="chip-arrow">▾</span>
+      </div>
+      <div class="location-dropdown" id="locationDropdown">
+        <a class="dropdown-item" href="/bangkok">
+          <span>曼谷 · 如如</span>
+        </a>
+        <a class="dropdown-item current" href="home.html">
+          <span>清迈 · 心灯</span>
+          <span class="dropdown-check">✓</span>
+        </a>
+        <a class="dropdown-item" href="/phuket">
+          <span>普吉</span>
+        </a>
+        <hr class="dropdown-divider">
+        <a class="dropdown-network" href="portal.html">
+          ← <span class="zh-inline">返回总门户 / Network home</span><span class="en-inline">Network home</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <ul class="main-nav">
+      <li><a href="home.html"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+      <li><a href="activities.html"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+      <li><a href="#"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+      <li><a href="#"><span class="zh-inline">关于</span><span class="en-inline">About</span></a></li>
+    </ul>
+  </nav>
+  <div class="header-right">
+    <span class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</span>
+    <a class="btn-book-pill" href="book.html"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a>
+    <div class="hamburger" onclick="openMobileNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</header>
+
+<!-- ─── HERO ─────────────────────────────────────────── -->
+<section class="hero">
+  <img class="hero-img"
+    src="https://images.unsplash.com/photo-1542640244-7e672d6cef4e?auto=format&fit=crop&w=2400&q=80"
+    alt="Temple at dawn, Chiang Mai">
+  <div class="hero-gradient"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">CHIANG MAI</p>
+    <h1 class="hero-title-zh">
+      <span class="zh-inline">心灯学堂</span>
+      <span class="en-inline">Xindeng Academy</span>
+    </h1>
+    <p class="hero-title-en">
+      <span class="zh-inline">山脚下的修学之地</span>
+      <span class="en-inline">A quiet academy in the Chiang Mai hills</span>
+    </p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="book.html">
+        <span class="zh-inline">我要预约 / Book your visit</span>
+        <span class="en-inline">Book your visit</span>
+      </a>
+      <a class="btn-ghost" href="#about">
+        <span class="zh-inline">了解学堂 / About</span>
+        <span class="en-inline">About the Academy</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 2: FEATURED ACTIVITIES ───────────────── -->
+<section class="section-pad">
+  <p class="section-eyebrow">
+    <span class="zh-inline">近期活动 / Upcoming</span>
+    <span class="en-inline">Upcoming · 近期活动</span>
+  </p>
+  <h2 class="section-title-zh">
+    <span class="zh-inline">走入学堂的几种方式</span>
+    <span class="en-inline">Ways to join us</span>
+  </h2>
+
+  <div class="cards-row">
+    <a class="activity-card" href="activity-detail.html">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=800&q=75"
+        alt="禅修入门课">
+      <div class="activity-card-body">
+        <p class="card-date">5月 26日 · May 26 · 09:00 ICT</p>
+        <h3 class="card-title">
+          <span class="zh-inline">禅修入门课</span>
+          <span class="en-inline">Introduction to Meditation</span>
+        </h3>
+        <p class="card-desc">
+          <span class="zh-inline">适合初学者，以静坐与问答为主</span>
+          <span class="en-inline">For beginners — sitting, silence, and dialogue</span>
+        </p>
+        <a class="link-moss" href="activity-detail.html">
+          <span class="zh-inline">查看详情 →</span>
+          <span class="en-inline">View →</span>
+        </a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="activities.html">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=75"
+        alt="正念生活工作坊">
+      <div class="activity-card-body">
+        <p class="card-date">6月 9日 · Jun 9 · 09:00 ICT</p>
+        <h3 class="card-title">
+          <span class="zh-inline">正念生活工作坊</span>
+          <span class="en-inline">Mindful Living Workshop</span>
+        </h3>
+        <p class="card-desc">
+          <span class="zh-inline">将觉知带入日常：饮食、工作、睡眠</span>
+          <span class="en-inline">Bringing awareness to eating, working, and rest</span>
+        </p>
+        <a class="link-moss" href="activities.html">
+          <span class="zh-inline">查看详情 →</span>
+          <span class="en-inline">View →</span>
+        </a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="activities.html">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=800&q=75"
+        alt="春季茶会">
+      <div class="activity-card-body">
+        <p class="card-date">6月 16日 · Jun 16 · 15:00 ICT</p>
+        <h3 class="card-title">
+          <span class="zh-inline">春季茶会</span>
+          <span class="en-inline">Spring Tea Gathering</span>
+        </h3>
+        <p class="card-desc">
+          <span class="zh-inline">围炉而坐，一盏茶，一段沉默</span>
+          <span class="en-inline">Around the fire, one cup of tea, one stretch of silence</span>
+        </p>
+        <a class="link-moss" href="activities.html">
+          <span class="zh-inline">查看详情 →</span>
+          <span class="en-inline">View →</span>
+        </a>
+      </div>
+    </a>
+  </div>
+
+  <div class="view-all-wrap">
+    <a class="link-moss" href="activities.html" style="font-size:13px;letter-spacing:0.06em;">
+      <span class="zh-inline">查看全部活动 →</span>
+      <span class="en-inline">View all activities →</span>
+    </a>
+  </div>
+</section>
+
+<!-- ─── SECTION 3: CONTEMPLATIVE PARAGRAPH ────────────── -->
+<section class="about-section" id="about">
+  <div class="about-inner">
+    <p class="section-eyebrow">
+      <span class="zh-inline">学堂之意 / The Academy</span>
+      <span class="en-inline">The Academy · 学堂之意</span>
+    </p>
+    <p class="about-body-zh zh">
+      心灯学堂坐落于清迈，是一处与日常修学相伴的安静空间。我们不教授什么，只是一起静坐、喝茶、读书、走路。来访的人会发现，这里没有规则，只有一种不疾不徐的节奏。
+    </p>
+    <p class="about-body-en en">
+      Nestled at the foot of the mountains in Chiang Mai, Xindeng Academy is a quiet space for daily practice. We don't teach anything — we simply sit together, drink tea, read, and walk. Visitors find that there are no rules here, only a gentle, unhurried rhythm.
+    </p>
+    <p class="about-body-en zh" style="margin-top:0;">
+      <em>Nestled at the foot of the mountains in Chiang Mai. We don't teach anything — we simply sit, drink tea, read, and walk.</em>
+    </p>
+  </div>
+</section>
+
+<!-- ─── SECTION 4: JOURNAL PREVIEW ───────────────────── -->
+<section class="section-pad">
+  <p class="section-eyebrow">
+    <span class="zh-inline">现场 · Journal</span>
+    <span class="en-inline">Journal · 现场</span>
+  </p>
+
+  <div class="journal-grid">
+    <div class="journal-item">
+      <img src="https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?auto=format&fit=crop&w=600&q=75"
+        alt="journal image 1">
+      <div class="journal-caption">
+        <p class="journal-caption-date">2026 · 5月 9日</p>
+        <p class="journal-caption-title">
+          <span class="zh-inline">晨修记录 · 经行</span>
+          <span class="en-inline">Morning Sit · Walking Practice</span>
+        </p>
+        <a class="link-moss" href="#" style="font-size:12px;">
+          <span class="zh-inline">阅读 →</span>
+          <span class="en-inline">Read →</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="journal-item">
+      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=600&q=75"
+        alt="journal image 2">
+      <div class="journal-caption">
+        <p class="journal-caption-date">2026 · 4月 21日</p>
+        <p class="journal-caption-title">
+          <span class="zh-inline">四月茶会现场</span>
+          <span class="en-inline">April Tea Gathering</span>
+        </p>
+        <a class="link-moss" href="#" style="font-size:12px;">
+          <span class="zh-inline">阅读 →</span>
+          <span class="en-inline">Read →</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="journal-item">
+      <img src="https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=800&q=75"
+        alt="journal image 3">
+      <div class="journal-caption">
+        <p class="journal-caption-date">2026 · 4月 3日</p>
+        <p class="journal-caption-title">
+          <span class="zh-inline">林间漫步 · 清迈山路</span>
+          <span class="en-inline">Forest Walk · Chiang Mai</span>
+        </p>
+        <a class="link-moss" href="#" style="font-size:12px;">
+          <span class="zh-inline">阅读 →</span>
+          <span class="en-inline">Read →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-all-wrap">
+    <a class="link-moss" href="#" style="font-size:13px;letter-spacing:0.06em;">
+      <span class="zh-inline">全部记录 →</span>
+      <span class="en-inline">All entries →</span>
+    </a>
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <p>静心学堂 · 泰国</p>
+      <span>
+        <span class="zh-inline">心灯学堂——清迈山间的修学空间。静坐、喝茶、行走。</span>
+        <span class="en-inline">Chiang Mai Xindeng Academy — a space for practice at the foot of the Chiang Mai hills.</span>
+      </span>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">导航</span><span class="en-inline">Navigate</span></h4>
+      <ul>
+        <li><a href="home.html"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+        <li><a href="activities.html"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+        <li><a href="#"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+        <li><a href="#"><span class="zh-inline">关于学堂</span><span class="en-inline">About</span></a></li>
+        <li><a href="book.html"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">联系</span><span class="en-inline">Contact</span></h4>
+      <ul>
+        <li><a href="#">Chiang Mai</a></li>
+        <li><a href="#">清迈</a></li>
+        <li><a href="mailto:chiangmai@mindfulpeaceth.com">chiangmai@mindfulpeaceth.com</a></li>
+        <li>
+          <span class="zh-inline">微信号: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong></span>
+          <span class="en-inline">WeChat: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong></span>
+        </li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">网络 · The Network</span><span class="en-inline">The Network</span></h4>
+      <ul>
+        <li><a href="/bangkok"><span class="zh-inline">曼谷如如</span><span class="en-inline">Bangkok Ruru</span></a></li>
+        <li><a href="home.html" class="current-loc"><span class="zh-inline">清迈心灯 ✓</span><span class="en-inline">Chiang Mai Xindeng ✓</span></a></li>
+        <li><a href="/phuket"><span class="zh-inline">普吉</span><span class="en-inline">Phuket</span></a></li>
+        <li><a href="portal.html"><span class="zh-inline">总门户</span><span class="en-inline">Network Home</span></a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">相关</span><span class="en-inline">Related</span></h4>
+      <ul>
+        <li><a href="https://mindfulpeace.org" target="_blank">mindfulpeace.org</a></li>
+        <li><a href="#"><span class="zh-inline">正念平和国际协会</span><span class="en-inline">Mindfulpeace International</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 静心学堂 · 泰国 · Mindfulpeace Academy Thailand</p>
+    <p>
+      <span class="zh-inline">清迈 · 泰国</span>
+      <span class="en-inline">Chiang Mai · Thailand</span>
+    </p>
+  </div>
+</footer>
+
+<script>
+  // Language toggle
+  function toggleLang() {
+    const body = document.body;
+    const btn = document.getElementById('langBtn');
+    if (body.classList.contains('lang-zh')) {
+      body.classList.replace('lang-zh', 'lang-en');
+      btn.textContent = '中';
+    } else {
+      body.classList.replace('lang-en', 'lang-zh');
+      btn.textContent = 'EN';
+    }
+  }
+
+  // Mobile nav
+  function openMobileNav() {
+    document.getElementById('mobileNav').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileNav() {
+    document.getElementById('mobileNav').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Location dropdown
+  function toggleDropdown() {
+    const chip = document.getElementById('locationChip');
+    const isOpen = chip.getAttribute('data-open') === 'true';
+    chip.setAttribute('data-open', isOpen ? 'false' : 'true');
+  }
+
+  // Click outside to close
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.location-chip-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('locationChip').setAttribute('data-open', 'false');
+    }
+  });
+</script>
+</body>
+</html>

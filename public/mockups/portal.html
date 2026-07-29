@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>静心学堂 · 泰国 / Mindfulpeace Academy Thailand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:    #F1ECE0;
+    --teak:     #3C2E22;
+    --cocoa:    #2A211A;
+    --smoke:    #7A6F62;
+    --moss:     #5C6A48;
+    --amber:    #A87544;
+    --hairline: rgba(42, 33, 26, 0.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--cocoa);
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────── */
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4vw;
+    background: rgba(241, 236, 224, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .brand-mark {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--cocoa);
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+
+  .brand-mark .brand-en {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-left: 0.55rem;
+    vertical-align: middle;
+  }
+
+  /* Group brand + chip so they sit together on the left */
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+
+  /* ─── LOCATION CHIP + DROPDOWN ────────────────────── */
+  .location-chip-wrap { position: relative; }
+
+  .location-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    border: 1px solid rgba(42, 33, 26, 0.20);
+    border-radius: 100px;
+    padding: 0.28rem 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    transition: border-color 150ms, color 150ms;
+    white-space: nowrap;
+  }
+  .location-chip:hover { border-color: rgba(42, 33, 26, 0.38); color: var(--cocoa); }
+  .location-chip[data-open="true"] { border-color: var(--moss); color: var(--moss); }
+
+  .chip-arrow { font-size: 8px; transition: transform 150ms; }
+  .location-chip[data-open="true"] .chip-arrow { transform: rotate(180deg); }
+
+  .location-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 210px;
+    background: var(--cream);
+    border: 1px solid rgba(42, 33, 26, 0.15);
+    border-radius: 4px;
+    z-index: 200;
+    overflow: hidden;
+  }
+  .location-chip[data-open="true"] + .location-dropdown { display: block; }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.1rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    text-decoration: none;
+    transition: background 120ms, color 120ms;
+  }
+  .dropdown-item:hover { background: rgba(92, 106, 72, 0.06); color: var(--cocoa); }
+
+  .main-nav { display: flex; align-items: center; gap: 2.4rem; list-style: none; }
+  .main-nav a {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--cocoa); text-decoration: none; transition: color 150ms;
+  }
+  .main-nav a:hover { color: var(--moss); }
+
+  .header-right { display: flex; align-items: center; gap: 1.6rem; }
+
+  .lang-toggle {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--smoke); cursor: pointer; user-select: none; transition: color 150ms;
+  }
+  .lang-toggle:hover { color: var(--cocoa); }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 1.5px; background: var(--cocoa); }
+
+  .mobile-nav-overlay {
+    display: none; position: fixed; inset: 0;
+    background: var(--cream); z-index: 200;
+    flex-direction: column; align-items: flex-start;
+    justify-content: center; padding: 6vw 8vw;
+  }
+  .mobile-nav-overlay.open { display: flex; }
+  .mobile-nav-close { position: absolute; top: 20px; right: 4vw; font-size: 24px; color: var(--smoke); cursor: pointer; background: none; border: none; line-height: 1; }
+  .mobile-nav-overlay ul { list-style: none; display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem; }
+  .mobile-nav-overlay ul a { font-family: 'Noto Serif SC', serif; font-size: 28px; font-weight: 400; color: var(--cocoa); text-decoration: none; }
+
+  /* ─── HERO ────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    height: 70vh;
+    min-height: 520px;
+    overflow: hidden;
+  }
+
+  .hero-img {
+    position: absolute;
+    inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 35%;
+    filter: saturate(0.82) brightness(0.88);
+  }
+
+  .hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(42, 33, 26, 0.70) 0%,
+      rgba(42, 33, 26, 0.22) 50%,
+      transparent 100%
+    );
+  }
+
+  .hero-content {
+    position: absolute;
+    left: 8%;
+    bottom: 11%;
+    max-width: 640px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(241, 236, 224, 0.7);
+    margin-bottom: 1.4rem;
+  }
+
+  .hero-title-zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(46px, 7vw, 80px);
+    font-weight: 400;
+    color: var(--cream);
+    line-height: 1.05;
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(22px, 3vw, 38px);
+    font-weight: 400;
+    color: rgba(241, 236, 224, 0.88);
+    line-height: 1.25;
+    margin-bottom: 2.8rem;
+  }
+
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; }
+
+  .btn-primary {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--cream); background: var(--amber);
+    border: none; border-radius: 100px;
+    padding: 0.75rem 1.8rem; text-decoration: none;
+    cursor: pointer; transition: background 150ms;
+  }
+  .btn-primary:hover { background: var(--cocoa); }
+
+  .btn-ghost {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--cream); background: transparent;
+    border: 1.5px solid rgba(241, 236, 224, 0.6);
+    border-radius: 100px;
+    padding: 0.75rem 1.8rem; text-decoration: none;
+    cursor: pointer; transition: border-color 150ms, color 150ms;
+  }
+  .btn-ghost:hover { border-color: var(--cream); }
+
+  /* ─── SECTION STRUCTURE ──────────────────────────── */
+  .section-pad { padding: 9rem 6vw; }
+
+  .section-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 1.4rem;
+  }
+
+  .section-title-zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(24px, 3.2vw, 40px);
+    font-weight: 400; color: var(--cocoa);
+    line-height: 1.3; margin-bottom: 4rem;
+  }
+
+  /* ─── ACADEMY CARDS (Section 1) ──────────────────── */
+  .academies-section {
+    padding: 8rem 6vw 9rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .academies-header { margin-bottom: 4rem; }
+
+  .academies-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .academy-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+  }
+
+  .academy-card-img-wrap {
+    overflow: hidden;
+    aspect-ratio: 3/4;
+  }
+
+  .academy-card-img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    filter: saturate(0.84);
+    transform: scale(1);
+    transition: transform 600ms ease;
+  }
+
+  .academy-card:hover .academy-card-img {
+    transform: scale(1.02);
+  }
+
+  .academy-card-body {
+    padding: 1.6rem 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .academy-card-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 0.55rem;
+  }
+
+  .academy-card-name {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(22px, 2.5vw, 30px);
+    font-weight: 400; color: var(--cocoa);
+    margin-bottom: 0.4rem;
+    line-height: 1.2;
+  }
+
+  .academy-card-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px; color: var(--smoke);
+    line-height: 1.4; margin-bottom: 0.7rem;
+  }
+
+  .academy-card-desc {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; color: var(--smoke);
+    line-height: 1.6; margin-bottom: 1.1rem;
+  }
+
+  .academy-next-session {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--hairline);
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 500;
+    color: var(--smoke);
+  }
+
+  .academy-next-label {
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--cocoa);
+    white-space: nowrap;
+  }
+
+  /* Phuket name-TBD note */
+  .name-tbd {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 500;
+    color: var(--smoke); opacity: 0.7;
+    letter-spacing: 0.04em;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+  }
+
+  /* ─── ABOUT SECTION (Section 2) ─────────────────── */
+  .about-section {
+    padding: 9rem 6vw;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .about-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    margin-bottom: 3rem;
+  }
+
+  .about-col-zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(17px, 1.8vw, 20px);
+    font-weight: 400; color: var(--cocoa);
+    line-height: 1.9;
+  }
+
+  .about-col-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 19px; color: var(--smoke);
+    line-height: 1.8;
+  }
+
+  .about-more-link {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--moss); text-decoration: none;
+    transition: color 150ms;
+  }
+  .about-more-link:hover { color: var(--cocoa); }
+
+  /* ─── JOURNAL GRID (Section 3) ──────────────────── */
+  .journal-section { padding: 9rem 6vw; }
+
+  .journal-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-bottom: 3.5rem;
+  }
+
+  .journal-photo-item {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .journal-photo-item img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.82);
+  }
+
+  .journal-badge {
+    position: absolute;
+    top: 0.8rem; left: 0.8rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--cream);
+    background: rgba(42, 33, 26, 0.62);
+    padding: 0.22rem 0.6rem;
+    border-radius: 2px;
+  }
+
+  .view-all-wrap { text-align: center; }
+
+  .link-moss {
+    font-size: 12px; font-weight: 600;
+    color: var(--moss); text-decoration: none;
+    letter-spacing: 0.04em; transition: color 150ms;
+  }
+  .link-moss:hover { color: var(--cocoa); }
+
+  /* ─── FOOTER ─────────────────────────────────────── */
+  .site-footer { background: var(--teak); color: var(--cream); padding: 6rem 6vw 2.5rem; }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 5rem;
+  }
+
+  .footer-brand p {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px; font-weight: 400;
+    color: var(--cream); margin-bottom: 0.6rem;
+  }
+  .footer-brand .footer-brand-en {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(241, 236, 224, 0.45);
+    display: block; margin-bottom: 1rem;
+  }
+  .footer-brand span {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 500;
+    color: rgba(241, 236, 224, 0.55);
+    line-height: 1.7; display: block; max-width: 30ch;
+  }
+
+  .footer-col h4 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(241, 236, 224, 0.5); margin-bottom: 1.4rem;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+  .footer-col ul li a { font-size: 13px; color: rgba(241, 236, 224, 0.75); text-decoration: none; transition: color 150ms; }
+  .footer-col ul li a:hover { color: var(--cream); }
+
+  .footer-bottom {
+    border-top: 1px solid rgba(241, 236, 224, 0.12);
+    padding-top: 1.8rem;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 0.8rem;
+  }
+  .footer-bottom p { font-size: 11px; color: rgba(241, 236, 224, 0.35); letter-spacing: 0.06em; }
+
+  /* ─── LANGUAGE TOGGLE ─────────────────────────────── */
+  body.lang-en .zh { display: none; }
+  body.lang-en .en { display: block; }
+  body.lang-zh .en { display: none; }
+  body.lang-zh .zh { display: block; }
+  body.lang-en .zh-inline { display: none; }
+  body.lang-en .en-inline { display: inline; }
+  body.lang-zh .en-inline { display: none; }
+  body.lang-zh .zh-inline { display: inline; }
+
+  /* ─── RESPONSIVE ─────────────────────────────────── */
+  @media (max-width: 960px) {
+    .academies-grid { grid-template-columns: 1fr; max-width: 480px; }
+    .about-columns { grid-template-columns: 1fr; gap: 3rem; }
+    .journal-grid-6 { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .main-nav { display: none; }
+    .hamburger { display: flex; }
+  }
+
+  @media (max-width: 600px) {
+    .hero-content { left: 6%; bottom: 9%; }
+    .journal-grid-6 { grid-template-columns: 1fr 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .hero-ctas { flex-direction: column; align-items: flex-start; }
+    .brand-mark .brand-en { display: none; }
+    .academies-grid { max-width: 100%; }
+  }
+</style>
+</head>
+<body class="lang-zh">
+
+<!-- ─── MOBILE NAV ────────────────────────────────────── -->
+<div class="mobile-nav-overlay" id="mobileNav">
+  <button class="mobile-nav-close" onclick="closeMobileNav()">✕</button>
+  <ul>
+    <li><a href="portal.html" onclick="closeMobileNav()"><span class="zh-inline">总门户</span><span class="en-inline">Network Home</span></a></li>
+    <li><a href="#academies" onclick="closeMobileNav()"><span class="zh-inline">寻找学堂</span><span class="en-inline">Find an Academy</span></a></li>
+    <li><a href="#about-network" onclick="closeMobileNav()"><span class="zh-inline">关于我们</span><span class="en-inline">About</span></a></li>
+  </ul>
+</div>
+
+<!-- ─── HEADER ───────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-left">
+    <a class="brand-mark" href="portal.html">
+      静心学堂 · 泰国<span class="brand-en">Mindfulpeace Academy Thailand</span>
+    </a>
+    <div class="location-chip-wrap">
+      <div class="location-chip" id="locationChip" onclick="toggleDropdown()" data-open="false">
+        <span class="zh-inline">寻找学堂</span><span class="en-inline">Find an academy</span><span class="chip-arrow">▾</span>
+      </div>
+      <div class="location-dropdown" id="locationDropdown">
+        <a class="dropdown-item" href="home.html">
+          <span>曼谷 · 如如</span>
+        </a>
+        <a class="dropdown-item" href="home.html">
+          <span>清迈 · 心灯</span>
+        </a>
+        <a class="dropdown-item" href="home.html">
+          <span>普吉</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <ul class="main-nav">
+      <li><a href="portal.html"><span class="zh-inline">网络</span><span class="en-inline">Network</span></a></li>
+      <li><a href="#academies"><span class="zh-inline">寻找学堂</span><span class="en-inline">Find an academy</span></a></li>
+      <li><a href="#academy-chooser"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a></li>
+    </ul>
+  </nav>
+  <div class="header-right">
+    <span class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</span>
+    <div class="hamburger" onclick="openMobileNav()"><span></span><span></span><span></span></div>
+  </div>
+</header>
+
+<!-- ─── HERO ─────────────────────────────────────────── -->
+<section class="hero">
+  <img class="hero-img"
+    src="https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=2400&q=80"
+    alt="Misty forest morning — Mindfulpeace Academy Thailand">
+  <div class="hero-gradient"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">
+      <span class="zh-inline">三处学堂 · 一片心地 / THREE ACADEMIES · ONE PATH</span>
+      <span class="en-inline">THREE ACADEMIES · ONE PATH · 三处学堂 · 一片心地</span>
+    </p>
+    <h1 class="hero-title-zh">
+      <span class="zh-inline">静心学堂 · 泰国</span>
+      <span class="en-inline">Mindfulpeace Academy Thailand</span>
+    </h1>
+    <p class="hero-title-en">
+      <span class="zh-inline">A network of Mindfulpeace academies across Thailand</span>
+      <span class="en-inline">遍布泰国的静心修学网络</span>
+    </p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#academies">
+        <span class="zh-inline">寻找学堂 / Find an academy</span>
+        <span class="en-inline">Find an academy</span>
+      </a>
+      <a class="btn-ghost" href="#about-network">
+        <span class="zh-inline">了解我们 / About the network</span>
+        <span class="en-inline">About the network</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 1: THREE ACADEMIES ───────────────────── -->
+<section class="academies-section" id="academies">
+  <div class="academies-header">
+    <p class="section-eyebrow">
+      <span class="zh-inline">三处学堂 · The Three Academies</span>
+      <span class="en-inline">The Three Academies · 三处学堂</span>
+    </p>
+    <h2 class="section-title-zh" style="margin-bottom:0;">
+      <span class="zh-inline">选择你最近的学堂</span>
+      <span class="en-inline">Find the academy nearest to you</span>
+    </h2>
+  </div>
+
+  <div class="academies-grid">
+
+    <!-- Bangkok -->
+    <a class="academy-card" href="/bangkok">
+      <div class="academy-card-img-wrap">
+        <img class="academy-card-img"
+          src="https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=1200&q=80"
+          alt="曼谷如如学堂">
+      </div>
+      <div class="academy-card-body">
+        <p class="academy-card-eyebrow">BANGKOK / 曼谷</p>
+        <h3 class="academy-card-name">如如学堂</h3>
+        <p class="academy-card-tagline">In the heart of the city, a quieter pulse</p>
+        <p class="academy-card-desc">
+          <span class="zh-inline">曼谷市中心的修学空间。城市喧嚣之中，留一处安静的落脚地。</span>
+          <span class="en-inline">A sitting space in central Bangkok. Stillness found within the city's constant motion.</span>
+        </p>
+        <div class="academy-next-session">
+          <span class="academy-next-label">
+            <span class="zh-inline">下一场</span><span class="en-inline">Next</span>
+          </span>
+          <span>· 5月 24日 09:00 · <span class="zh-inline">正念早课</span><span class="en-inline">Morning Mindfulness</span></span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Chiang Mai -->
+    <a class="academy-card" href="home.html">
+      <div class="academy-card-img-wrap">
+        <img class="academy-card-img"
+          src="https://images.unsplash.com/photo-1493804714600-6edb1cd93080?auto=format&fit=crop&w=1200&q=80"
+          alt="清迈心灯学堂">
+      </div>
+      <div class="academy-card-body">
+        <p class="academy-card-eyebrow">CHIANG MAI / 清迈</p>
+        <h3 class="academy-card-name">心灯学堂</h3>
+        <p class="academy-card-tagline">Where the hills hold the morning mist</p>
+        <p class="academy-card-desc">
+          <span class="zh-inline">清迈山间的修学空间。静坐、喝茶、行走于山径之间。</span>
+          <span class="en-inline">Nestled in the Chiang Mai hills. Sitting, tea, and walks along the hillside paths.</span>
+        </p>
+        <div class="academy-next-session">
+          <span class="academy-next-label">
+            <span class="zh-inline">下一场</span><span class="en-inline">Next</span>
+          </span>
+          <span>· 5月 26日 09:00 · <span class="zh-inline">禅修入门课</span><span class="en-inline">Intro to Meditation</span></span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Phuket -->
+    <a class="academy-card" href="/phuket">
+      <div class="academy-card-img-wrap">
+        <img class="academy-card-img"
+          src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=1200&q=80"
+          alt="普吉学堂">
+      </div>
+      <div class="academy-card-body">
+        <p class="academy-card-eyebrow">PHUKET / 普吉</p>
+        <h3 class="academy-card-name">
+          <span class="zh-inline">普吉学堂<span class="name-tbd">（名字待定）</span></span>
+          <span class="en-inline">Phuket Academy <span class="name-tbd">(name TBD)</span></span>
+        </h3>
+        <p class="academy-card-tagline">Sea-light and the breath of the tide</p>
+        <p class="academy-card-desc">
+          <span class="zh-inline">普吉岛上的修学空间。海风、光线，与一段向内的安静时光。</span>
+          <span class="en-inline">A practice space on the island of Phuket. Sea-light, open air, and a quiet turning inward.</span>
+        </p>
+        <div class="academy-next-session">
+          <span class="academy-next-label">
+            <span class="zh-inline">下一场</span><span class="en-inline">Next</span>
+          </span>
+          <span>· 5月 28日 08:00 · <span class="zh-inline">晨修共坐</span><span class="en-inline">Morning Sit</span></span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ─── SECTION 2: ABOUT THE NETWORK ─────────────────── -->
+<section class="about-section" id="about-network">
+  <p class="section-eyebrow">
+    <span class="zh-inline">网络的根脉 · Our roots</span>
+    <span class="en-inline">Our roots · 网络的根脉</span>
+  </p>
+
+  <div class="about-columns">
+    <p class="about-col-zh zh">
+      静心学堂 · 泰国 是国际静心协会（<a href="https://mindfulpeace.org" target="_blank" rel="noreferrer">mindfulpeace.org</a>）在泰国的本地分院。协会由 <strong style="font-weight:500;">济群法师</strong> 创建，以「<strong style="font-weight:500;">觉醒之道</strong>」为修学根脉——设学士、修士、胜士、智士四阶课程，贯穿禅修、读书、禅茶与日常修行。
+      <br><br>
+      三处学堂在曼谷、清迈、普吉，各自守着一方静室——把修学落到一杯茶、一段共坐、一段共同走过的路。
+    </p>
+    <p class="about-col-en en">
+      Mindfulpeace Academy Thailand is the local Thai branch of the Mindfulpeace International Association (<a href="https://mindfulpeace.org" target="_blank" rel="noreferrer">mindfulpeace.org</a>). Founded by <strong style="font-weight:500;">Master Jiqun</strong> (济群法师), the association teaches the <strong style="font-weight:500;">Path of Awakening</strong> (觉醒之道) — a graduated curriculum of meditation, study, tea, and everyday practice across four stages: Bachelor, Master, Master of Practice, and Wisdom.
+      <br><br>
+      Three academies — Bangkok, Chiang Mai, and Phuket — each keep a quiet room: a place where the teaching becomes a cup of tea, a sitting together, a walk shared.
+    </p>
+    <!-- Shown in ZH mode as English companion -->
+    <p class="about-col-en zh" style="font-size:17px; line-height:1.75;">
+      <em>Founded by Master Jiqun, rooted in the Path of Awakening — meditation, study, tea, and everyday practice. Three academies in Bangkok, Chiang Mai, and Phuket each keep a quiet room.</em>
+    </p>
+  </div>
+
+  <a class="about-more-link" href="https://mindfulpeace.org/#/course" target="_blank" rel="noreferrer">
+    <span class="zh-inline">查看完整修学路径 / Read about the full curriculum →</span>
+    <span class="en-inline">Read about the full curriculum at mindfulpeace.org →</span>
+  </a>
+</section>
+
+<!-- ─── SECTION 3: ACROSS THE NETWORK ────────────────── -->
+<section class="journal-section" id="journal">
+  <p class="section-eyebrow">
+    <span class="zh-inline">现场 · Across the Network</span>
+    <span class="en-inline">Across the Network · 现场</span>
+  </p>
+  <h2 class="section-title-zh" style="margin-bottom:3rem;">
+    <span class="zh-inline">三座城市的日常</span>
+    <span class="en-inline">Daily life across three cities</span>
+  </h2>
+
+  <div class="journal-grid-6">
+
+    <div class="journal-photo-item">
+      <img src="https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=800&q=75" alt="Chiang Mai sitting">
+      <span class="journal-badge">CHIANG MAI</span>
+    </div>
+
+    <div class="journal-photo-item">
+      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=75" alt="Bangkok tea">
+      <span class="journal-badge">BANGKOK</span>
+    </div>
+
+    <div class="journal-photo-item">
+      <img src="https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=800&q=75" alt="Phuket morning">
+      <span class="journal-badge">PHUKET</span>
+    </div>
+
+    <div class="journal-photo-item">
+      <img src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=800&q=75" alt="Bangkok meditation">
+      <span class="journal-badge">BANGKOK</span>
+    </div>
+
+    <div class="journal-photo-item">
+      <img src="https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=800&q=75" alt="Chiang Mai forest">
+      <span class="journal-badge">CHIANG MAI</span>
+    </div>
+
+    <div class="journal-photo-item">
+      <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=75" alt="Phuket practice">
+      <span class="journal-badge">PHUKET</span>
+    </div>
+
+  </div>
+
+  <div class="view-all-wrap">
+    <a class="link-moss" href="#" style="font-size:13px; letter-spacing:0.06em;">
+      <span class="zh-inline">查看所有现场 / All journal entries →</span>
+      <span class="en-inline">All journal entries →</span>
+    </a>
+  </div>
+</section>
+
+<!-- ─── ACADEMY CHOOSER anchor for Book nav link ──────── -->
+<div id="academy-chooser" style="padding: 4rem 6vw; border-top: 1px solid var(--hairline); text-align:center;">
+  <p class="section-eyebrow" style="justify-content:center; text-align:center;">
+    <span class="zh-inline">选择一家学堂预约 · Choose an academy to book</span>
+    <span class="en-inline">Choose an academy to book · 选择一家学堂预约</span>
+  </p>
+  <div style="display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; margin-top:1.6rem;">
+    <a href="/bangkok" style="font-family:'Manrope',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--cocoa); border:1.5px solid rgba(42,33,26,0.2); border-radius:100px; padding:0.6rem 1.4rem; text-decoration:none; transition:border-color 150ms, color 150ms;" onmouseover="this.style.borderColor='var(--moss)';this.style.color='var(--moss)'" onmouseout="this.style.borderColor='rgba(42,33,26,0.2)';this.style.color='var(--cocoa)'">
+      <span class="zh-inline">曼谷如如 → 预约</span><span class="en-inline">Bangkok Ruru → Book</span>
+    </a>
+    <a href="book.html" style="font-family:'Manrope',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--cream); background:var(--amber); border:1.5px solid var(--amber); border-radius:100px; padding:0.6rem 1.4rem; text-decoration:none; transition:background 150ms;" onmouseover="this.style.background='var(--teak)';this.style.borderColor='var(--teak)'" onmouseout="this.style.background='var(--amber)';this.style.borderColor='var(--amber)'">
+      <span class="zh-inline">清迈心灯 → 预约</span><span class="en-inline">Chiang Mai Xindeng → Book</span>
+    </a>
+    <a href="/phuket" style="font-family:'Manrope',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--cocoa); border:1.5px solid rgba(42,33,26,0.2); border-radius:100px; padding:0.6rem 1.4rem; text-decoration:none; transition:border-color 150ms, color 150ms;" onmouseover="this.style.borderColor='var(--moss)';this.style.color='var(--moss)'" onmouseout="this.style.borderColor='rgba(42,33,26,0.2)';this.style.color='var(--cocoa)'">
+      <span class="zh-inline">普吉 → 预约</span><span class="en-inline">Phuket → Book</span>
+    </a>
+  </div>
+
+  <p class="portal-wechat-hint" style="text-align:center; font-size:13px; color:var(--smoke); margin-top:3rem;">
+    <span class="zh-inline">想直接联系某家学堂?搜索微信号:曼谷 <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;color:var(--moss);">mp_bangkok</strong> · 清迈 <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;color:var(--moss);">mp_chiangmai</strong> · 普吉 <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;color:var(--moss);">mp_phuket</strong></span>
+    <span class="en-inline">Prefer WeChat? Search: Bangkok <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;color:var(--moss);">mp_bangkok</strong> · Chiang Mai <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;color:var(--moss);">mp_chiangmai</strong> · Phuket <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;color:var(--moss);">mp_phuket</strong></span>
+  </p>
+</div>
+
+<!-- ─── FOOTER ────────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <p>静心学堂 · 泰国</p>
+      <span class="footer-brand-en">Mindfulpeace Academy Thailand · mindfulpeaceth.com</span>
+      <span>
+        <span class="zh-inline">泰国三处本地分院 — 曼谷、清迈、普吉。与 mindfulpeace.org 国际协会共同走这条路。</span>
+        <span class="en-inline">Three local academies in Thailand — Bangkok, Chiang Mai, Phuket. Part of the international mindfulpeace.org network.</span>
+      </span>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">三处学堂</span><span class="en-inline">The Academies</span></h4>
+      <ul>
+        <li><a href="/bangkok"><span class="zh-inline">曼谷如如学堂 · Bangkok</span><span class="en-inline">Bangkok Ruru Academy</span></a></li>
+        <li><a href="home.html"><span class="zh-inline">清迈心灯学堂 · Chiang Mai</span><span class="en-inline">Chiang Mai Xindeng Academy</span></a></li>
+        <li><a href="/phuket"><span class="zh-inline">普吉学堂 · Phuket</span><span class="en-inline">Phuket Academy</span></a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">联系</span><span class="en-inline">Contact</span></h4>
+      <ul>
+        <li><a href="mailto:hello@mindfulpeaceth.com">hello@mindfulpeaceth.com</a></li>
+        <li><a href="https://mindfulpeaceth.com" target="_blank">mindfulpeaceth.com</a></li>
+        <li>
+          <span class="zh-inline">微信号: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_bangkok</strong> · <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong> · <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_phuket</strong></span>
+          <span class="en-inline">WeChat: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_bangkok</strong> · <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong> · <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_phuket</strong></span>
+        </li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">相关</span><span class="en-inline">Related</span></h4>
+      <ul>
+        <li><a href="https://mindfulpeace.org" target="_blank">mindfulpeace.org</a></li>
+        <li><a href="#"><span class="zh-inline">正念平和国际协会</span><span class="en-inline">Mindfulpeace International</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 静心学堂 · 泰国 · Mindfulpeace Academy Thailand</p>
+    <p>mindfulpeaceth.com</p>
+  </div>
+</footer>
+
+<script>
+  function toggleLang() {
+    const body = document.body;
+    const btn = document.getElementById('langBtn');
+    if (body.classList.contains('lang-zh')) {
+      body.classList.replace('lang-zh', 'lang-en');
+      btn.textContent = '中';
+    } else {
+      body.classList.replace('lang-en', 'lang-zh');
+      btn.textContent = 'EN';
+    }
+  }
+  function openMobileNav() { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeMobileNav() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow = ''; }
+
+  // ─── LOCATION CHIP DROPDOWN ────────────────────────
+  function toggleDropdown() {
+    const chip = document.getElementById('locationChip');
+    chip.dataset.open = chip.dataset.open === 'true' ? 'false' : 'true';
+  }
+  // Click outside closes the dropdown
+  document.addEventListener('click', (e) => {
+    const chip = document.getElementById('locationChip');
+    const wrap = document.querySelector('.location-chip-wrap');
+    if (!chip || !wrap) return;
+    if (!wrap.contains(e.target)) chip.dataset.open = 'false';
+  });
+</script>
+</body>
+</html>

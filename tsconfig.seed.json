@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "outDir": "./dist-seed"
+  },
+  "include": ["src/seed.ts", "src/**/*.ts"]
+}

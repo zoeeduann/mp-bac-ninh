@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>静心学堂 | Chiang Mai Mindful Peace Academy</title>
+    <meta
+      name="description"
+      content="A multilingual website for Chiang Mai Mindful Peace Academy with calendar, experiences, journal, FAQ, and booking flows."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;500;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+          </button>
+          <a class="brand" href="#home">
+            <span class="brand-en">Chiang Mai Mindful Peace Academy</span>
+            <span class="brand-zh">静心学堂</span>
+          </a>
+        </div>
+        <nav class="main-nav" id="main-nav"></nav>
+        <div class="topbar-actions">
+          <button class="lang-toggle" id="lang-toggle" type="button">EN / 中文</button>
+          <a class="book-cta" href="#book">Book</a>
+        </div>
+      </header>
+
+      <div class="mobile-nav" id="mobile-nav"></div>
+
+      <main id="app"></main>
+
+      <footer class="site-footer">
+        <div class="footer-grid">
+          <div>
+            <h3>静心学堂</h3>
+            <p data-i18n="footerBlurb">
+              A quiet academy space in Chiang Mai for everyday practice, tea, reading, and shared
+              presence.
+            </p>
+          </div>
+          <div>
+            <h4 data-i18n="footerExplore">Explore</h4>
+            <div class="footer-links" id="footer-links"></div>
+          </div>
+          <div>
+            <h4 data-i18n="footerContact">Contact</h4>
+            <p>Mae Rim District, Chiang Mai</p>
+            <p>hello@mindfulchiangmai.academy</p>
+            <p>+66 53 000 247</p>
+          </div>
+          <div>
+            <h4 data-i18n="footerUpdates">Quiet Updates</h4>
+            <form id="newsletter-form" class="newsletter-form">
+              <input id="newsletter-email" type="email" placeholder="Email address" required />
+              <button type="submit" data-i18n="subscribe">Subscribe</button>
+            </form>
+            <p class="muted" id="newsletter-status"></p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 Chiang Mai Mindful Peace Academy · 清迈静心学堂</span>
+          <span data-i18n="footerCredit">Built from Stitch screens and expanded into a functional site.</span>
+        </div>
+      </footer>
+    </div>
+
+    <dialog id="booking-modal" class="booking-modal">
+      <form method="dialog" class="booking-shell" id="booking-shell">
+        <button class="modal-close" value="cancel" aria-label="Close booking form">×</button>
+        <div class="modal-copy">
+          <span class="eyebrow" data-i18n="bookingEyebrow">Reservation</span>
+          <h2 id="booking-title"></h2>
+          <p id="booking-description"></p>
+          <div class="booking-summary" id="booking-summary"></div>
+        </div>
+        <div class="booking-panel">
+          <label>
+            <span data-i18n="formName">Name</span>
+            <input id="booking-name" name="name" type="text" required />
+          </label>
+          <label>
+            <span data-i18n="formEmail">Email</span>
+            <input id="booking-email" name="email" type="email" required />
+          </label>
+          <label>
+            <span data-i18n="formDate">Preferred date</span>
+            <input id="booking-date" name="date" type="date" required />
+          </label>
+          <label>
+            <span data-i18n="formGuests">Guests</span>
+            <select id="booking-guests" name="guests">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="formNotes">Intentions or notes</span>
+            <textarea id="booking-notes" name="notes" rows="4"></textarea>
+          </label>
+          <button class="submit-button" id="booking-submit" type="submit" data-i18n="confirmBooking">
+            Confirm booking
+          </button>
+          <p class="muted" id="booking-status"></p>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

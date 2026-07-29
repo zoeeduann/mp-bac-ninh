@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Hero text on dark photographic backgrounds gets a soft black halo
+       so light text remains legible regardless of underlying image. */
+    --shadow-hero: 0 1px 18px rgba(0, 0, 0, 0.45);
+  }
+
+  html {
+    font-family: theme('fontFamily.sans');
+    color: theme('colors.ink');
+    background: theme('colors.paper');
+  }
+  :lang(zh) {
+    font-family: theme('fontFamily.serif');
+  }
+  body {
+    line-height: 1.65;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: theme('fontFamily.serif');
+    color: theme('colors.ink');
+  }
+
+  /* Keyboard-only focus ring — brand sky (#82C1EB).
+     Applies to every interactive element. `:focus-visible` ensures
+     mouse clicks don't trigger the outline; only keyboard navigation does. */
+  :focus-visible {
+    outline: 2px solid theme('colors.sky');
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  /* Form inputs use outline-none in component classes; restore via focus-visible */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline-offset: 4px;
+  }
+}

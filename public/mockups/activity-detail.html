@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>禅修入门课 · 心灯学堂 · 清迈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:    #F1ECE0;
+    --teak:     #3C2E22;
+    --cocoa:    #2A211A;
+    --smoke:    #7A6F62;
+    --moss:     #5C6A48;
+    --amber:    #A87544;
+    --hairline: rgba(42, 33, 26, 0.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--cocoa);
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ──────────────────────────────────────── */
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4vw;
+    background: rgba(241, 236, 224, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .header-left { display: flex; align-items: center; gap: 0.9rem; }
+
+  .brand-mark {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px; font-weight: 500;
+    color: var(--cocoa); text-decoration: none; white-space: nowrap;
+  }
+  .brand-mark .brand-en {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--smoke); margin-left: 0.5rem; vertical-align: middle;
+  }
+
+  .location-chip-wrap { position: relative; }
+
+  .location-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--smoke);
+    border: 1px solid rgba(42, 33, 26, 0.20);
+    border-radius: 100px;
+    padding: 0.28rem 0.75rem;
+    cursor: pointer; user-select: none; background: transparent;
+    transition: border-color 150ms, color 150ms;
+    white-space: nowrap;
+  }
+  .location-chip:hover { border-color: rgba(42, 33, 26, 0.38); color: var(--cocoa); }
+  .location-chip[data-open="true"] { border-color: var(--moss); color: var(--moss); }
+  .chip-arrow { font-size: 8px; transition: transform 150ms; }
+  .location-chip[data-open="true"] .chip-arrow { transform: rotate(180deg); }
+
+  .location-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px); left: 0;
+    min-width: 210px;
+    background: var(--cream);
+    border: 1px solid rgba(42, 33, 26, 0.15);
+    border-radius: 4px;
+    z-index: 200; overflow: hidden;
+  }
+  .location-chip[data-open="true"] + .location-dropdown { display: block; }
+
+  .dropdown-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1.1rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--smoke); text-decoration: none;
+    transition: background 120ms, color 120ms;
+  }
+  .dropdown-item:hover { background: rgba(92, 106, 72, 0.06); color: var(--cocoa); }
+  .dropdown-item.current { color: var(--cocoa); }
+  .dropdown-check { font-size: 11px; color: var(--moss); }
+  .dropdown-divider { border: none; border-top: 1px solid var(--hairline); margin: 0; }
+  .dropdown-network {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.75rem 1.1rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+    color: var(--smoke); text-decoration: none;
+    transition: background 120ms, color 120ms;
+  }
+  .dropdown-network:hover { background: rgba(92, 106, 72, 0.06); color: var(--cocoa); }
+
+  .main-nav { display: flex; align-items: center; gap: 2.4rem; list-style: none; }
+  .main-nav a {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--cocoa); text-decoration: none; transition: color 150ms;
+  }
+  .main-nav a:hover, .main-nav a.active { color: var(--moss); }
+
+  .header-right { display: flex; align-items: center; gap: 1.6rem; }
+  .lang-toggle {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--smoke); cursor: pointer; user-select: none; transition: color 150ms;
+  }
+  .lang-toggle:hover { color: var(--cocoa); }
+
+  .btn-book-pill {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cream); background: var(--amber);
+    border: none; border-radius: 100px;
+    padding: 0.45rem 1.2rem; text-decoration: none;
+    cursor: pointer; white-space: nowrap; transition: background 150ms;
+  }
+  .btn-book-pill:hover { background: var(--teak); }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 1.5px; background: var(--cocoa); }
+
+  .mobile-nav-overlay {
+    display: none; position: fixed; inset: 0;
+    background: var(--cream); z-index: 200;
+    flex-direction: column; align-items: flex-start;
+    justify-content: center; padding: 6vw 8vw;
+  }
+  .mobile-nav-overlay.open { display: flex; }
+  .mobile-nav-close {
+    position: absolute; top: 20px; right: 4vw;
+    font-size: 24px; color: var(--smoke); cursor: pointer;
+    background: none; border: none; line-height: 1;
+  }
+  .mobile-nav-overlay ul { list-style: none; display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem; }
+  .mobile-nav-overlay ul a { font-family: 'Noto Serif SC', serif; font-size: 28px; font-weight: 400; color: var(--cocoa); text-decoration: none; }
+
+  /* ─── HERO IMAGE ─────────────────────────────────── */
+  .detail-hero {
+    margin-top: 64px;
+    width: 100%;
+    aspect-ratio: 16/7;
+    overflow: hidden;
+  }
+  .detail-hero img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 40%;
+    display: block;
+    filter: saturate(0.85) brightness(0.96);
+  }
+
+  /* ─── BREADCRUMB ────────────────────────────────── */
+  .breadcrumb {
+    padding: 2rem 6vw 0;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--smoke);
+  }
+  .breadcrumb a { color: var(--smoke); text-decoration: none; transition: color 150ms; }
+  .breadcrumb a:hover { color: var(--moss); }
+  .breadcrumb span { margin: 0 0.45rem; opacity: 0.5; }
+
+  /* ─── ARTICLE BODY ────────────────────────────────── */
+  .article-wrap { padding: 2.5rem 6vw 0; }
+  .article-inner { max-width: 68ch; }
+
+  .article-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 1.4rem;
+  }
+
+  .article-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(32px, 4.5vw, 52px);
+    font-weight: 400; color: var(--cocoa);
+    line-height: 1.15; margin-bottom: 0.6rem;
+  }
+
+  .article-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(20px, 2.5vw, 28px);
+    color: var(--smoke); margin-bottom: 1.6rem;
+  }
+
+  .article-short-desc {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px; color: var(--smoke);
+    margin-bottom: 2.4rem; line-height: 1.6;
+  }
+
+  /* Meta strip */
+  .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.8rem;
+    padding: 1.6rem 0;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 4rem;
+  }
+
+  .meta-item {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 500; color: var(--smoke);
+  }
+  .meta-icon { font-size: 14px; line-height: 1; }
+
+  /* Long-form body text */
+  .body-text { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 6rem; }
+  .body-text p {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(16px, 1.5vw, 19px); font-weight: 400;
+    color: var(--cocoa); line-height: 1.85; max-width: 68ch;
+  }
+  .body-text p.en-para {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 16px;
+    color: var(--smoke); line-height: 1.7;
+  }
+
+  /* ─── SESSIONS SECTION ────────────────────────────── */
+  .sessions-section {
+    padding: 0 6vw 7rem;
+    border-top: 1px solid var(--hairline);
+  }
+  .sessions-inner { padding-top: 4rem; max-width: 820px; }
+  .sessions-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 2.5rem;
+  }
+
+  .session-list { display: flex; flex-direction: column; }
+
+  .session-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.8rem 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .session-row.highlight {
+    background: rgba(92, 106, 72, 0.06);
+    margin: 0 -1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .session-date-main {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px; font-weight: 400;
+    color: var(--cocoa); display: block; margin-bottom: 0.2rem;
+  }
+  .session-time { font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 500; color: var(--smoke); }
+
+  .session-location {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: var(--cocoa); display: block; margin-bottom: 0.3rem;
+  }
+  .session-capacity { font-family: 'Manrope', sans-serif; font-size: 12px; color: var(--smoke); }
+  .session-capacity .spots-low { color: var(--amber); font-weight: 600; }
+
+  .btn-book-session {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--cream); background: var(--amber);
+    border: none; border-radius: 100px;
+    padding: 0.55rem 1.3rem;
+    text-decoration: none; cursor: pointer;
+    white-space: nowrap; transition: background 150ms;
+  }
+  .btn-book-session:hover { background: var(--teak); }
+  .btn-book-session.full { background: rgba(42, 33, 26, 0.12); color: var(--smoke); cursor: not-allowed; }
+
+  /* ─── NOTES SECTION ───────────────────────────────── */
+  .notes-section { padding: 0 6vw 7rem; }
+  .notes-inner { max-width: 68ch; }
+  .notes-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 2rem;
+    padding-top: 4rem;
+    border-top: 1px solid var(--hairline);
+  }
+  .notes-list { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; }
+  .notes-list li {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px; color: var(--cocoa);
+    line-height: 1.7; padding-left: 1.4rem; position: relative;
+  }
+  .notes-list li::before { content: '—'; position: absolute; left: 0; color: var(--smoke); font-family: 'Manrope', sans-serif; }
+
+  /* ─── RELATED ─────────────────────────────────────── */
+  .related-section { padding: 0 6vw 9rem; border-top: 1px solid var(--hairline); }
+  .related-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 3rem;
+    padding-top: 4.5rem;
+  }
+  .related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
+
+  .activity-card { display: block; text-decoration: none; color: inherit; }
+  .activity-card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; filter: saturate(0.85); }
+  .activity-card-body { padding: 1.4rem 0; border-top: 1px solid var(--hairline); }
+  .card-date { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--smoke); margin-bottom: 0.6rem; }
+  .card-title { font-family: 'Noto Serif SC', serif; font-size: 20px; font-weight: 500; color: var(--cocoa); margin-bottom: 0.45rem; }
+  .card-desc { font-size: 13px; color: var(--smoke); margin-bottom: 1rem; line-height: 1.6; }
+  .link-moss { font-size: 12px; font-weight: 600; color: var(--moss); text-decoration: none; letter-spacing: 0.04em; transition: color 150ms; }
+  .link-moss:hover { color: var(--cocoa); }
+
+  /* ─── FOOTER ──────────────────────────────────────── */
+  .site-footer { background: var(--teak); color: var(--cream); padding: 6rem 6vw 2.5rem; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 5rem; }
+  .footer-brand p { font-family: 'Noto Serif SC', serif; font-size: 20px; font-weight: 400; color: var(--cream); margin-bottom: 1rem; }
+  .footer-brand span { font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 500; color: rgba(241, 236, 224, 0.55); line-height: 1.7; display: block; max-width: 28ch; }
+  .footer-col h4 { font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(241, 236, 224, 0.5); margin-bottom: 1.4rem; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+  .footer-col ul li a { font-size: 13px; color: rgba(241, 236, 224, 0.75); text-decoration: none; transition: color 150ms; }
+  .footer-col ul li a:hover { color: var(--cream); }
+  .footer-col ul li a.current-loc { color: rgba(241, 236, 224, 0.95); font-weight: 600; }
+  .footer-bottom { border-top: 1px solid rgba(241, 236, 224, 0.12); padding-top: 1.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; }
+  .footer-bottom p { font-size: 11px; color: rgba(241, 236, 224, 0.35); letter-spacing: 0.06em; }
+
+  /* ─── LANGUAGE TOGGLE ─────────────────────────────── */
+  body.lang-en .zh { display: none; }
+  body.lang-en .en { display: block; }
+  body.lang-zh .en { display: none; }
+  body.lang-zh .zh { display: block; }
+  body.lang-en .zh-inline { display: none; }
+  body.lang-en .en-inline { display: inline; }
+  body.lang-zh .en-inline { display: none; }
+  body.lang-zh .zh-inline { display: inline; }
+
+  /* ─── BOOKING MODAL ──────────────────────────────── */
+
+  /* Backdrop */
+  .bm-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(42, 33, 26, 0.55);
+    z-index: 400;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .bm-backdrop.bm-open { display: block; }
+  .bm-backdrop.bm-visible { opacity: 1; }
+
+  /* Modal card */
+  .bm-card {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, calc(-50% + 8px));
+    z-index: 401;
+    width: 90%; max-width: 540px;
+    max-height: 90vh; overflow-y: auto;
+    background: var(--cream);
+    border: 1px solid rgba(42, 33, 26, 0.18);
+    border-radius: 4px;
+    padding: 2.5rem 2.75rem;
+    opacity: 0;
+    transition: opacity 200ms ease, transform 200ms ease;
+    display: none;
+  }
+  .bm-card.bm-open { display: block; }
+  .bm-card.bm-visible {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Close button */
+  .bm-close {
+    position: absolute; top: 1.1rem; right: 1.25rem;
+    background: none; border: none;
+    font-size: 18px; line-height: 1;
+    color: var(--smoke); cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    transition: color 150ms;
+  }
+  .bm-close:hover { color: var(--cocoa); }
+
+  /* Modal header */
+  .bm-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--smoke); margin-bottom: 0.7rem;
+  }
+  .bm-activity-name {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px; font-weight: 400;
+    color: var(--cocoa); line-height: 1.2; margin-bottom: 0.45rem;
+  }
+  .bm-session-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 14px;
+    color: var(--smoke); margin-bottom: 1.4rem;
+    display: block;
+  }
+  .bm-divider {
+    border: none; border-top: 1px solid var(--hairline);
+    margin-bottom: 1.8rem;
+  }
+
+  /* Form fields */
+  .bm-form { display: flex; flex-direction: column; gap: 1.6rem; }
+
+  .bm-field { display: flex; flex-direction: column; gap: 0.45rem; }
+
+  .bm-label {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--smoke);
+  }
+
+  .bm-input, .bm-textarea {
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px; font-weight: 400;
+    color: var(--cocoa); background: transparent;
+    border: none; border-bottom: 1.5px solid rgba(42, 33, 26, 0.22);
+    outline: none; padding: 0.5rem 0; width: 100%;
+    transition: border-color 200ms;
+    border-radius: 0; -webkit-appearance: none; appearance: none;
+  }
+  .bm-input::placeholder, .bm-textarea::placeholder { color: rgba(122, 111, 98, 0.45); }
+  .bm-input:focus, .bm-textarea:focus { border-bottom-color: var(--moss); }
+
+  .bm-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  /* Contact row: Email + WeChat side-by-side on desktop */
+  .bm-contact-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+  .bm-contact-note {
+    font-size: 11px; color: var(--smoke);
+    margin-top: 0.25rem;
+    grid-column: 1 / -1;
+  }
+
+  /* Submit button */
+  .bm-submit {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cream); background: var(--amber);
+    border: none; border-radius: 100px;
+    padding: 0.85rem 2.2rem;
+    cursor: pointer; transition: background 150ms;
+    width: 100%;
+    margin-top: 0.6rem;
+  }
+  .bm-submit:hover:not(:disabled) { background: var(--teak); }
+  .bm-submit:disabled { background: var(--moss); cursor: default; }
+
+  .bm-submit-note {
+    font-size: 12px; color: var(--smoke);
+    text-align: center; margin-top: 0.7rem;
+    line-height: 1.5;
+  }
+  .bm-wechat-alt {
+    margin-top: 1.6rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+    color: var(--smoke);
+    text-align: center;
+  }
+  .bm-wechat-id {
+    font-family: 'Manrope', monospace;
+    color: var(--cocoa);
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    margin-left: 0.3rem;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 600px) {
+    .bm-card { padding: 2rem 1.5rem; }
+    .bm-contact-row { grid-template-columns: 1fr; }
+    .bm-submit { padding: 0.85rem 1.5rem; }
+  }
+
+  /* ─── RESPONSIVE ──────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .footer-grid { grid-template-columns: 1fr 1fr 1fr; gap: 3rem; }
+    .footer-brand { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 900px) {
+    .session-row { grid-template-columns: 1fr auto; }
+    .session-row > *:nth-child(2) { display: none; }
+    .related-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .footer-brand { grid-column: 1 / -1; }
+    .main-nav { display: none; }
+    .hamburger { display: flex; }
+    .detail-hero { aspect-ratio: 16/9; }
+    .brand-mark .brand-en { display: none; }
+  }
+
+  @media (max-width: 600px) {
+    .footer-grid { grid-template-columns: 1fr; }
+    .session-row { grid-template-columns: 1fr; gap: 1rem; }
+    .detail-hero { aspect-ratio: 4/3; }
+    .meta-strip { gap: 1rem; }
+  }
+</style>
+</head>
+<body class="lang-zh">
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" id="mobileNav">
+  <button class="mobile-nav-close" onclick="closeMobileNav()">✕</button>
+  <ul>
+    <li><a href="home.html" onclick="closeMobileNav()"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+    <li><a href="activities.html" onclick="closeMobileNav()"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+    <li><a href="#" onclick="closeMobileNav()"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+    <li><a href="#" onclick="closeMobileNav()"><span class="zh-inline">关于</span><span class="en-inline">About</span></a></li>
+    <li><a href="portal.html" onclick="closeMobileNav()"><span class="zh-inline">总门户</span><span class="en-inline">Network Home</span></a></li>
+  </ul>
+  <a class="btn-book-pill" href="book.html"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="header-left">
+    <a class="brand-mark" href="portal.html">
+      静心学堂 · 泰国<span class="brand-en">Mindfulpeace Academy Thailand</span>
+    </a>
+    <div class="location-chip-wrap">
+      <div class="location-chip" id="locationChip" onclick="toggleDropdown()" data-open="false">
+        ▸ 清迈 · 心灯<span class="chip-arrow">▾</span>
+      </div>
+      <div class="location-dropdown" id="locationDropdown">
+        <a class="dropdown-item" href="/bangkok"><span>曼谷 · 如如</span></a>
+        <a class="dropdown-item current" href="home.html">
+          <span>清迈 · 心灯</span>
+          <span class="dropdown-check">✓</span>
+        </a>
+        <a class="dropdown-item" href="/phuket"><span>普吉</span></a>
+        <hr class="dropdown-divider">
+        <a class="dropdown-network" href="portal.html">
+          ← <span class="zh-inline">返回总门户 / Network home</span><span class="en-inline">Network home</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <ul class="main-nav">
+      <li><a href="home.html"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+      <li><a href="activities.html" class="active"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+      <li><a href="#"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+      <li><a href="#"><span class="zh-inline">关于</span><span class="en-inline">About</span></a></li>
+    </ul>
+  </nav>
+  <div class="header-right">
+    <span class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</span>
+    <button class="btn-book-pill" type="button" onclick="openBookingModal({activityZh:'禅修入门课',activityEn:'Introduction to Meditation',sessionZh:'5月 26日(周一) · 09:00–11:00 ICT',sessionEn:'Mon May 26 · 09:00–11:00 ICT',locationZh:'心灯学堂 · 清迈',locationEn:'Xindeng Academy · Chiang Mai'})"><span class="zh-inline">预约</span><span class="en-inline">Book</span></button>
+    <div class="hamburger" onclick="openMobileNav()"><span></span><span></span><span></span></div>
+  </div>
+</header>
+
+<!-- Hero image — full-width, no text overlay -->
+<div class="detail-hero">
+  <img
+    src="https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=2400&q=80"
+    alt="禅修入门课 — 心灯学堂">
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="home.html"><span class="zh-inline">心灯学堂</span><span class="en-inline">Xindeng Academy</span></a>
+  <span>/</span>
+  <a href="activities.html"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a>
+  <span>/</span>
+  <span><span class="zh-inline">禅修入门课</span><span class="en-inline">Introduction to Meditation</span></span>
+</div>
+
+<!-- Article body -->
+<div class="article-wrap">
+  <div class="article-inner">
+    <p class="article-eyebrow">
+      <span class="zh-inline">禅修课 · Meditation Class</span>
+      <span class="en-inline">Meditation Class · 禅修课</span>
+    </p>
+
+    <h1 class="article-title">
+      <span class="zh-inline">禅修入门课</span>
+      <span class="en-inline">Introduction to Meditation</span>
+    </h1>
+
+    <p class="article-subtitle">
+      <span class="zh-inline">Introduction to Meditation</span>
+      <span class="en-inline">禅修入门课</span>
+    </p>
+
+    <p class="article-short-desc">
+      <span class="zh-inline">适合从未接触过正式坐禅练习的朋友，或者想重新建立修学习惯的人。</span>
+      <span class="en-inline">For those new to formal sitting practice, or those wishing to re-establish a regular meditation habit.</span>
+    </p>
+
+    <!-- Meta strip -->
+    <div class="meta-strip">
+      <div class="meta-item">
+        <span class="meta-icon">📍</span>
+        <span>
+          <span class="zh-inline">心灯学堂 · 清迈</span>
+          <span class="en-inline">Xindeng Academy · Chiang Mai</span>
+        </span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">👥</span>
+        <span><span class="zh-inline">12 个名额</span><span class="en-inline">12 spots per session</span></span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">🌐</span>
+        <span>中文 · English</span>
+      </div>
+      <div class="meta-item" style="color: var(--cocoa);">
+        <span style="font-family:'Noto Serif SC',serif; font-size:13px;">
+          <span class="zh-inline">2 小时 · Two hours</span>
+          <span class="en-inline">2 hours</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Long-form body -->
+    <div class="body-text">
+      <p class="zh">
+        禅修入门课是为初次接触坐禅、或想重新建立修学习惯的朋友而设计的。课程以身体的觉知作为起点，带领大家感受呼吸、感受坐姿、感受当下这一刻真实发生的事情。
+      </p>
+      <p class="en en-para">
+        The introduction class is designed for those new to sitting practice, or those who wish to re-establish the habit of meditation. We begin with awareness of the body — breath, posture, and the simple fact of being present.
+      </p>
+
+      <p class="zh">
+        整个课程约两小时，分为三个部分：引导式静坐（约四十分钟）、小休与自由行走（约二十分钟）、以及开放问答与交流（约一小时）。我们不会讲很多理论，更多的是直接练习，然后在练习之后坦诚地谈谈各自的感受。
+      </p>
+      <p class="en en-para">
+        The session lasts approximately two hours, in three parts: guided sitting (around 40 minutes), a break with free walking (around 20 minutes), and open dialogue (around one hour). We don't focus on theory — we practice, and then speak honestly about what we experienced.
+      </p>
+
+      <p class="zh">
+        这门课程没有门槛——不需要任何冥想经验，不需要特定的宗教背景，也不需要提前了解任何内容。唯一的要求，是愿意安静地坐着，并且对自己当下的状态保持一点好奇。
+      </p>
+      <p class="en en-para">
+        There are no prerequisites. No meditation experience, no specific religious background, no required reading. The only requirement is a willingness to sit still, and a small amount of curiosity about your present state.
+      </p>
+
+      <p class="zh">
+        课程以中文为主，英文辅助讲解。如需全英语讲解，请在报名时备注，我们会尽量安排。
+      </p>
+      <p class="en en-para">
+        The class is primarily conducted in Mandarin Chinese, with English support. If you require a full English session, please note this when registering and we will do our best to accommodate.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Sessions -->
+<div class="sessions-section" id="sessions">
+  <div class="sessions-inner">
+    <p class="sessions-eyebrow">
+      <span class="zh-inline">场次 · Sessions</span>
+      <span class="en-inline">Sessions · 场次</span>
+    </p>
+
+    <div class="session-list">
+
+      <div class="session-row highlight">
+        <div class="session-date-block">
+          <span class="session-date-main">
+            <span class="zh-inline">5月 26日</span>
+            <span class="en-inline">May 26</span>
+          </span>
+          <span class="session-time">09:00 – 11:00 ICT · <span class="zh-inline">周一</span><span class="en-inline">Monday</span></span>
+        </div>
+        <div class="session-meta-block">
+          <span class="session-location">
+            <span class="zh-inline">心灯学堂 · 清迈</span>
+  <span class="en-inline">Xindeng Academy · Chiang Mai</span>
+          </span>
+          <span class="session-capacity">
+            5/12 <span class="zh-inline">已报名</span><span class="en-inline">registered</span>
+            · <span class="spots-low"><span class="zh-inline">7 个名额</span><span class="en-inline">7 spots left</span></span>
+          </span>
+        </div>
+        <button class="btn-book-session" type="button" onclick="openBookingModal({activityZh:'禅修入门课',activityEn:'Introduction to Meditation',sessionZh:'5月 26日(周一) · 09:00–11:00 ICT',sessionEn:'Mon May 26 · 09:00–11:00 ICT',locationZh:'心灯学堂 · 清迈',locationEn:'Xindeng Academy · Chiang Mai'})">
+          <span class="zh-inline">立即报名</span>
+          <span class="en-inline">Book</span>
+        </button>
+      </div>
+
+      <div class="session-row">
+        <div class="session-date-block">
+          <span class="session-date-main">
+            <span class="zh-inline">6月 9日</span>
+            <span class="en-inline">Jun 9</span>
+          </span>
+          <span class="session-time">09:00 – 11:00 ICT · <span class="zh-inline">周一</span><span class="en-inline">Monday</span></span>
+        </div>
+        <div class="session-meta-block">
+          <span class="session-location">
+            <span class="zh-inline">心灯学堂 · 清迈</span>
+  <span class="en-inline">Xindeng Academy · Chiang Mai</span>
+          </span>
+          <span class="session-capacity">
+            2/12 <span class="zh-inline">已报名</span><span class="en-inline">registered</span>
+            · <span class="zh-inline">10 个名额</span><span class="en-inline">10 spots left</span>
+          </span>
+        </div>
+        <button class="btn-book-session" type="button" onclick="openBookingModal({activityZh:'禅修入门课',activityEn:'Introduction to Meditation',sessionZh:'6月 9日(周一) · 09:00–11:00 ICT',sessionEn:'Mon Jun 9 · 09:00–11:00 ICT',locationZh:'心灯学堂 · 清迈',locationEn:'Xindeng Academy · Chiang Mai'})">
+          <span class="zh-inline">立即报名</span>
+          <span class="en-inline">Book</span>
+        </button>
+      </div>
+
+      <div class="session-row">
+        <div class="session-date-block">
+          <span class="session-date-main">
+            <span class="zh-inline">6月 16日</span>
+            <span class="en-inline">Jun 16</span>
+          </span>
+          <span class="session-time">09:00 – 11:00 ICT · <span class="zh-inline">周一</span><span class="en-inline">Monday</span></span>
+        </div>
+        <div class="session-meta-block">
+          <span class="session-location">
+            <span class="zh-inline">心灯学堂 · 清迈</span>
+  <span class="en-inline">Xindeng Academy · Chiang Mai</span>
+          </span>
+          <span class="session-capacity">
+            12/12 · <span style="color:var(--smoke);">
+              <span class="zh-inline">已满</span><span class="en-inline">Full</span>
+            </span>
+          </span>
+        </div>
+        <span class="btn-book-session full">
+          <span class="zh-inline">已满</span>
+          <span class="en-inline">Full</span>
+        </span>
+      </div>
+
+      <div class="session-row">
+        <div class="session-date-block">
+          <span class="session-date-main">
+            <span class="zh-inline">7月 7日</span>
+            <span class="en-inline">Jul 7</span>
+          </span>
+          <span class="session-time">09:00 – 11:00 ICT · <span class="zh-inline">周二</span><span class="en-inline">Tuesday</span></span>
+        </div>
+        <div class="session-meta-block">
+          <span class="session-location">
+            <span class="zh-inline">心灯学堂 · 清迈</span>
+  <span class="en-inline">Xindeng Academy · Chiang Mai</span>
+          </span>
+          <span class="session-capacity">
+            0/12 · <span class="zh-inline">12 个名额</span><span class="en-inline">12 spots</span>
+          </span>
+        </div>
+        <button class="btn-book-session" type="button" onclick="openBookingModal({activityZh:'禅修入门课',activityEn:'Introduction to Meditation',sessionZh:'7月 7日(周二) · 09:00–11:00 ICT',sessionEn:'Tue Jul 7 · 09:00–11:00 ICT',locationZh:'心灯学堂 · 清迈',locationEn:'Xindeng Academy · Chiang Mai'})">
+          <span class="zh-inline">立即报名</span>
+          <span class="en-inline">Book</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Notes -->
+<div class="notes-section">
+  <div class="notes-inner">
+    <p class="notes-eyebrow">
+      <span class="zh-inline">注意事项 · Notes</span>
+      <span class="en-inline">Notes · 注意事项</span>
+    </p>
+    <ul class="notes-list">
+      <li><span class="zh-inline">请穿宽松、舒适的衣物，方便长时间静坐</span><span class="en-inline">Wear loose, comfortable clothing suitable for extended sitting</span></li>
+      <li><span class="zh-inline">请自带水壶；学堂提供茶水，不提供早餐</span><span class="en-inline">Bring your own water bottle; the academy provides tea but not breakfast</span></li>
+      <li><span class="zh-inline">提前 10 分钟到达，保持安静进入空间</span><span class="en-inline">Arrive 10 minutes early and enter the space quietly</span></li>
+      <li><span class="zh-inline">课程期间请将手机调至静音或关机</span><span class="en-inline">Please silence or switch off your phone during the session</span></li>
+      <li><span class="zh-inline">坐垫与坐凳学堂提供，也可自带习惯的坐具</span><span class="en-inline">Cushions and benches are provided; you may also bring your own</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Related -->
+<div class="related-section">
+  <p class="related-eyebrow">
+    <span class="zh-inline">相关活动 · You may also enjoy</span>
+    <span class="en-inline">You may also enjoy · 相关活动</span>
+  </p>
+
+  <div class="related-grid">
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=75"
+        alt="正念生活工作坊">
+      <div class="activity-card-body">
+        <p class="card-date">6月 9日 · Jun 9 · 09:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">正念生活工作坊</span><span class="en-inline">Mindful Living Workshop</span></h3>
+        <p class="card-desc"><span class="zh-inline">将觉知带入饮食、工作与睡眠</span><span class="en-inline">Bringing awareness to eating, working, and rest</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+
+    <a class="activity-card" href="#">
+      <img class="activity-card-img"
+        src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=900&q=75"
+        alt="春季茶会">
+      <div class="activity-card-body">
+        <p class="card-date">6月 16日 · Jun 16 · 15:00 ICT</p>
+        <h3 class="card-title"><span class="zh-inline">春季茶会</span><span class="en-inline">Spring Tea Gathering</span></h3>
+        <p class="card-desc"><span class="zh-inline">围炉而坐，一盏茶，一段沉默</span><span class="en-inline">Around the fire, one cup, one silence</span></p>
+        <a class="link-moss" href="#"><span class="zh-inline">查看详情 →</span><span class="en-inline">View →</span></a>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <p>静心学堂 · 泰国</p>
+      <span><span class="zh-inline">心灯学堂——清迈山间的修学空间。静坐、喝茶、行走。</span><span class="en-inline">Chiang Mai Xindeng Academy — a space for practice at the foot of the Chiang Mai hills.</span></span>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">导航</span><span class="en-inline">Navigate</span></h4>
+      <ul>
+        <li><a href="home.html"><span class="zh-inline">首页</span><span class="en-inline">Home</span></a></li>
+        <li><a href="activities.html"><span class="zh-inline">活动</span><span class="en-inline">Activities</span></a></li>
+        <li><a href="#"><span class="zh-inline">现场</span><span class="en-inline">Journal</span></a></li>
+        <li><a href="#"><span class="zh-inline">关于学堂</span><span class="en-inline">About</span></a></li>
+        <li><a href="book.html"><span class="zh-inline">预约</span><span class="en-inline">Book</span></a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">联系</span><span class="en-inline">Contact</span></h4>
+      <ul>
+        <li><a href="#">Chiang Mai</a></li>
+        <li><a href="mailto:chiangmai@mindfulpeaceth.com">chiangmai@mindfulpeaceth.com</a></li>
+        <li>
+          <span class="zh-inline">微信号: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong></span>
+          <span class="en-inline">WeChat: <strong style="font-family:'Manrope',monospace;letter-spacing:0.02em;">mp_chiangmai</strong></span>
+        </li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">网络 · The Network</span><span class="en-inline">The Network</span></h4>
+      <ul>
+        <li><a href="/bangkok"><span class="zh-inline">曼谷如如</span><span class="en-inline">Bangkok Ruru</span></a></li>
+        <li><a href="home.html" class="current-loc"><span class="zh-inline">清迈心灯 ✓</span><span class="en-inline">Chiang Mai Xindeng ✓</span></a></li>
+        <li><a href="/phuket"><span class="zh-inline">普吉</span><span class="en-inline">Phuket</span></a></li>
+        <li><a href="portal.html"><span class="zh-inline">总门户</span><span class="en-inline">Network Home</span></a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4><span class="zh-inline">相关</span><span class="en-inline">Related</span></h4>
+      <ul>
+        <li><a href="https://mindfulpeace.org" target="_blank">mindfulpeace.org</a></li>
+        <li><a href="#"><span class="zh-inline">正念平和国际协会</span><span class="en-inline">Mindfulpeace International</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 静心学堂 · 泰国 · Mindfulpeace Academy Thailand</p>
+    <p><span class="zh-inline">清迈 · 泰国</span><span class="en-inline">Chiang Mai · Thailand</span></p>
+  </div>
+</footer>
+
+<!-- Booking Modal -->
+<div class="bm-backdrop" id="bmBackdrop" onclick="closeBookingModal()"></div>
+<div class="bm-card" id="bmCard" role="dialog" aria-modal="true" aria-labelledby="bmActivityName">
+  <button class="bm-close" type="button" onclick="closeBookingModal()" aria-label="Close">✕</button>
+
+  <p class="bm-eyebrow">
+    <span class="zh-inline">预约 · BOOKING</span>
+    <span class="en-inline">预约 · BOOKING</span>
+  </p>
+  <h2 class="bm-activity-name" id="bmActivityName">
+    <span class="zh-inline" id="bmActivityNameZh"></span>
+    <span class="en-inline" id="bmActivityNameEn"></span>
+  </h2>
+  <span class="bm-session-line">
+    <span class="zh-inline" id="bmSessionZh"></span>
+    <span class="en-inline" id="bmSessionEn"></span>
+    <span class="zh-inline"> · </span><span class="en-inline"> · </span>
+    <span class="zh-inline" id="bmLocationZh"></span>
+    <span class="en-inline" id="bmLocationEn"></span>
+  </span>
+  <hr class="bm-divider">
+
+  <form class="bm-form" id="bmForm" onsubmit="handleModalSubmit(event)">
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmName">
+        <span class="zh-inline">姓名 / Name</span>
+        <span class="en-inline">Name · 姓名</span>
+      </label>
+      <input class="bm-input" type="text" id="bmName" name="name" autocomplete="name"
+        placeholder="你的名字 / Your name">
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label">
+        <span class="zh-inline">联系方式 / Contact</span>
+        <span class="en-inline">Contact · 联系方式</span>
+      </label>
+      <div class="bm-contact-row">
+        <div class="bm-field">
+          <label class="bm-label" for="bmEmail">
+            <span class="zh-inline">邮箱 / Email</span>
+            <span class="en-inline">Email · 邮箱</span>
+          </label>
+          <input class="bm-input" type="email" id="bmEmail" name="email" autocomplete="email"
+            placeholder="your@email.com">
+        </div>
+        <div class="bm-field">
+          <label class="bm-label" for="bmWechat">
+            <span class="zh-inline">微信 / WeChat</span>
+            <span class="en-inline">WeChat · 微信</span>
+          </label>
+          <input class="bm-input" type="text" id="bmWechat" name="wechat"
+            placeholder="WeChat ID">
+        </div>
+        <p class="bm-contact-note">
+          <span class="zh-inline">至少填一个 / fill at least one</span>
+          <span class="en-inline">fill at least one · 至少填一个</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmPhone">
+        <span class="zh-inline">电话 / Phone</span>
+        <span class="en-inline">Phone · 电话</span>
+      </label>
+      <input class="bm-input" type="tel" id="bmPhone" name="phone" autocomplete="tel"
+        placeholder="+66 / +86 ...">
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmGuests">
+        <span class="zh-inline">人数 / Guests</span>
+        <span class="en-inline">Guests · 人数</span>
+      </label>
+      <input class="bm-input" type="number" id="bmGuests" name="guests"
+        min="1" max="8" value="1" style="max-width:6rem;">
+    </div>
+
+    <div class="bm-field">
+      <label class="bm-label" for="bmNotes">
+        <span class="zh-inline">备注 / Notes</span>
+        <span class="en-inline">Notes · 备注</span>
+      </label>
+      <textarea class="bm-textarea" id="bmNotes" name="notes" rows="3"
+        placeholder="任何需要告诉我们的 / Anything we should know (optional)"></textarea>
+    </div>
+
+    <div>
+      <button class="bm-submit" type="submit" id="bmSubmitBtn">
+        <span class="zh-inline">确认报名 / Confirm booking</span>
+        <span class="en-inline">Confirm booking · 确认报名</span>
+      </button>
+      <p class="bm-submit-note">
+        <span class="zh-inline">提交后我们会在 24 小时内通过邮件或微信跟你确认</span>
+        <span class="en-inline">Confirmation within 24h via email or WeChat</span>
+      </p>
+    </div>
+
+    <div class="bm-wechat-alt">
+      <span class="zh-inline">或直接添加学堂微信咨询: <strong class="bm-wechat-id">mp_chiangmai</strong></span>
+      <span class="en-inline">Or add the academy's WeChat directly: <strong class="bm-wechat-id">mp_chiangmai</strong></span>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  function toggleLang() {
+    const body = document.body;
+    const btn = document.getElementById('langBtn');
+    if (body.classList.contains('lang-zh')) {
+      body.classList.replace('lang-zh', 'lang-en');
+      btn.textContent = '中';
+    } else {
+      body.classList.replace('lang-en', 'lang-zh');
+      btn.textContent = 'EN';
+    }
+  }
+  function openMobileNav() { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeMobileNav() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow = ''; }
+  function toggleDropdown() {
+    const chip = document.getElementById('locationChip');
+    const isOpen = chip.getAttribute('data-open') === 'true';
+    chip.setAttribute('data-open', isOpen ? 'false' : 'true');
+  }
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.location-chip-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('locationChip').setAttribute('data-open', 'false');
+    }
+  });
+
+  /* ── Booking Modal ── */
+  function openBookingModal(data) {
+    document.getElementById('bmActivityNameZh').textContent = data.activityZh;
+    document.getElementById('bmActivityNameEn').textContent = data.activityEn;
+    document.getElementById('bmSessionZh').textContent = data.sessionZh;
+    document.getElementById('bmSessionEn').textContent = data.sessionEn;
+    document.getElementById('bmLocationZh').textContent = data.locationZh;
+    document.getElementById('bmLocationEn').textContent = data.locationEn;
+
+    // Reset form
+    document.getElementById('bmForm').reset();
+    const btn = document.getElementById('bmSubmitBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<span class="zh-inline">确认报名 / Confirm booking</span><span class="en-inline">Confirm booking · 确认报名</span>';
+
+    const backdrop = document.getElementById('bmBackdrop');
+    const card = document.getElementById('bmCard');
+    backdrop.classList.add('bm-open');
+    card.classList.add('bm-open');
+    document.body.style.overflow = 'hidden';
+
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        backdrop.classList.add('bm-visible');
+        card.classList.add('bm-visible');
+      });
+    });
+  }
+
+  function closeBookingModal() {
+    const backdrop = document.getElementById('bmBackdrop');
+    const card = document.getElementById('bmCard');
+    backdrop.classList.remove('bm-visible');
+    card.classList.remove('bm-visible');
+    setTimeout(function() {
+      backdrop.classList.remove('bm-open');
+      card.classList.remove('bm-open');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBookingModal();
+  });
+
+  // Prevent backdrop click propagating from card clicks
+  document.getElementById('bmCard').addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+
+  function handleModalSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('bmSubmitBtn');
+    const isZh = document.body.classList.contains('lang-zh');
+    btn.textContent = isZh ? '已提交 / Submitted ✓' : 'Submitted ✓';
+    btn.disabled = true;
+    setTimeout(function() { closeBookingModal(); }, 1000);
+  }
+</script>
+</body>
+</html>

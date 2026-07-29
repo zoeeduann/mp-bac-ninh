@@ -61,8 +61,8 @@ ${location.email ? `- 邮箱 / Email: ${location.email}` : ''}
 ${location.phone ? `- 电话 / Phone: ${location.phone}` : ''}
 ${location.wechatId ? `- 微信 / WeChat: ${location.wechatId}` : ''}
 
-这是越南北宁善明小院的独立官网，不属于静心学堂 · 泰国门户。
-This is the independent official website of Mindfulpeace Bac Ninh in Vietnam; it is not part of the Thailand academy portal.
+这是越南北宁善明小院的独立官网。
+This is the independent official website of Mindfulpeace Bac Ninh in Vietnam.
 `
 
     return new Response(body, {

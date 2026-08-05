@@ -12,6 +12,21 @@ export const SITE_BASE =
 export const SITE_LOCATION_SLUG =
   process.env.NEXT_PUBLIC_SITE_LOCATION_SLUG?.trim() || null
 
+const DEFAULT_GOOGLE_ANALYTICS_IDS: Record<string, string> = {
+  'bac-ninh': 'G-0WNPPNKYE4',
+}
+
+/**
+ * Keep analytics data separated across dedicated location sites. Deployments
+ * can override the mapped/default ID without requiring a code change.
+ */
+export const GOOGLE_ANALYTICS_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID?.trim() ||
+  (SITE_LOCATION_SLUG
+    ? DEFAULT_GOOGLE_ANALYTICS_IDS[SITE_LOCATION_SLUG]
+    : 'G-Y8SDHSFT9N') ||
+  null
+
 export function isSingleLocationSite(slug: string): boolean {
   return SITE_LOCATION_SLUG === slug
 }

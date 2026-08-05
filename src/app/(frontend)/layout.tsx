@@ -8,7 +8,11 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import { SITE_BASE, SITE_LOCATION_SLUG } from '@/lib/site-config'
+import {
+  GOOGLE_ANALYTICS_ID,
+  SITE_BASE,
+  SITE_LOCATION_SLUG,
+} from '@/lib/site-config'
 
 // VI A-15 specifies HarmonyOS Sans SC ("端庄") for body / formal sans. That face is
 // not on Google Fonts; Noto Sans SC is the closest open-source alternative with
@@ -30,8 +34,6 @@ const notoSerifSC = Noto_Serif_SC({
   variable: '--font-serif',
   display: 'swap',
 })
-
-const googleAnalyticsId = 'G-Y8SDHSFT9N'
 
 export const metadata = {
   metadataBase: new URL(SITE_BASE),
@@ -80,18 +82,22 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       className={`${notoSansSC.variable} ${notoSerifSC.variable}`}
     >
       <body>
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${googleAnalyticsId}');
-          `}
-        </Script>
+        {GOOGLE_ANALYTICS_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GOOGLE_ANALYTICS_ID}');
+              `}
+            </Script>
+          </>
+        )}
         <Header
           locale={locale}
           allLocations={normalizedAll}

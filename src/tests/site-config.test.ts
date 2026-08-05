@@ -22,12 +22,23 @@ describe('single-location site configuration', () => {
   it('publishes the configured location at the domain root', async () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_LOCATION_SLUG', 'bac-ninh')
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://mindfulpeacebacninh.com/')
-    const { locationPath, locationUrl } = await import('@/lib/site-config')
+    const { GOOGLE_ANALYTICS_ID, locationPath, locationUrl } = await import(
+      '@/lib/site-config'
+    )
 
     expect(locationPath('zh-CN', 'bac-ninh')).toBe('/')
     expect(locationPath('en', 'bac-ninh', '/activities')).toBe('/en/activities')
     expect(locationUrl('zh-CN', 'bac-ninh', '/journal')).toBe(
       'https://mindfulpeacebacninh.com/journal',
     )
+    expect(GOOGLE_ANALYTICS_ID).toBe('G-0WNPPNKYE4')
+  })
+
+  it('allows a deployment-specific analytics ID override', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_LOCATION_SLUG', 'bac-ninh')
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_ANALYTICS_ID', 'G-OVERRIDE123')
+    const { GOOGLE_ANALYTICS_ID } = await import('@/lib/site-config')
+
+    expect(GOOGLE_ANALYTICS_ID).toBe('G-OVERRIDE123')
   })
 })

@@ -10,6 +10,7 @@ import type { Locale } from '@/lib/i18n'
 import { t } from '@/lib/i18n'
 import { stripLocale, localePath } from '@/lib/locale-url'
 import CopyableWechat from '@/components/CopyableWechat'
+import TrackedLink from '@/components/analytics/TrackedLink'
 import { locationPath } from '@/lib/site-config'
 
 interface LocationDoc {
@@ -138,22 +139,26 @@ export default function Footer({ locale, allLocations, siteLocationSlug }: Foote
               )}
               {contactInfo.email && (
                 <li>
-                  <a
+                  <TrackedLink
                     href={`mailto:${contactInfo.email}`}
+                    analyticsEvent="contact_click"
+                    analyticsParameters={{ contact_method: 'email' }}
                     className="inline-block py-0.5 text-[13px] text-ink/75 no-underline transition-all duration-150 hover:text-ink hover:underline hover:underline-offset-4 hover:decoration-sky/60"
                   >
                     {contactInfo.email}
-                  </a>
+                  </TrackedLink>
                 </li>
               )}
               {contactInfo.phone && (
                 <li>
-                  <a
+                  <TrackedLink
                     href={`tel:${contactInfo.phone}`}
+                    analyticsEvent="contact_click"
+                    analyticsParameters={{ contact_method: 'phone' }}
                     className="inline-block py-0.5 text-[13px] text-ink/75 no-underline transition-all duration-150 hover:text-ink hover:underline hover:underline-offset-4 hover:decoration-sky/60"
                   >
                     {contactInfo.phone}
-                  </a>
+                  </TrackedLink>
                 </li>
               )}
               {contactInfo.wechatId && (
@@ -170,15 +175,17 @@ export default function Footer({ locale, allLocations, siteLocationSlug }: Foote
               )}
               {contactInfo.whatsapp && (
                 <li>
-                  <a
+                  <TrackedLink
                     href={whatsappHref(contactInfo.whatsapp)}
                     target="_blank"
                     rel="noreferrer"
+                    analyticsEvent="contact_click"
+                    analyticsParameters={{ contact_method: 'whatsapp' }}
                     className="inline-block py-0.5 text-[13px] text-ink/75 no-underline transition-all duration-150 hover:text-ink hover:underline hover:underline-offset-4 hover:decoration-sky/60"
                   >
                     WhatsApp:{' '}
                     <strong className="font-sans tracking-[0.02em]">{contactInfo.whatsapp}</strong>
-                  </a>
+                  </TrackedLink>
                 </li>
               )}
             </ul>

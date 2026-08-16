@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import type { Locale } from '@/lib/i18n'
+import { trackWechatCopy } from '@/lib/analytics'
 
 interface CopyableWechatProps {
   /** The WeChat ID to display and copy. */
@@ -30,6 +31,7 @@ export default function CopyableWechat({
   async function handleClick() {
     try {
       await navigator.clipboard.writeText(id)
+      trackWechatCopy()
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {

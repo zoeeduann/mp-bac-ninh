@@ -15,6 +15,8 @@ import { faqPageJsonLd } from '@/lib/jsonld'
 import { locationSeoKeywords } from '@/lib/seo'
 import { academyName } from '@/lib/short-name'
 import type { Media } from '@/payload-types'
+import CopyableWechat from '@/components/CopyableWechat'
+import TrackedLink from '@/components/analytics/TrackedLink'
 
 export async function generateMetadata({
   params,
@@ -79,6 +81,9 @@ export default async function ContactPage({
 
   const wechatQrUrl = mediaUrl(location.wechatQr as any)
   const wechatQrAlt = mediaAlt(location.wechatQr as any, 'WeChat QR')
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${location.name} ${location.address || location.city}`,
+  )}`
 
   const faqJsonLd = faqPageJsonLd(location.faq)
 
@@ -116,12 +121,14 @@ export default async function ContactPage({
               <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
                 {t(locale, 'form.email')}
               </p>
-              <a
+              <TrackedLink
                 href={`mailto:${location.email}`}
+                analyticsEvent="contact_click"
+                analyticsParameters={{ contact_method: 'email' }}
                 className="font-sans text-[15px] text-ink no-underline transition-colors duration-150 hover:text-sky"
               >
                 {location.email}
-              </a>
+              </TrackedLink>
             </div>
           )}
 
@@ -131,12 +138,14 @@ export default async function ContactPage({
               <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
                 {t(locale, 'form.phone')}
               </p>
-              <a
+              <TrackedLink
                 href={`tel:${location.phone}`}
+                analyticsEvent="contact_click"
+                analyticsParameters={{ contact_method: 'phone' }}
                 className="font-sans text-[15px] text-ink no-underline transition-colors duration-150 hover:text-sky"
               >
                 {location.phone}
-              </a>
+              </TrackedLink>
             </div>
           )}
 
@@ -146,9 +155,11 @@ export default async function ContactPage({
               <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
                 {t(locale, 'form.wechat')}
               </p>
-              <p className="font-sans text-[15px] text-ink tracking-[0.02em]">
-                {location.wechatId}
-              </p>
+              <CopyableWechat
+                id={location.wechatId}
+                locale={locale}
+                className="self-start font-sans text-[15px] text-ink tracking-[0.02em]"
+              />
               {wechatQrUrl && (
                 <Image
                   src={wechatQrUrl}
@@ -167,7 +178,7 @@ export default async function ContactPage({
               <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
                 WhatsApp
               </p>
-              <a
+              <TrackedLink
                 href={
                   location.whatsapp.startsWith('http')
                     ? location.whatsapp
@@ -175,10 +186,12 @@ export default async function ContactPage({
                 }
                 target="_blank"
                 rel="noreferrer"
+                analyticsEvent="contact_click"
+                analyticsParameters={{ contact_method: 'whatsapp' }}
                 className="font-sans text-[15px] text-ink no-underline transition-colors duration-150 hover:text-sky"
               >
                 {location.whatsapp}
-              </a>
+              </TrackedLink>
             </div>
           )}
 
@@ -189,15 +202,22 @@ export default async function ContactPage({
                 {isZh ? '社交媒体' : 'Social media'}
               </p>
               {location.social.map((s) => (
-                <a
+                <TrackedLink
                   key={s.id ?? s.url}
                   href={s.url ?? '#'}
                   target="_blank"
                   rel="noreferrer"
+                  analyticsEvent="contact_click"
+                  analyticsParameters={{
+                    contact_method:
+                      `${s.label ?? ''} ${s.url ?? ''}`.toLowerCase().includes('zalo')
+                        ? 'zalo'
+                        : 'social',
+                  }}
                   className="font-sans text-[14px] text-sky no-underline transition-colors duration-150 hover:text-ink"
                 >
                   {s.label ?? s.url}
-                </a>
+                </TrackedLink>
               ))}
             </div>
           )}
@@ -235,6 +255,16 @@ export default async function ContactPage({
               {t(locale, 'meta.map_soon')}
             </p>
           )}
+          <TrackedLink
+            href={mapsHref}
+            target="_blank"
+            rel="noreferrer"
+            analyticsEvent="map_open"
+            analyticsParameters={{ location_slug: slug }}
+            className="mt-6 inline-flex font-sans text-[13px] font-semibold tracking-[0.04em] text-sky no-underline transition-colors hover:text-ink"
+          >
+            {isZh ? '在 Google 地图中打开 ↗' : 'Open in Google Maps ↗'}
+          </TrackedLink>
         </section>
       )}
 

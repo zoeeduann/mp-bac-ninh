@@ -47,6 +47,7 @@ export default function BookSessionButton(props: BookSessionButtonProps) {
         occurrenceId={props.occurrenceId}
         sessionLabel={props.sessionLabel}
         locationId={props.locationId}
+        locationSlug={props.locationSlug}
         locationName={props.locationName}
         locationWechatId={props.locationWechatId}
         locale={props.locale}

@@ -222,6 +222,7 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
               : `${formatWeekdayEn(startDate)} ${formatDayEn(startDate)} · ${formatTimeRange(s.startAt, s.endAt)}`
           })()}
           locationId={modal.session.locationId}
+          locationSlug={modal.session.locationSlug}
           locationName={modal.session.locationName}
           locationWechatId={modal.session.locationWechatId ?? undefined}
           locationWhatsapp={modal.session.locationWhatsapp ?? undefined}

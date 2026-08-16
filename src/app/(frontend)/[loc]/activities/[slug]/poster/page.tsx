@@ -18,6 +18,7 @@ import PosterControls from '@/components/activities/PosterControls'
 import QRCode from 'qrcode'
 import { buildPosterQrTarget } from '@/lib/poster-download'
 import { fetchInlineImage } from '@/lib/poster-image'
+import TrackedLink from '@/components/analytics/TrackedLink'
 
 const TZ = 'Asia/Bangkok'
 
@@ -266,17 +267,19 @@ export default async function ActivityPosterPage({
                 {t(locale, 'poster.no_sessions')}
               </p>
             )}
-            <a
+            <TrackedLink
               href={mapsHref}
               target="_blank"
               rel="noreferrer"
+              analyticsEvent="map_open"
+              analyticsParameters={{ location_slug: locSlug }}
               className="font-sans text-[14px] text-ink-soft flex items-start gap-2 no-underline transition-colors duration-150 hover:text-sky group"
             >
               <span aria-hidden="true" className="leading-[1.5]">📍</span>
               <span className="underline decoration-ink-soft/30 underline-offset-2 group-hover:decoration-sky">
                 {venueText}
               </span>
-            </a>
+            </TrackedLink>
           </div>
 
           {activity.shortDesc && (

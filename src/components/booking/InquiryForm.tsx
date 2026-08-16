@@ -2,6 +2,8 @@
 import { useState, useTransition } from 'react'
 import Turnstile from './Turnstile'
 import CopyableWechat from '@/components/CopyableWechat'
+import TrackedLink from '@/components/analytics/TrackedLink'
+import { trackInquiryLead } from '@/lib/analytics'
 
 interface LocationOption {
   id: number
@@ -70,6 +72,11 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
       })
 
       if (res.ok) {
+        const selectedLocation = locations.find((location) => location.id === selectedLocationId)
+        trackInquiryLead({
+          locationSlug: selectedLocation?.slug,
+          language: locale,
+        })
         startTransition(() => setSubmitted(true))
       } else {
         const data = await res.json().catch(() => ({}))
@@ -173,7 +180,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
               <span key={loc.id}>
                 {i > 0 && ' · '}
                 {loc.city}{' '}
-                <a
+                <TrackedLink
                   href={
                     loc.whatsapp!.startsWith('http')
                       ? loc.whatsapp!
@@ -181,10 +188,12 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
                   }
                   target="_blank"
                   rel="noreferrer"
+                  analyticsEvent="contact_click"
+                  analyticsParameters={{ contact_method: 'whatsapp' }}
                   className="font-mono tracking-[0.02em] text-sky font-semibold no-underline hover:underline"
                 >
                   {loc.whatsapp}
-                </a>
+                </TrackedLink>
               </span>
             ))}
           </div>

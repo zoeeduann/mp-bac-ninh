@@ -22,6 +22,7 @@ import { localBusinessJsonLd } from '@/lib/jsonld'
 import { locationSeoDescription, locationSeoKeywords } from '@/lib/seo'
 import { getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
 import type { Media, Activity, Journal } from '@/payload-types'
+import TrackedLink from '@/components/analytics/TrackedLink'
 
 export async function generateMetadata({
   params,
@@ -118,6 +119,9 @@ export default async function AcademyHomePage({
   const academyShortName = shortName(location.city, location.name)
   const academyDisplayName = academyName(location.city, location.name)
   const isBacNinh = location.slug === 'bac-ninh'
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${location.name} ${location.address || location.city}`,
+  )}`
   const bacNinhCopy = getBacNinhBrandCopy(locale)
 
   const businessJsonLd = localBusinessJsonLd({
@@ -453,6 +457,16 @@ export default async function AcademyHomePage({
               {t(locale, 'meta.map_soon')}
             </p>
           )}
+          <TrackedLink
+            href={mapsHref}
+            target="_blank"
+            rel="noreferrer"
+            analyticsEvent="map_open"
+            analyticsParameters={{ location_slug: slug }}
+            className="mt-6 inline-flex font-sans text-[13px] font-semibold tracking-[0.04em] text-sky no-underline transition-colors hover:text-ink"
+          >
+            {isZh ? '在 Google 地图中打开 ↗' : 'Open in Google Maps ↗'}
+          </TrackedLink>
         </section>
       )}
     </div>

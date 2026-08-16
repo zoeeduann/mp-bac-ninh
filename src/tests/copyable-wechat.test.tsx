@@ -14,6 +14,7 @@ describe('CopyableWechat', () => {
       value: { writeText },
     })
     vi.useFakeTimers()
+    ;(window as typeof window & { gtag: ReturnType<typeof vi.fn> }).gtag = vi.fn()
   })
 
   afterEach(() => {
@@ -31,6 +32,10 @@ describe('CopyableWechat', () => {
       fireEvent.click(screen.getByRole('button'))
     })
     expect(writeText).toHaveBeenCalledWith('mp_chiangmai')
+    const gtag = (window as typeof window & { gtag: ReturnType<typeof vi.fn> }).gtag
+    expect(gtag).toHaveBeenCalledWith('event', 'wechat_copy', {
+      contact_method: 'wechat',
+    })
   })
 
   it('flips to "已复制 ✓" on click in zh locale', async () => {

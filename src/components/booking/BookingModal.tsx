@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef, useTransition } from 'react'
 import Turnstile from './Turnstile'
 import CopyableWechat from '@/components/CopyableWechat'
+import TrackedLink from '@/components/analytics/TrackedLink'
+import { trackActivityLead, trackBookingStart } from '@/lib/analytics'
 
 export interface BookingModalProps {
   open: boolean
@@ -13,6 +15,7 @@ export interface BookingModalProps {
   occurrenceId: string
   sessionLabel: string
   locationId: number
+  locationSlug: string
   locationName: string
   locationWechatId?: string
   locationWhatsapp?: string | null
@@ -33,10 +36,12 @@ export default function BookingModal({
   open,
   onClose,
   activityId,
+  activitySlug,
   activityTitle,
   occurrenceId,
   sessionLabel,
   locationId,
+  locationSlug,
   locationName,
   locationWechatId,
   locationWhatsapp,
@@ -59,6 +64,23 @@ export default function BookingModal({
   const [, startTransition] = useTransition()
 
   const closeRef = useRef<HTMLButtonElement>(null)
+  const trackedOpenRef = useRef(false)
+
+  // Count a booking start once per modal opening, including shared links that
+  // auto-open the form. Closing and reopening starts a new attempt.
+  useEffect(() => {
+    if (open && !trackedOpenRef.current) {
+      trackBookingStart({
+        bookingSource: source,
+        locationSlug,
+        activitySlug,
+        language: locale,
+      })
+      trackedOpenRef.current = true
+    } else if (!open) {
+      trackedOpenRef.current = false
+    }
+  }, [activitySlug, locale, locationSlug, open, source])
 
   // Lock body scroll when open
   useEffect(() => {
@@ -134,6 +156,13 @@ export default function BookingModal({
 
       if (res.ok) {
         const data = await res.json()
+        trackActivityLead({
+          bookingSource: source,
+          locationSlug,
+          activitySlug,
+          language: locale,
+          waitlisted: data.kind === 'waitlisted',
+        })
         startTransition(() => {
           setSubmitState({
             kind: 'success',
@@ -493,7 +522,7 @@ export default function BookingModal({
                 {locationWhatsapp && (
                   <div>
                     {isZh ? '或加 WhatsApp：' : 'Or WhatsApp us: '}
-                    <a
+                    <TrackedLink
                       href={
                         locationWhatsapp.startsWith('http')
                           ? locationWhatsapp
@@ -501,10 +530,12 @@ export default function BookingModal({
                       }
                       target="_blank"
                       rel="noreferrer"
+                      analyticsEvent="contact_click"
+                      analyticsParameters={{ contact_method: 'whatsapp' }}
                       className="font-mono text-ink font-semibold tracking-[0.02em] ml-1 no-underline hover:underline"
                     >
                       {locationWhatsapp}
-                    </a>
+                    </TrackedLink>
                   </div>
                 )}
               </div>

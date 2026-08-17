@@ -212,7 +212,7 @@ export default function Footer({ locale, allLocations, siteLocationSlug }: Foote
                   : 'News, gatherings and reflections from Bac Ninh'}
               </p>
             </div>
-            <div className="flex flex-1 flex-wrap gap-x-6 gap-y-3 md:justify-end">
+            <div className="flex flex-1 flex-wrap gap-x-6 gap-y-3">
               {currentLocation.social.map((social) => (
                 <TrackedLink
                   key={social.url}

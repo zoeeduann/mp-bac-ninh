@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import type { AnchorHTMLAttributes, MouseEvent } from 'react'
 import type { AnalyticsParameters } from '@/lib/analytics'
 import { trackEvent } from '@/lib/analytics'

@@ -50,6 +50,8 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   // fetch the full list of academies once.
   const allLocations = await getAllLocations(locale)
 
+  type SocialInput = { label?: unknown; url?: unknown }
+
   // Normalize location docs to the shape Header/Footer expect
   function normalize(doc: any) {
     const logoDoc = typeof doc.logo === 'object' && doc.logo ? doc.logo : null
@@ -63,6 +65,15 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       email: doc.email ?? null,
       phone: doc.phone ?? null,
       wechatId: doc.wechatId ?? null,
+      whatsapp: doc.whatsapp ?? null,
+      social: Array.isArray(doc.social)
+        ? doc.social
+            .filter((item: SocialInput) => typeof item?.url === 'string' && item.url.trim())
+            .map((item: SocialInput) => ({
+              label: typeof item.label === 'string' ? item.label : null,
+              url: (item.url as string).trim(),
+            }))
+        : [],
       logo: logoSized
         ? {
             url: logoSized as string,

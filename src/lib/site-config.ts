@@ -12,6 +12,22 @@ export const SITE_BASE =
 export const SITE_LOCATION_SLUG =
   process.env.NEXT_PUBLIC_SITE_LOCATION_SLUG?.trim() || null
 
+const TURNSTILE_ENABLED_OVERRIDE =
+  process.env.NEXT_PUBLIC_TURNSTILE_ENABLED?.trim().toLowerCase()
+
+/**
+ * Cloudflare's challenge host is not consistently reachable from mainland
+ * China. Keep Turnstile on for the Thailand network site, but default it off
+ * for the dedicated Bac Ninh deployment. Either deployment can override this
+ * explicitly through its public environment variables.
+ */
+export const TURNSTILE_ENABLED =
+  TURNSTILE_ENABLED_OVERRIDE === 'true'
+    ? true
+    : TURNSTILE_ENABLED_OVERRIDE === 'false'
+      ? false
+      : SITE_LOCATION_SLUG !== 'bac-ninh'
+
 const DEFAULT_GOOGLE_ANALYTICS_IDS: Record<string, string> = {
   'bac-ninh': 'G-0WNPPNKYE4',
 }

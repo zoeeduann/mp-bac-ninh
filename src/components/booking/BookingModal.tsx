@@ -4,6 +4,7 @@ import Turnstile from './Turnstile'
 import CopyableWechat from '@/components/CopyableWechat'
 import TrackedLink from '@/components/analytics/TrackedLink'
 import { trackActivityLead, trackBookingStart } from '@/lib/analytics'
+import { TURNSTILE_ENABLED } from '@/lib/site-config'
 
 export interface BookingModalProps {
   open: boolean
@@ -33,7 +34,9 @@ type SubmitState =
   | { kind: 'full' }
   | { kind: 'error'; message: string }
 
-const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
+const TURNSTILE_SITE_KEY = TURNSTILE_ENABLED
+  ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
+  : ''
 
 export default function BookingModal({
   open,

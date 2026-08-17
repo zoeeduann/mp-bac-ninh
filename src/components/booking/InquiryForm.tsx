@@ -4,6 +4,7 @@ import Turnstile from './Turnstile'
 import CopyableWechat from '@/components/CopyableWechat'
 import TrackedLink from '@/components/analytics/TrackedLink'
 import { trackInquiryLead } from '@/lib/analytics'
+import { TURNSTILE_ENABLED } from '@/lib/site-config'
 
 interface LocationOption {
   id: number
@@ -20,7 +21,9 @@ interface InquiryFormProps {
   locale: 'zh-CN' | 'en'
 }
 
-const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
+const TURNSTILE_SITE_KEY = TURNSTILE_ENABLED
+  ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
+  : ''
 
 export default function InquiryForm({ locations, defaultLocationId, locale }: InquiryFormProps) {
   const isZh = locale === 'zh-CN'

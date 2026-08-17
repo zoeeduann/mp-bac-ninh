@@ -179,6 +179,10 @@ export interface Location {
   name: string;
   city: string;
   /**
+   * IANA time zone used by booking emails, reminders and calendar invitations, e.g. Asia/Ho_Chi_Minh.
+   */
+  timeZone: string;
+  /**
    * Enable only for Thailand-network academies. Standalone pages stay accessible but are excluded from the Thailand portal, switcher, and network feeds.
    */
   isThailandNetwork: boolean;
@@ -417,6 +421,14 @@ export interface Activity {
   venueNote?: string | null;
   capacity: number;
   /**
+   * A course series is presented and booked as one complete course, with full-attendance confirmation required.
+   */
+  registrationMode: 'per_occurrence' | 'series';
+  /**
+   * Enable for Chinese-taught courses. Registrants must select their listening and speaking level.
+   */
+  requiresChineseProficiency?: boolean | null;
+  /**
    * Internal notes (visible to admin/staff only in context)
    */
   notes?: {
@@ -526,8 +538,17 @@ export interface Reservation {
   name: string;
   email?: string | null;
   wechatId?: string | null;
+  zaloId?: string | null;
   phone: string;
   guests: number;
+  /**
+   * The registrant confirmed they can attend every session in the course series.
+   */
+  fullSeriesConfirmed?: boolean | null;
+  /**
+   * Required only for Chinese-taught courses.
+   */
+  chineseProficiency?: ('understands_and_speaks' | 'understands_speaking_difficult' | 'translation_needed') | null;
   /**
    * Interest direction for general inquiries
    */
@@ -793,6 +814,7 @@ export interface LocationsSelect<T extends boolean = true> {
   slug?: T;
   name?: T;
   city?: T;
+  timeZone?: T;
   isThailandNetwork?: T;
   tagline?: T;
   heroImage?: T;
@@ -853,6 +875,8 @@ export interface ActivitiesSelect<T extends boolean = true> {
   description?: T;
   venueNote?: T;
   capacity?: T;
+  registrationMode?: T;
+  requiresChineseProficiency?: T;
   notes?: T;
   occurrences?:
     | T
@@ -908,8 +932,11 @@ export interface ReservationsSelect<T extends boolean = true> {
   name?: T;
   email?: T;
   wechatId?: T;
+  zaloId?: T;
   phone?: T;
   guests?: T;
+  fullSeriesConfirmed?: T;
+  chineseProficiency?: T;
   direction?: T;
   notes?: T;
   internalNotes?: T;

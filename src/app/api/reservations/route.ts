@@ -39,6 +39,10 @@ const Body = z.object({
     (v) => (v === '' ? undefined : v),
     z.string().max(80).optional(),
   ),
+  zaloId: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.string().max(80).optional(),
+  ),
   phone: z.string().min(3).max(40).regex(/^[+\d][\d\s\-()+]{2,}$/, 'invalid_phone'),
   guests: z.number().int().min(1).max(10).default(1),
   direction: z
@@ -49,7 +53,15 @@ const Body = z.object({
   turnstileToken: z.string(),
   honeypot: z.string().optional(), // must be empty
   acceptWaitlist: z.boolean().default(false),
-}).refine(d => d.email || d.wechatId, { message: 'email_or_wechat_required' })
+  fullSeriesConfirmed: z.boolean().default(false),
+  chineseProficiency: z
+    .enum([
+      'understands_and_speaks',
+      'understands_speaking_difficult',
+      'translation_needed',
+    ])
+    .optional(),
+}).refine(d => d.email || d.wechatId || d.zaloId, { message: 'contact_required' })
 
 type ParsedBody = z.infer<typeof Body>
 
@@ -128,10 +140,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'activity_not_published' }, { status: 400 })
   }
 
+  const isSeries = (activity as any).registrationMode === 'series'
+  if (isSeries && !body.fullSeriesConfirmed) {
+    return NextResponse.json(
+      { error: 'full_series_confirmation_required' },
+      { status: 400 },
+    )
+  }
+  if ((activity as any).requiresChineseProficiency && !body.chineseProficiency) {
+    return NextResponse.json(
+      { error: 'chinese_proficiency_required' },
+      { status: 400 },
+    )
+  }
+
   const occurrences: any[] = (activity as any).occurrences ?? []
   const occ = occurrences.find((o: any) => o.id === body.occurrenceId)
   if (!occ || occ.status === 'deleted' || occ.status === 'cancelled') {
     return NextResponse.json({ error: 'occurrence_invalid' }, { status: 400 })
+  }
+
+  if (isSeries) {
+    const seriesAnchor = occurrences
+      .filter((o: any) => o.startAt && o.status !== 'deleted' && o.status !== 'cancelled')
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+      )[0]
+    if (!seriesAnchor || String(seriesAnchor.id) !== String(body.occurrenceId)) {
+      return NextResponse.json({ error: 'series_anchor_required' }, { status: 400 })
+    }
   }
 
   // Acquire Postgres advisory lock to serialize bookings for this occurrence
@@ -337,6 +375,40 @@ async function sendNotifications(
       : (isZh ? ' (当地时间)' : ' (local time)')
   }
 
+  const isSeries = activity?.registrationMode === 'series'
+  const seriesTimeSuffix = locationIsThailandNetwork
+    ? (isZh ? ' (泰国时间)' : ' (Bangkok time)')
+    : (isZh ? ' (当地时间)' : ' (local time)')
+  const seriesOccurrenceLines = isSeries
+    ? ((activity?.occurrences as any[] | undefined) ?? [])
+        .filter((occ: any) => occ?.startAt && occ.status !== 'deleted' && occ.status !== 'cancelled')
+        .sort(
+          (a: any, b: any) =>
+            new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+        )
+        .map((occ: any, index: number) => {
+          const start = new Date(occ.startAt)
+          const formatted = start.toLocaleString(isZh ? 'zh-CN' : 'en-US', {
+            timeZone: 'Asia/Bangkok',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          })
+          return `${index + 1}. ${formatted}${seriesTimeSuffix}`
+        })
+    : []
+
+  const chineseProficiencyLabel = body.chineseProficiency
+    ? ({
+        understands_and_speaks: '① 听得懂，也表达得清楚',
+        understands_speaking_difficult: '② 能听懂，但表达困难',
+        translation_needed: '③ 听和说都需要翻译才能够完成',
+      } as const)[body.chineseProficiency]
+    : undefined
+
   const activityTitleStr = activityTitle
     ? typeof activityTitle === 'string'
       ? activityTitle
@@ -356,11 +428,22 @@ async function sendNotifications(
   //    the central team to forward.
   const adminBody = [
     ...(activityTitleStr ? [`活动: ${activityTitleStr}`] : []),
-    ...(occurrenceLineLong ? [`场次: ${occurrenceLineLong}`] : []),
+    ...(isSeries
+      ? [
+          '报名类型: 系列课程（已确认全程参加）',
+          ...(seriesOccurrenceLines.length > 0
+            ? [`全部课次:\n${seriesOccurrenceLines.join('\n')}`]
+            : []),
+        ]
+      : occurrenceLineLong
+        ? [`场次: ${occurrenceLineLong}`]
+        : []),
     `姓名: ${body.name}`,
     `电话: ${body.phone}`,
     `邮箱: ${body.email ?? '-'}`,
     `微信: ${body.wechatId ?? '-'}`,
+    `Zalo: ${body.zaloId ?? '-'}`,
+    ...(chineseProficiencyLabel ? [`中文听说水平: ${chineseProficiencyLabel}`] : []),
     `人数: ${body.guests}`,
     `备注: ${body.notes ?? '-'}`,
     ``,
@@ -398,8 +481,8 @@ async function sendNotifications(
           ? `${signOff} · 已收到你的预约`
           : `${signOff} · We received your reservation`,
         body: isZh
-          ? `你好 ${body.name},\n\n我们已收到你的预约,会在 24 小时内通过微信或邮件跟你确认。\n\n${signOff}`
-          : `Hi ${body.name},\n\nWe received your reservation and will confirm within 24 hours via email or WeChat.\n\n${signOff}`,
+          ? `你好 ${body.name},\n\n我们已收到你的预约，会在 24 小时内通过邮件、微信或 Zalo 跟你确认。${activityTitleStr ? `\n\n活动：${activityTitleStr}` : ''}${isSeries && seriesOccurrenceLines.length > 0 ? `\n全部课次：\n${seriesOccurrenceLines.join('\n')}` : occurrenceLineLong ? `\n时间：${occurrenceLineLong}` : ''}\n\n${signOff}`
+          : `Hi ${body.name},\n\nWe received your reservation and will confirm within 24 hours via email, WeChat, or Zalo.${activityTitleStr ? `\n\nActivity: ${activityTitleStr}` : ''}${isSeries && seriesOccurrenceLines.length > 0 ? `\nAll sessions:\n${seriesOccurrenceLines.join('\n')}` : occurrenceLineLong ? `\nTime: ${occurrenceLineLong}` : ''}\n\n${signOff}`,
         fromName: locationName,
         replyTo: locationEmail,
         relatedReservation: reservationId,

@@ -95,6 +95,11 @@ export default async function BookPage({
     capacityOverride: s.occurrence.capacityOverride ?? null,
     activityCapacity: s.activity.capacity as number,
     remaining: s.remaining,
+    registrationMode: (s.activity.registrationMode === 'series'
+      ? 'series'
+      : 'per_occurrence') as 'per_occurrence' | 'series',
+    requiresChineseProficiency: Boolean(s.activity.requiresChineseProficiency),
+    seriesOccurrences: s.seriesOccurrences,
     locationId: location.id,
     locationSlug: locSlug,
     locationName: academyDisplayName,

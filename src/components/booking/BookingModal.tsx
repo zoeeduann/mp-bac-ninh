@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useTransition } from 'react'
+import React, { useState, useEffect, useRef, useTransition } from 'react'
 import Turnstile from './Turnstile'
 import CopyableWechat from '@/components/CopyableWechat'
 import TrackedLink from '@/components/analytics/TrackedLink'
@@ -14,6 +14,9 @@ export interface BookingModalProps {
   activityTitle: string
   occurrenceId: string
   sessionLabel: string
+  seriesSessionLabels?: string[]
+  requiresFullAttendance?: boolean
+  requiresChineseProficiency?: boolean
   locationId: number
   locationSlug: string
   locationName: string
@@ -40,6 +43,9 @@ export default function BookingModal({
   activityTitle,
   occurrenceId,
   sessionLabel,
+  seriesSessionLabels = [],
+  requiresFullAttendance = false,
+  requiresChineseProficiency = false,
   locationId,
   locationSlug,
   locationName,
@@ -53,12 +59,17 @@ export default function BookingModal({
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [wechatId, setWechatId] = useState('')
+  const [zaloId, setZaloId] = useState('')
   const [phone, setPhone] = useState('')
   const [guests, setGuests] = useState(1)
+  const [fullSeriesConfirmed, setFullSeriesConfirmed] = useState(false)
+  const [chineseProficiency, setChineseProficiency] = useState('')
   const [notes, setNotes] = useState('')
   const [honeypot, setHoneypot] = useState('')
   const [turnstileToken, setTurnstileToken] = useState('')
   const [contactError, setContactError] = useState(false)
+  const [seriesConfirmationError, setSeriesConfirmationError] = useState(false)
+  const [chineseProficiencyError, setChineseProficiencyError] = useState(false)
 
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: 'idle' })
   const [, startTransition] = useTransition()
@@ -112,23 +123,40 @@ export default function BookingModal({
       setName('')
       setEmail('')
       setWechatId('')
+      setZaloId('')
       setPhone('')
       setGuests(1)
+      setFullSeriesConfirmed(false)
+      setChineseProficiency('')
       setNotes('')
       setHoneypot('')
       setTurnstileToken('')
       setContactError(false)
+      setSeriesConfirmationError(false)
+      setChineseProficiencyError(false)
       setSubmitState({ kind: 'idle' })
     }
   }, [open])
 
   async function handleSubmit(acceptWaitlist = false) {
     // Client-side validation
-    if (!email && !wechatId) {
+    if (!email && !wechatId && !zaloId) {
       setContactError(true)
       return
     }
     setContactError(false)
+
+    if (requiresFullAttendance && !fullSeriesConfirmed) {
+      setSeriesConfirmationError(true)
+      return
+    }
+    setSeriesConfirmationError(false)
+
+    if (requiresChineseProficiency && !chineseProficiency) {
+      setChineseProficiencyError(true)
+      return
+    }
+    setChineseProficiencyError(false)
 
     setSubmitState({ kind: 'submitting' })
 
@@ -144,8 +172,11 @@ export default function BookingModal({
           name,
           email: email || undefined,
           wechatId: wechatId || undefined,
+          zaloId: zaloId || undefined,
           phone,
           guests,
+          fullSeriesConfirmed,
+          chineseProficiency: chineseProficiency || undefined,
           notes: notes || undefined,
           language: isZh ? 'zh' : 'en',
           turnstileToken: turnstileToken || 'dev-bypass',
@@ -233,9 +264,25 @@ export default function BookingModal({
         >
           {activityTitle}
         </h2>
-        <span className="font-serif text-[14px] text-ink-soft mb-[1.4rem] block">
+        <span className="font-serif text-[14px] text-ink-soft mb-[1rem] block">
           {sessionLabel} · {locationName}
         </span>
+        {requiresFullAttendance && seriesSessionLabels.length > 0 && (
+          <div className="mb-[1.4rem] rounded border border-sky/40 bg-sky/10 px-4 py-3">
+            <p className="font-sans text-[12px] font-semibold text-ink mb-2">
+              {isZh
+                ? `系列课程 · 共 ${seriesSessionLabels.length} 次，需全程参加`
+                : `Course series · ${seriesSessionLabels.length} sessions, full attendance required`}
+            </p>
+            <ol className="space-y-1 font-sans text-[12px] text-ink-soft leading-[1.55]">
+              {seriesSessionLabels.map((label, index) => (
+                <li key={`${label}-${index}`}>
+                  {isZh ? `第 ${index + 1} 次：` : `Session ${index + 1}: `}{label}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
         <hr className="border-none border-t border-hairline mb-[1.8rem]" />
 
         {/* Success state */}
@@ -252,45 +299,13 @@ export default function BookingModal({
                 : (isZh ? '谢谢你 ✓' : 'Thank you ✓')}
             </h3>
             <p className="font-sans text-[13px] text-ink-soft leading-[1.7] mb-6">
-              {(() => {
-                // Inline the WeChat ID as a click-to-copy chip; build the
-                // sentence as JSX so we can drop CopyableWechat in mid-string.
-                const wechatChip = locationWechatId ? (
-                  <>
-                    {isZh ? '微信: ' : ' WeChat: '}
-                    <CopyableWechat
-                      id={locationWechatId}
-                      locale={locale}
-                      className="font-mono font-semibold"
-                    />
-                  </>
-                ) : null
-                const emailChip = submitState.userEmail
-                  ? isZh
-                    ? ` 或邮箱: ${submitState.userEmail}`
-                    : ` or email: ${submitState.userEmail}`
-                  : ''
-                if (submitState.waitlisted) {
-                  return isZh ? (
-                    <>
-                      这一场目前已满，你已经排在候补名单。有空位时，义工会第一时间通过{wechatChip}{emailChip}联系你。
-                    </>
-                  ) : (
-                    <>
-                      This session is full. You&apos;ve been added to the waitlist. When a spot opens, we&apos;ll contact you via{wechatChip}{emailChip} right away.
-                    </>
-                  )
-                }
-                return isZh ? (
-                  <>
-                    我们已经收到你的预约。义工会在 24 小时内通过{wechatChip}{emailChip}跟你确认。
-                  </>
-                ) : (
-                  <>
-                    We&apos;ve received your booking. Our team will confirm within 24 hours via{wechatChip}{emailChip}.
-                  </>
-                )
-              })()}
+              {submitState.waitlisted
+                ? isZh
+                  ? `${requiresFullAttendance ? '本期课程' : '这一场'}目前已满，你已经排在候补名单。有空位时，义工会通过你填写的邮箱、微信或 Zalo 第一时间联系你。`
+                  : `${requiresFullAttendance ? 'This course' : 'This session'} is full. You are on the waitlist, and we will contact you via the email, WeChat, or Zalo details you provided when a place opens.`
+                : isZh
+                  ? '我们已经收到你的预约。义工会在 24 小时内通过你填写的邮箱、微信或 Zalo 跟你确认。'
+                  : 'We received your booking. Our team will confirm within 24 hours using the email, WeChat, or Zalo details you provided.'}
             </p>
             <button
               type="button"
@@ -341,12 +356,12 @@ export default function BookingModal({
               />
             </div>
 
-            {/* Contact row: email + wechat */}
+            {/* Contact row: email + WeChat + Zalo */}
             <div className="flex flex-col gap-[0.45rem]">
               <label className="font-sans text-[10px] font-semibold tracking-[0.18em] uppercase text-ink-soft">
                 {isZh ? '联系方式' : 'Contact'}
               </label>
-              <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-[1.2rem]">
+              <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-[1.2rem]">
                 <div className="flex flex-col gap-[0.45rem]">
                   <label
                     htmlFor="bm-email"
@@ -380,15 +395,31 @@ export default function BookingModal({
                     className="font-sans text-[15px] text-ink bg-transparent border-b border-b-ink/[0.22] outline-none py-2 w-full transition-colors focus:border-b-sky placeholder:text-ink-soft/45 rounded-none appearance-none"
                   />
                 </div>
+                <div className="flex flex-col gap-[0.45rem]">
+                  <label
+                    htmlFor="bm-zalo"
+                    className="font-sans text-[10px] font-semibold tracking-[0.18em] uppercase text-ink-soft"
+                  >
+                    Zalo
+                  </label>
+                  <input
+                    id="bm-zalo"
+                    type="text"
+                    placeholder="Zalo ID"
+                    value={zaloId}
+                    onChange={(e) => setZaloId(e.target.value)}
+                    className="font-sans text-[15px] text-ink bg-transparent border-b border-b-ink/[0.22] outline-none py-2 w-full transition-colors focus:border-b-sky placeholder:text-ink-soft/45 rounded-none appearance-none"
+                  />
+                </div>
               </div>
               {contactError && (
                 <p className="font-sans text-[11px] text-clay mt-1">
-                  {isZh ? '至少填一个联系方式' : 'fill at least one'}
+                  {isZh ? '邮箱、微信或 Zalo 至少填写一个' : 'Enter an email, WeChat, or Zalo contact'}
                 </p>
               )}
               {!contactError && (
                 <p className="font-sans text-[11px] text-ink-soft mt-1">
-                  {isZh ? '至少填一个' : 'fill at least one'}
+                  {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo — at least one'}
                 </p>
               )}
             </div>
@@ -406,7 +437,7 @@ export default function BookingModal({
                 type="tel"
                 required
                 autoComplete="tel"
-                placeholder="+66 / +86 ..."
+                placeholder="+84 / +86 ..."
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="font-sans text-[15px] text-ink bg-transparent border-b border-b-ink/[0.22] outline-none py-2 w-full transition-colors focus:border-b-sky placeholder:text-ink-soft/45 rounded-none appearance-none"
@@ -431,6 +462,74 @@ export default function BookingModal({
                 className="font-sans text-[15px] text-ink bg-transparent border-b border-b-ink/[0.22] outline-none py-2 max-w-[6rem] transition-colors focus:border-b-sky rounded-none appearance-none"
               />
             </div>
+
+            {/* Chinese listening and speaking level */}
+            {requiresChineseProficiency && (
+              <fieldset className="flex flex-col gap-[0.7rem]">
+                <legend className="font-sans text-[10px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-2">
+                  {isZh ? '中文听说水平' : 'Chinese listening and speaking level'}
+                </legend>
+                <p className="font-sans text-[12px] text-ink-soft leading-[1.6] mb-1">
+                  {isZh
+                    ? '本课程为中文授课，为保障课程体验，请选择最符合你的情况：'
+                    : 'This course is taught in Chinese. Please select the option that best describes you:'}
+                </p>
+                {[
+                  ['understands_and_speaks', isZh ? '① 听得懂，也表达得清楚' : '① I understand and can express myself clearly'],
+                  ['understands_speaking_difficult', isZh ? '② 能听懂，但表达困难' : '② I understand but have difficulty expressing myself'],
+                  ['translation_needed', isZh ? '③ 听和说都需要翻译才能够完成' : '③ I need translation for both listening and speaking'],
+                ].map(([value, label]) => (
+                  <label key={value} className="flex items-start gap-2.5 cursor-pointer font-sans text-[13px] text-ink leading-[1.55]">
+                    <input
+                      type="radio"
+                      name="chineseProficiency"
+                      value={value}
+                      checked={chineseProficiency === value}
+                      onChange={(e) => {
+                        setChineseProficiency(e.target.value)
+                        setChineseProficiencyError(false)
+                      }}
+                      required
+                      className="mt-1 h-4 w-4 flex-none accent-sky"
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+                {chineseProficiencyError && (
+                  <p className="font-sans text-[11px] text-clay">
+                    {isZh ? '请选择中文听说水平' : 'Please select your Chinese level'}
+                  </p>
+                )}
+              </fieldset>
+            )}
+
+            {/* Full-series attendance confirmation */}
+            {requiresFullAttendance && (
+              <div>
+                <label className="flex items-start gap-3 rounded border border-sky/45 bg-sky/[0.08] px-4 py-3.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={fullSeriesConfirmed}
+                    onChange={(e) => {
+                      setFullSeriesConfirmed(e.target.checked)
+                      setSeriesConfirmationError(false)
+                    }}
+                    className="mt-0.5 h-4 w-4 flex-none accent-sky"
+                  />
+                  <span className="font-sans text-[13px] text-ink leading-[1.65]">
+                    {isZh
+                      ? `我已确认可以参加以上全部 ${seriesSessionLabels.length || 3} 次课程，并理解这是一个需要连续完成的完整研修班。`
+                      : `I confirm that I can attend all ${seriesSessionLabels.length || 3} sessions and understand that they form one complete course.`}
+                  </span>
+                </label>
+                {seriesConfirmationError && (
+                  <p className="font-sans text-[11px] text-clay mt-2">
+                    {isZh ? '请确认可以参加全部课次' : 'Please confirm full attendance'}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Notes */}
             <div className="flex flex-col gap-[0.45rem]">
@@ -460,7 +559,9 @@ export default function BookingModal({
             {submitState.kind === 'full' && (
               <div className="bg-sky/15 border border-sky/40 rounded p-4 text-[13px] text-ink">
                 <p className="font-semibold mb-3">
-                  {isZh ? '本场已满 · 你要不要进候补？' : 'This session is full. Join the waitlist?'}
+                  {requiresFullAttendance
+                    ? (isZh ? '本期课程已满 · 你要不要进候补？' : 'This course is full. Join the waitlist?')
+                    : (isZh ? '本场已满 · 你要不要进候补？' : 'This session is full. Join the waitlist?')}
                 </p>
                 <div className="flex gap-3">
                   <button
@@ -497,12 +598,14 @@ export default function BookingModal({
               >
                 {submitState.kind === 'submitting'
                   ? (isZh ? '提交中...' : 'Submitting...')
-                  : (isZh ? '确认报名' : 'Confirm booking')}
+                  : requiresFullAttendance
+                    ? (isZh ? '确认报名整期课程' : 'Book the full course')
+                    : (isZh ? '确认报名' : 'Confirm booking')}
               </button>
               <p className="font-sans text-[12px] text-ink-soft text-center mt-[0.7rem] leading-[1.5]">
                 {isZh
-                  ? '提交后我们会在 24 小时内通过邮件或微信跟你确认'
-                  : 'Confirmation within 24h via email or WeChat'}
+                  ? '提交后我们会在 24 小时内通过邮件、微信或 Zalo 跟你确认'
+                  : 'Confirmation within 24h via email, WeChat, or Zalo'}
               </p>
             </div>
 

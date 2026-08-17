@@ -181,6 +181,41 @@ export const Activities: CollectionConfig = {
       min: 1,
     },
     {
+      name: 'registrationMode',
+      type: 'select',
+      label: { zh: '报名方式', en: 'Registration mode' },
+      required: true,
+      defaultValue: 'per_occurrence',
+      options: [
+        {
+          label: { zh: '每个场次单独报名', en: 'Register for each session separately' },
+          value: 'per_occurrence',
+        },
+        {
+          label: { zh: '系列课程：一次报名参加全部课次', en: 'Course series: one registration covers every session' },
+          value: 'series',
+        },
+      ],
+      admin: {
+        description: {
+          zh: '系列课程会把所有课次作为一个完整课程展示，并要求报名者确认能够全程参加。',
+          en: 'A course series is presented and booked as one complete course, with full-attendance confirmation required.',
+        },
+      },
+    },
+    {
+      name: 'requiresChineseProficiency',
+      type: 'checkbox',
+      label: { zh: '报名时询问中文听说水平', en: 'Ask about Chinese listening and speaking' },
+      defaultValue: false,
+      admin: {
+        description: {
+          zh: '适用于中文授课课程。启用后，报名者必须选择中文听说水平。',
+          en: 'Enable for Chinese-taught courses. Registrants must select their listening and speaking level.',
+        },
+      },
+    },
+    {
       name: 'notes',
       type: 'richText',
       label: { zh: '注意事项', en: 'Notes' },

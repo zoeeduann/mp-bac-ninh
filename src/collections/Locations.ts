@@ -83,6 +83,20 @@ export const Locations: CollectionConfig = {
       localized: true,
     },
     {
+      name: 'timeZone',
+      type: 'text',
+      label: { zh: '当地时区', en: 'Local time zone' },
+      required: true,
+      defaultValue: 'Asia/Ho_Chi_Minh',
+      admin: {
+        description: {
+          zh: 'IANA 时区名称，用于预约邮件、提醒和日历邀请，例如 Asia/Ho_Chi_Minh。',
+          en: 'IANA time zone used by booking emails, reminders and calendar invitations, e.g. Asia/Ho_Chi_Minh.',
+        },
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'isThailandNetwork',
       type: 'checkbox',
       label: { zh: '属于泰国站', en: 'Part of the Thailand network' },

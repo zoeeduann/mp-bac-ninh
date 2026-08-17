@@ -29,6 +29,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [wechatId, setWechatId] = useState('')
+  const [zaloId, setZaloId] = useState('')
   const [phone, setPhone] = useState('')
   const [direction, setDirection] = useState('')
   const [notes, setNotes] = useState('')
@@ -44,7 +45,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (!email && !wechatId) {
+    if (!email && !wechatId && !zaloId) {
       setContactError(true)
       return
     }
@@ -62,6 +63,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
           name,
           email: email || undefined,
           wechatId: wechatId || undefined,
+          zaloId: zaloId || undefined,
           phone,
           direction: direction || undefined,
           notes: notes || undefined,
@@ -110,8 +112,8 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         </h3>
         <p className="font-sans text-[13px] text-ink-soft leading-[1.7]">
           {isZh
-            ? '我们会在 24 小时内通过邮件或微信跟你联系。'
-            : "We'll reach you within 24 hours via email or WeChat."}
+            ? '我们会在 24 小时内通过邮件、微信或 Zalo 跟你联系。'
+            : "We'll reach you within 24 hours via email, WeChat, or Zalo."}
         </p>
       </div>
     )
@@ -228,7 +230,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         >
           {isZh ? '邮箱' : 'Email'}
           <span className="text-[10px] font-normal tracking-normal normal-case ml-[0.6rem] opacity-70">
-            {isZh ? '邮箱 或 微信 至少填一个' : 'Email or WeChat, at least one required'}
+            {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo — at least one required'}
           </span>
         </label>
         <input
@@ -260,9 +262,27 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         />
         {contactError && (
           <p className="font-sans text-[11px] text-clay mt-1">
-            {isZh ? '邮箱或微信至少填一个' : 'Email or WeChat required'}
+            {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo required'}
           </p>
         )}
+      </div>
+
+      {/* Zalo */}
+      <div className="flex flex-col gap-[0.5rem]">
+        <label
+          htmlFor="inq-zalo"
+          className="font-sans text-[11px] font-semibold tracking-[0.18em] uppercase text-ink-soft"
+        >
+          Zalo
+        </label>
+        <input
+          id="inq-zalo"
+          type="text"
+          placeholder="Zalo ID"
+          value={zaloId}
+          onChange={(e) => setZaloId(e.target.value)}
+          className="font-sans text-[16px] text-ink bg-transparent border-b border-b-ink/[0.22] outline-none py-[0.6rem] w-full transition-colors focus:border-b-sky placeholder:text-ink-soft/45 rounded-none appearance-none"
+        />
       </div>
 
       {/* Phone */}
@@ -278,7 +298,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
           type="tel"
           required
           autoComplete="tel"
-          placeholder="+66 / +86 ..."
+          placeholder="+84 / +86 ..."
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           className="font-sans text-[16px] text-ink bg-transparent border-b border-b-ink/[0.22] outline-none py-[0.6rem] w-full transition-colors focus:border-b-sky placeholder:text-ink-soft/45 rounded-none appearance-none"
@@ -360,8 +380,8 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         </button>
         <p className="font-sans text-[12px] text-ink-soft leading-[1.6]">
           {isZh
-            ? '我们会在 24 小时内通过邮件或微信跟你联系。'
-            : "We'll reach you within 24 hours via email or WeChat."}
+            ? '我们会在 24 小时内通过邮件、微信或 Zalo 跟你联系。'
+            : "We'll reach you within 24 hours via email, WeChat, or Zalo."}
         </p>
       </div>
     </form>

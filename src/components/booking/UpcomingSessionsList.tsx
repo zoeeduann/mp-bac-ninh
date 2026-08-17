@@ -17,6 +17,13 @@ interface SessionRow {
   capacityOverride: number | null
   activityCapacity: number
   remaining: number
+  registrationMode: 'per_occurrence' | 'series'
+  requiresChineseProficiency: boolean
+  seriesOccurrences: Array<{
+    id: string
+    startAt: string
+    endAt: string
+  }>
   locationId: number
   /** Used to build the activity-detail link on the title. */
   locationSlug: string
@@ -84,7 +91,10 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
   useEffect(() => {
     if (autoOpen.activitySlug && autoOpen.occurrenceId) {
       const match = sessions.find(
-        (s) => s.activitySlug === autoOpen.activitySlug && s.occurrenceId === autoOpen.occurrenceId,
+        (s) =>
+          s.activitySlug === autoOpen.activitySlug &&
+          (s.occurrenceId === autoOpen.occurrenceId ||
+            s.seriesOccurrences.some((occ) => occ.id === autoOpen.occurrenceId)),
       )
       if (match) {
         setModal({ open: true, session: match, source: autoOpen.source })
@@ -127,6 +137,7 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
       {unavailableNotice}
       <div className="flex flex-col max-w-[860px]">
         {sessions.map((session, i) => {
+          const isSeries = session.registrationMode === 'series'
           const isFull = session.remaining === 0
           const effectiveCap = session.capacityOverride ?? session.activityCapacity
           const occupied = effectiveCap - session.remaining
@@ -149,18 +160,48 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
                 >
                   {session.activityTitle}
                 </Link>
+                {isSeries && (
+                  <span className="inline-block rounded-full border border-sky/40 bg-sky/10 px-2.5 py-1 font-sans text-[10px] font-semibold tracking-[0.08em] text-ink-soft">
+                    {isZh
+                      ? `${session.seriesOccurrences.length} 次系列课 · 需全程参加`
+                      : `${session.seriesOccurrences.length}-session series · full attendance`}
+                  </span>
+                )}
               </div>
 
               {/* Date / time */}
               <div>
-                <span className="font-serif text-[17px] font-normal text-ink block mb-[0.2rem]">
-                  {isZh
-                    ? `${formatDayZh(startDate)} · ${formatWeekdayZh(startDate)}`
-                    : `${formatDayEn(startDate)} · ${formatWeekdayEn(startDate)}`}
-                </span>
-                <span className="font-sans text-[12px] font-medium text-ink-soft">
-                  {formatTimeRange(session.startAt, session.endAt)}
-                </span>
+                {isSeries ? (
+                  <ol className="space-y-2">
+                    {session.seriesOccurrences.map((occ, index) => {
+                      const occDate = new Date(occ.startAt)
+                      return (
+                        <li key={occ.id} className="font-sans text-[12px] text-ink-soft leading-[1.5]">
+                          <span className="font-semibold text-ink">
+                            {isZh ? `第 ${index + 1} 次` : `Session ${index + 1}`}
+                          </span>
+                          {' · '}
+                          {isZh
+                            ? `${formatDayZh(occDate)} ${formatWeekdayZh(occDate)}`
+                            : `${formatDayEn(occDate)} ${formatWeekdayEn(occDate)}`}
+                          {' · '}
+                          {formatTimeRange(occ.startAt, occ.endAt)}
+                        </li>
+                      )
+                    })}
+                  </ol>
+                ) : (
+                  <>
+                    <span className="font-serif text-[17px] font-normal text-ink block mb-[0.2rem]">
+                      {isZh
+                        ? `${formatDayZh(startDate)} · ${formatWeekdayZh(startDate)}`
+                        : `${formatDayEn(startDate)} · ${formatWeekdayEn(startDate)}`}
+                    </span>
+                    <span className="font-sans text-[12px] font-medium text-ink-soft">
+                      {formatTimeRange(session.startAt, session.endAt)}
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Location + capacity */}
@@ -217,10 +258,23 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
           sessionLabel={(() => {
             const s = modal.session
             const startDate = new Date(s.startAt)
+            if (s.registrationMode === 'series') {
+              return isZh
+                ? `完整系列课程 · 共 ${s.seriesOccurrences.length} 次`
+                : `Complete course series · ${s.seriesOccurrences.length} sessions`
+            }
             return isZh
               ? `${formatDayZh(startDate)}(${formatWeekdayZh(startDate)}) · ${formatTimeRange(s.startAt, s.endAt)}`
               : `${formatWeekdayEn(startDate)} ${formatDayEn(startDate)} · ${formatTimeRange(s.startAt, s.endAt)}`
           })()}
+          seriesSessionLabels={modal.session.seriesOccurrences.map((occ) => {
+            const startDate = new Date(occ.startAt)
+            return isZh
+              ? `${formatDayZh(startDate)}（${formatWeekdayZh(startDate)}）· ${formatTimeRange(occ.startAt, occ.endAt)}`
+              : `${formatWeekdayEn(startDate)}, ${formatDayEn(startDate)} · ${formatTimeRange(occ.startAt, occ.endAt)}`
+          })}
+          requiresFullAttendance={modal.session.registrationMode === 'series'}
+          requiresChineseProficiency={modal.session.requiresChineseProficiency}
           locationId={modal.session.locationId}
           locationSlug={modal.session.locationSlug}
           locationName={modal.session.locationName}

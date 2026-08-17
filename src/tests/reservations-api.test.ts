@@ -111,6 +111,22 @@ describe('POST /api/reservations', () => {
     )
   })
 
+  it('accepts Zalo as the contact method for a general inquiry', async () => {
+    mockPayload.create.mockResolvedValueOnce({ id: 'r-zalo' })
+    const res = await POST(makeReq({
+      name: 'Zalo User', phone: '+84 90 000 0000', zaloId: '0900000000',
+      turnstileToken: 't', honeypot: '', source: 'book_general_inquiry',
+      direction: 'visit', location: '4',
+    }))
+
+    expect(res.status).toBe(200)
+    expect(mockPayload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ zaloId: '0900000000', emailStatus: 'no_email' }),
+      }),
+    )
+  })
+
   // ── Activity booking: capacity available → created ────────────────────────
 
   it('activity booking with capacity available returns 200, kind=created', async () => {
@@ -138,6 +154,94 @@ describe('POST /api/reservations', () => {
     expect(mockPayload.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'pending' }),
+      }),
+    )
+  })
+
+  it('rejects a series booking unless full attendance is confirmed', async () => {
+    mockPayload.findByID.mockResolvedValueOnce({
+      id: 58,
+      status: 'published',
+      registrationMode: 'series',
+      capacity: 8,
+      occurrences: [
+        { id: 'o1', status: 'open', startAt: '2026-08-23T02:00:00.000Z' },
+        { id: 'o2', status: 'open', startAt: '2026-08-29T02:00:00.000Z' },
+      ],
+    })
+
+    const res = await POST(makeReq({
+      name: 'Series User', phone: '+84 90 000 0000', zaloId: '0900000000',
+      turnstileToken: 't', honeypot: '', activity: 58, occurrenceId: 'o1',
+      guests: 1, source: 'activity_detail',
+    }))
+
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ error: 'full_series_confirmation_required' })
+    expect(mockPayload.create).not.toHaveBeenCalled()
+  })
+
+  it('requires Chinese proficiency for a Chinese-taught course', async () => {
+    mockPayload.findByID.mockResolvedValueOnce({
+      id: 58,
+      status: 'published',
+      registrationMode: 'series',
+      requiresChineseProficiency: true,
+      capacity: 8,
+      occurrences: [{ id: 'o1', status: 'open', startAt: '2026-08-23T02:00:00.000Z' }],
+    })
+
+    const res = await POST(makeReq({
+      name: 'Series User', phone: '+84 90 000 0000', zaloId: '0900000000',
+      turnstileToken: 't', honeypot: '', activity: 58, occurrenceId: 'o1',
+      fullSeriesConfirmed: true, guests: 1, source: 'activity_detail',
+    }))
+
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ error: 'chinese_proficiency_required' })
+  })
+
+  it('stores series confirmation, Chinese proficiency, and Zalo for a valid course booking', async () => {
+    mockPayload.findByID
+      .mockResolvedValueOnce({
+        id: 58,
+        status: 'published',
+        registrationMode: 'series',
+        requiresChineseProficiency: true,
+        capacity: 8,
+        title: '静茶七式研修班招生',
+        location: 4,
+        occurrences: [
+          { id: 'o1', status: 'open', startAt: '2026-08-23T02:00:00.000Z' },
+          { id: 'o2', status: 'open', startAt: '2026-08-29T02:00:00.000Z' },
+          { id: 'o3', status: 'open', startAt: '2026-09-05T02:00:00.000Z' },
+        ],
+      })
+      .mockResolvedValueOnce({
+        id: 4,
+        name: '北宁善明小院',
+        timeZone: 'Asia/Ho_Chi_Minh',
+      })
+    mockPayload.find.mockResolvedValueOnce({ docs: [] })
+    mockPayload.create.mockResolvedValueOnce({ id: 'r-series' })
+
+    const res = await POST(makeReq({
+      name: 'Series User', phone: '+84 90 000 0000', zaloId: '0900000000',
+      turnstileToken: 't', honeypot: '', activity: 58, occurrenceId: 'o1',
+      fullSeriesConfirmed: true,
+      chineseProficiency: 'understands_speaking_difficult',
+      guests: 1, source: 'activity_detail',
+    }))
+
+    expect(res.status).toBe(200)
+    expect(mockPayload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          zaloId: '0900000000',
+          fullSeriesConfirmed: true,
+          chineseProficiency: 'understands_speaking_difficult',
+          occurrenceId: 'o1',
+        }),
       }),
     )
   })

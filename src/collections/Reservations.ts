@@ -32,7 +32,7 @@ export const Reservations: CollectionConfig = {
       'notes',
       'internalNotes',
     ],
-    listSearchableFields: ['name', 'email', 'wechatId', 'phone'],
+    listSearchableFields: ['name', 'email', 'wechatId', 'zaloId', 'phone'],
   },
   access: {
     // Admin sees all reservations; staff scoped to their academy.
@@ -201,6 +201,11 @@ export const Reservations: CollectionConfig = {
       label: { zh: '微信号', en: 'WeChat ID' },
     },
     {
+      name: 'zaloId',
+      type: 'text',
+      label: { zh: 'Zalo', en: 'Zalo' },
+    },
+    {
       name: 'phone',
       type: 'text',
       label: { zh: '电话', en: 'Phone' },
@@ -214,6 +219,35 @@ export const Reservations: CollectionConfig = {
       defaultValue: 1,
       min: 1,
       max: 10,
+    },
+    {
+      name: 'fullSeriesConfirmed',
+      type: 'checkbox',
+      label: { zh: '已确认全程参加系列课程', en: 'Confirmed full-series attendance' },
+      defaultValue: false,
+      admin: {
+        readOnly: true,
+        description: {
+          zh: '报名者已在前台勾选确认能够参加全部课次。',
+          en: 'The registrant confirmed they can attend every session in the course series.',
+        },
+      },
+    },
+    {
+      name: 'chineseProficiency',
+      type: 'select',
+      label: { zh: '中文听说水平', en: 'Chinese listening and speaking level' },
+      options: [
+        { label: { zh: '① 听得懂，也表达得清楚', en: '① Understands and speaks clearly' }, value: 'understands_and_speaks' },
+        { label: { zh: '② 能听懂，但表达困难', en: '② Understands but has difficulty speaking' }, value: 'understands_speaking_difficult' },
+        { label: { zh: '③ 听和说都需要翻译才能够完成', en: '③ Needs translation for listening and speaking' }, value: 'translation_needed' },
+      ],
+      admin: {
+        description: {
+          zh: '仅中文授课课程要求填写。',
+          en: 'Required only for Chinese-taught courses.',
+        },
+      },
     },
     {
       // Only shown when the reservation is a general inquiry (no specific activity)

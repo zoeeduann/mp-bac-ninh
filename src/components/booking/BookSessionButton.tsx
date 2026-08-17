@@ -8,6 +8,9 @@ export interface BookSessionButtonProps {
   activityTitle: string
   occurrenceId: string
   sessionLabel: string
+  seriesSessionLabels?: string[]
+  requiresFullAttendance?: boolean
+  requiresChineseProficiency?: boolean
   locationId: number
   locationSlug: string
   locationName: string
@@ -46,6 +49,9 @@ export default function BookSessionButton(props: BookSessionButtonProps) {
         activityTitle={props.activityTitle}
         occurrenceId={props.occurrenceId}
         sessionLabel={props.sessionLabel}
+        seriesSessionLabels={props.seriesSessionLabels}
+        requiresFullAttendance={props.requiresFullAttendance}
+        requiresChineseProficiency={props.requiresChineseProficiency}
         locationId={props.locationId}
         locationSlug={props.locationSlug}
         locationName={props.locationName}

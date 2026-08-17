@@ -324,12 +324,19 @@ export interface UpcomingSession {
     endAt: string
     capacityOverride?: number | null
   }
+  seriesOccurrences: Array<{
+    id: string
+    startAt: string
+    endAt: string
+  }>
   remaining: number
 }
 
 /**
  * Fetch upcoming sessions across all published activities for a location.
  * Returns individual occurrence rows flattened and sorted by startAt ascending.
+ * Series activities produce one row anchored to the first session because one
+ * registration covers the complete course.
  * Capacity is computed by calling getCapacityForOccurrence.
  */
 export async function getUpcomingSessionsForLocation(
@@ -361,13 +368,44 @@ export async function getUpcomingSessionsForLocation(
   const candidates: Array<{
     activity: any
     occurrence: { id: string; startAt: string; endAt: string; capacityOverride?: number | null }
+    seriesOccurrences: Array<{ id: string; startAt: string; endAt: string }>
   }> = []
 
   for (const activity of result.docs) {
-    const occs = (activity as any).occurrences ?? []
+    const occs = ((activity as any).occurrences ?? [])
+      .filter((occ: any) =>
+        occ.startAt &&
+        occ.id &&
+        occ.status !== 'cancelled' &&
+        occ.status !== 'deleted',
+      )
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+      )
+
+    if ((activity as any).registrationMode === 'series') {
+      const first = occs[0]
+      // A series closes to new registrants once its first class has started.
+      if (!first || isSessionPast(first.startAt, now)) continue
+      candidates.push({
+        activity,
+        occurrence: {
+          id: first.id,
+          startAt: first.startAt,
+          endAt: first.endAt,
+          capacityOverride: first.capacityOverride ?? null,
+        },
+        seriesOccurrences: occs.map((occ: any) => ({
+          id: occ.id,
+          startAt: occ.startAt,
+          endAt: occ.endAt,
+        })),
+      })
+      continue
+    }
+
     for (const occ of occs) {
-      if (!occ.startAt || !occ.id) continue
-      if (occ.status === 'cancelled' || occ.status === 'deleted') continue
       if (isSessionPast(occ.startAt, now)) continue
       candidates.push({
         activity,
@@ -377,6 +415,7 @@ export async function getUpcomingSessionsForLocation(
           endAt: occ.endAt,
           capacityOverride: occ.capacityOverride ?? null,
         },
+        seriesOccurrences: [],
       })
     }
   }
@@ -390,14 +429,14 @@ export async function getUpcomingSessionsForLocation(
 
   // Fetch capacity for each
   const withCapacity = await Promise.all(
-    sliced.map(async ({ activity, occurrence }) => {
+    sliced.map(async ({ activity, occurrence, seriesOccurrences }) => {
       const effectiveCap = occurrence.capacityOverride ?? (activity as any).capacity
       const { remaining } = await getCapacityForOccurrence(
         (activity as any).id,
         occurrence.id,
         effectiveCap,
       )
-      return { activity, occurrence, remaining }
+      return { activity, occurrence, seriesOccurrences, remaining }
     }),
   )
 

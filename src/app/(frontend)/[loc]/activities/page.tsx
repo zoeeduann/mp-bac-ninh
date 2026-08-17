@@ -373,6 +373,19 @@ export default async function ActivitiesPage({
                   const imgUrl = mediaUrl(act.heroImage)
                   const imgAlt = mediaAlt(act.heroImage, act.title)
                   const upcoming = nextOccurrenceDate(act)
+                  const seriesOccurrences = act.registrationMode === 'series'
+                    ? (act.occurrences ?? [])
+                        .filter(
+                          (occ) =>
+                            occ.startAt &&
+                            occ.status !== 'cancelled' &&
+                            occ.status !== 'deleted',
+                        )
+                        .sort(
+                          (a, b) =>
+                            new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+                        )
+                    : []
 
                   return (
                     <Link
@@ -406,7 +419,9 @@ export default async function ActivitiesPage({
                       <div className="pt-5 pb-6 border-t border-hairline">
                         {upcoming ? (
                           <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
-                            {formatDateCompact(new Date(upcoming), locale)}
+                            {seriesOccurrences.length > 0
+                              ? `${formatDateCompact(new Date(seriesOccurrences[0].startAt), locale)} — ${formatDateCompact(new Date(seriesOccurrences[seriesOccurrences.length - 1].startAt), locale)} · ${isZh ? `${seriesOccurrences.length} 次系列课` : `${seriesOccurrences.length}-session series`}`
+                              : formatDateCompact(new Date(upcoming), locale)}
                           </p>
                         ) : (
                           <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">

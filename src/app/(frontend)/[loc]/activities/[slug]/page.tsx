@@ -246,6 +246,10 @@ export default async function ActivityDetailPage({
   const sortedOccurrences = (activity.occurrences ?? [])
     .filter((o) => o.status !== 'deleted')
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+  const isSeries = activity.registrationMode === 'series'
+  const activeSeriesOccurrences = sortedOccurrences.filter((o) => o.status !== 'cancelled')
+  const seriesAnchor = activeSeriesOccurrences[0] ?? null
+  const seriesAnchorIndex = seriesAnchor ? sortedOccurrences.indexOf(seriesAnchor) : -1
 
   // ─ Capacity data (parallel fetch per occurrence) ─────────────────────
   const capacityResults = await Promise.all(
@@ -257,6 +261,15 @@ export default async function ActivityDetailPage({
         effectiveCap,
       )
     }),
+  )
+  const seriesCapacity = seriesAnchorIndex >= 0 ? capacityResults[seriesAnchorIndex] : null
+  const seriesEffectiveCapacity = seriesAnchor
+    ? (seriesAnchor.capacityOverride ?? activity.capacity)
+    : activity.capacity
+  const seriesSessionLabels = activeSeriesOccurrences.map((occ) =>
+    isZh
+      ? `${formatDayZh(new Date(occ.startAt))}（${formatWeekdayZh(new Date(occ.startAt))}）· ${formatTimeRange(occ.startAt, occ.endAt)}`
+      : `${formatWeekdayEn(new Date(occ.startAt))}, ${formatDayEn(new Date(occ.startAt))} · ${formatTimeRange(occ.startAt, occ.endAt)}`,
   )
 
   // ─ Meta ─────────────────────────────────────────────────────────────
@@ -408,8 +421,8 @@ export default async function ActivityDetailPage({
               <span>👥</span>
               <span>
                 {isZh
-                  ? `${activity.capacity} ${t(locale, 'meta.spots')}`
-                  : `${activity.capacity} spots per session`}
+                  ? `${activity.capacity} ${t(locale, 'meta.spots')}${isSeries ? '（整期课程）' : ''}`
+                  : `${activity.capacity} spots ${isSeries ? 'for the full course' : 'per session'}`}
               </span>
             </span>
             <span className="flex items-center gap-2">
@@ -468,88 +481,158 @@ export default async function ActivityDetailPage({
           </p>
 
           {sortedOccurrences.length > 0 ? (
-            <div className="flex flex-col divide-y divide-hairline">
-              {sortedOccurrences.map((occ, i) => {
-                const { occupied, remaining } = capacityResults[i]
-                const effectiveCap = occ.capacityOverride ?? activity.capacity
-                const isFull = remaining === 0
-                const occId = occ.id ?? `occ-${i}`
-                const isHighlighted = focusOccId && occId === focusOccId
-                const sessionLabel = isZh
-                  ? `${formatDayZh(new Date(occ.startAt))}(${formatWeekdayZh(new Date(occ.startAt))}) · ${formatTimeRange(occ.startAt, occ.endAt)}`
-                  : `${formatWeekdayEn(new Date(occ.startAt))} ${formatDayEn(new Date(occ.startAt))} · ${formatTimeRange(occ.startAt, occ.endAt)}`
+            <div>
+              {isSeries && (
+                <div className="mb-8 rounded border border-sky/45 bg-sky/[0.09] px-5 py-4">
+                  <p className="font-serif text-[18px] text-ink mb-1.5">
+                    {isZh
+                      ? `这是一个完整的系列课程，共 ${activeSeriesOccurrences.length} 次课`
+                      : `This is one complete course with ${activeSeriesOccurrences.length} sessions`}
+                  </p>
+                  <p className="font-sans text-[13px] text-ink-soft leading-[1.7]">
+                    {isZh
+                      ? '一次报名涵盖全部课次。为保障课程体验，请确认能够参加全部课程后再报名。'
+                      : 'One registration covers every session. Please book only if you can attend the complete course.'}
+                  </p>
+                </div>
+              )}
 
-                return (
-                  <div
-                    key={occId}
-                    id={`book-${occId}`}
-                    className={[
-                      'flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-6',
-                      isHighlighted ? 'bg-sky/10 -mx-4 px-4 rounded' : '',
-                    ].join(' ')}
-                  >
-                    {/* Date block */}
-                    <div className="flex-none min-w-[130px]">
-                      <span className="font-serif text-[22px] font-normal text-ink block leading-tight">
-                        {isZh
-                          ? formatDayZh(new Date(occ.startAt))
-                          : formatDayEn(new Date(occ.startAt))}
-                      </span>
-                      <span className="font-sans text-[12px] text-ink-soft mt-1 block">
-                        {formatTimeRange(occ.startAt, occ.endAt)}
-                        {' · '}
-                        {isZh
-                          ? formatWeekdayZh(new Date(occ.startAt))
-                          : formatWeekdayEn(new Date(occ.startAt))}
-                      </span>
-                    </div>
+              <div className="flex flex-col divide-y divide-hairline">
+                {sortedOccurrences.map((occ, i) => {
+                  const { occupied, remaining } = capacityResults[i]
+                  const effectiveCap = occ.capacityOverride ?? activity.capacity
+                  const isFull = remaining === 0 || occ.status === 'full'
+                  const occId = occ.id ?? `occ-${i}`
+                  const seriesPosition = activeSeriesOccurrences.indexOf(occ)
+                  const isHighlighted = focusOccId && occId === focusOccId
+                  const sessionLabel = isZh
+                    ? `${formatDayZh(new Date(occ.startAt))}(${formatWeekdayZh(new Date(occ.startAt))}) · ${formatTimeRange(occ.startAt, occ.endAt)}`
+                    : `${formatWeekdayEn(new Date(occ.startAt))} ${formatDayEn(new Date(occ.startAt))} · ${formatTimeRange(occ.startAt, occ.endAt)}`
 
-                    {/* Meta block */}
-                    <div className="flex-1">
-                      <span className="font-sans text-[13px] text-ink-soft block">
-                        {activity.venueNote ||
-                          (isZh ? location.name : `${academyDisplayName} · ${location.city}`)}
-                      </span>
-                      <span className="font-sans text-[12px] text-ink-soft block mt-1">
-                        {occupied}/{effectiveCap}{' '}
-                        {t(locale, 'meta.registered')}
-                        {' · '}
-                        {remaining > 0 ? (
-                          <span className={remaining <= 3 ? 'text-clay font-semibold' : ''}>
-                            {isZh ? `${remaining} ${t(locale, 'meta.spots')}` : `${remaining} spots left`}
+                  return (
+                    <div
+                      key={occId}
+                      id={`book-${occId}`}
+                      className={[
+                        'flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-6',
+                        isHighlighted ? 'bg-sky/10 -mx-4 px-4 rounded' : '',
+                      ].join(' ')}
+                    >
+                      <div className="flex-none min-w-[130px]">
+                        <span className="font-serif text-[22px] font-normal text-ink block leading-tight">
+                          {isZh
+                            ? formatDayZh(new Date(occ.startAt))
+                            : formatDayEn(new Date(occ.startAt))}
+                        </span>
+                        <span className="font-sans text-[12px] text-ink-soft mt-1 block">
+                          {formatTimeRange(occ.startAt, occ.endAt)}
+                          {' · '}
+                          {isZh
+                            ? formatWeekdayZh(new Date(occ.startAt))
+                            : formatWeekdayEn(new Date(occ.startAt))}
+                        </span>
+                      </div>
+
+                      <div className="flex-1">
+                        <span className="font-sans text-[13px] text-ink-soft block">
+                          {activity.venueNote ||
+                            (isZh ? location.name : `${academyDisplayName} · ${location.city}`)}
+                        </span>
+                        {isSeries ? (
+                          <span className="font-sans text-[12px] font-semibold text-ink-soft block mt-1">
+                            {occ.status === 'cancelled'
+                              ? (isZh ? '本次课程已取消' : 'This session is cancelled')
+                              : isZh
+                                ? `完整课程 · 第 ${seriesPosition + 1} 次`
+                                : `Full course · Session ${seriesPosition + 1}`}
                           </span>
                         ) : (
-                          <span className="text-ink-soft">{t(locale, 'meta.full')}</span>
+                          <span className="font-sans text-[12px] text-ink-soft block mt-1">
+                            {occupied}/{effectiveCap} {t(locale, 'meta.registered')} ·{' '}
+                            {remaining > 0 ? (
+                              <span className={remaining <= 3 ? 'text-clay font-semibold' : ''}>
+                                {isZh ? `${remaining} ${t(locale, 'meta.spots')}` : `${remaining} spots left`}
+                              </span>
+                            ) : (
+                              <span className="text-ink-soft">{t(locale, 'meta.full')}</span>
+                            )}
+                          </span>
                         )}
-                      </span>
-                    </div>
+                      </div>
 
-                    {/* Book button / Full indicator / Ended */}
-                    <div className="flex-none">
-                      {isSessionPast(occ.startAt, now) ? (
-                        <span className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink-soft border border-ink-soft/30 rounded-full px-5 py-[0.45rem] cursor-default">
-                          {isZh ? '已结束' : 'Ended'}
-                        </span>
-                      ) : (
-                        <BookSessionButton
-                          activityId={activity.id}
-                          activitySlug={activity.slug}
-                          activityTitle={activity.title}
-                          occurrenceId={occId}
-                          sessionLabel={sessionLabel}
-                          locationId={location.id}
-                          locationSlug={locSlug}
-                          locationName={academyDisplayName}
-                          locationWechatId={(location as any).wechatId ?? undefined}
-                          locale={locale}
-                          source={srcParam}
-                          isFull={isFull}
-                        />
-                      )}
+                      <div className="flex-none">
+                        {isSeries ? (
+                          <span className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink-soft border border-ink-soft/25 rounded-full px-4 py-[0.4rem]">
+                            {isSessionPast(occ.startAt, now)
+                              ? (isZh ? '已结束' : 'Ended')
+                              : occ.status === 'cancelled'
+                                ? (isZh ? '已取消' : 'Cancelled')
+                                : (isZh ? `第 ${seriesPosition + 1} 次` : `Session ${seriesPosition + 1}`)}
+                          </span>
+                        ) : isSessionPast(occ.startAt, now) ? (
+                          <span className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink-soft border border-ink-soft/30 rounded-full px-5 py-[0.45rem] cursor-default">
+                            {isZh ? '已结束' : 'Ended'}
+                          </span>
+                        ) : (
+                          <BookSessionButton
+                            activityId={activity.id}
+                            activitySlug={activity.slug}
+                            activityTitle={activity.title}
+                            occurrenceId={occId}
+                            sessionLabel={sessionLabel}
+                            locationId={location.id}
+                            locationSlug={locSlug}
+                            locationName={academyDisplayName}
+                            locationWechatId={(location as any).wechatId ?? undefined}
+                            locale={locale}
+                            source={srcParam}
+                            isFull={isFull}
+                          />
+                        )}
+                      </div>
                     </div>
+                  )
+                })}
+              </div>
+
+              {isSeries && seriesAnchor && seriesCapacity && (
+                <div className="mt-8 flex flex-col gap-4 rounded border border-ink/15 bg-sky/[0.04] px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-serif text-[18px] text-ink mb-1">
+                      {isZh ? '一次报名，参加全部课次' : 'One registration for the complete course'}
+                    </p>
+                    <p className="font-sans text-[12px] text-ink-soft">
+                      {seriesCapacity.occupied}/{seriesEffectiveCapacity} {t(locale, 'meta.registered')} ·{' '}
+                      {seriesCapacity.remaining > 0
+                        ? (isZh ? `剩余 ${seriesCapacity.remaining} 个名额` : `${seriesCapacity.remaining} spots left`)
+                        : t(locale, 'meta.full')}
+                    </p>
                   </div>
-                )
-              })}
+                  {isSessionPast(seriesAnchor.startAt, now) ? (
+                    <span className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink-soft border border-ink-soft/30 rounded-full px-5 py-[0.55rem] text-center">
+                      {isZh ? '报名已截止' : 'Registration closed'}
+                    </span>
+                  ) : (
+                    <BookSessionButton
+                      activityId={activity.id}
+                      activitySlug={activity.slug}
+                      activityTitle={activity.title}
+                      occurrenceId={seriesAnchor.id ?? 'series'}
+                      sessionLabel={isZh ? `完整系列课程 · 共 ${activeSeriesOccurrences.length} 次` : `Complete course · ${activeSeriesOccurrences.length} sessions`}
+                      seriesSessionLabels={seriesSessionLabels}
+                      requiresFullAttendance
+                      requiresChineseProficiency={Boolean(activity.requiresChineseProficiency)}
+                      locationId={location.id}
+                      locationSlug={locSlug}
+                      locationName={academyDisplayName}
+                      locationWechatId={(location as any).wechatId ?? undefined}
+                      locale={locale}
+                      source={srcParam}
+                      isFull={seriesCapacity.remaining === 0 || seriesAnchor.status === 'full'}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <p className="font-sans text-[13px] text-ink-soft">

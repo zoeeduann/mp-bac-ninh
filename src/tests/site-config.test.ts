@@ -9,7 +9,9 @@ describe('single-location site configuration', () => {
   it('keeps location-prefixed URLs when no single location is configured', async () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_LOCATION_SLUG', '')
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://www.mindfulpeaceth.com')
-    const { locationPath, locationUrl } = await import('@/lib/site-config')
+    const { TURNSTILE_ENABLED, locationPath, locationUrl } = await import(
+      '@/lib/site-config'
+    )
 
     expect(locationPath('zh-CN', 'chiangmai', '/activities')).toBe(
       '/chiangmai/activities',
@@ -17,14 +19,18 @@ describe('single-location site configuration', () => {
     expect(locationUrl('en', 'chiangmai', '/about')).toBe(
       'https://www.mindfulpeaceth.com/en/chiangmai/about',
     )
+    expect(TURNSTILE_ENABLED).toBe(true)
   })
 
   it('publishes the configured location at the domain root', async () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_LOCATION_SLUG', 'bac-ninh')
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://mindfulpeacebacninh.com/')
-    const { GOOGLE_ANALYTICS_ID, locationPath, locationUrl } = await import(
-      '@/lib/site-config'
-    )
+    const {
+      GOOGLE_ANALYTICS_ID,
+      TURNSTILE_ENABLED,
+      locationPath,
+      locationUrl,
+    } = await import('@/lib/site-config')
 
     expect(locationPath('zh-CN', 'bac-ninh')).toBe('/')
     expect(locationPath('en', 'bac-ninh', '/activities')).toBe('/en/activities')
@@ -32,6 +38,7 @@ describe('single-location site configuration', () => {
       'https://mindfulpeacebacninh.com/journal',
     )
     expect(GOOGLE_ANALYTICS_ID).toBe('G-0WNPPNKYE4')
+    expect(TURNSTILE_ENABLED).toBe(false)
   })
 
   it('allows a deployment-specific analytics ID override', async () => {
@@ -40,5 +47,13 @@ describe('single-location site configuration', () => {
     const { GOOGLE_ANALYTICS_ID } = await import('@/lib/site-config')
 
     expect(GOOGLE_ANALYTICS_ID).toBe('G-OVERRIDE123')
+  })
+
+  it('allows a deployment to override the Turnstile default', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_LOCATION_SLUG', 'bac-ninh')
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_ENABLED', 'true')
+    const { TURNSTILE_ENABLED } = await import('@/lib/site-config')
+
+    expect(TURNSTILE_ENABLED).toBe(true)
   })
 })

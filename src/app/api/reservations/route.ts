@@ -6,6 +6,8 @@ import { verifyTurnstile } from '../../../lib/turnstile'
 import { rateLimit } from '../../../lib/rate-limit'
 import { computeOccupancy, canBook } from '../../../lib/capacity'
 import { enqueueEmail } from '../../../lib/email-jobs'
+import { isAllowedSameOriginRequest } from '../../../lib/request-origin'
+import { TURNSTILE_ENABLED } from '../../../lib/site-config'
 
 // Synchronous SMTP to Gmail can take 2-3 s per email; with the admin +
 // user notifications + DB writes + advisory lock work, the default 10 s
@@ -84,22 +86,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 })
   }
 
-  // 3. Rate limit: 20 submissions per IP per 5 minutes
+  // 3. Bac Ninh does not load Turnstile because its challenge host is not
+  //    consistently reachable from mainland China. Require browser requests
+  //    to originate from this deployment instead.
+  if (
+    !TURNSTILE_ENABLED &&
+    !isAllowedSameOriginRequest({
+      requestUrl: req.url,
+      origin: req.headers.get('origin'),
+      isProduction: process.env.NODE_ENV === 'production',
+    })
+  ) {
+    return NextResponse.json({ error: 'cross_origin_forbidden' }, { status: 403 })
+  }
+
+  // 4. Use a stricter limit when CAPTCHA protection is disabled.
   //    Runs AFTER honeypot so bots don't consume legit users' budget.
   //    Still BEFORE Turnstile (network call) since rate-limit is cheap.
-  const rl = rateLimit(ip, 20, 5 * 60_000)
+  const rl = TURNSTILE_ENABLED
+    ? rateLimit(ip, 20, 5 * 60_000)
+    : rateLimit(ip, 5, 10 * 60_000)
   if (!rl.ok) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
   }
 
-  // 4. Verify Turnstile
-  if (!(await verifyTurnstile(body.turnstileToken, ip))) {
+  // 5. Verify Turnstile only on deployments where it is enabled.
+  if (TURNSTILE_ENABLED && !(await verifyTurnstile(body.turnstileToken, ip))) {
     return NextResponse.json({ error: 'turnstile_failed' }, { status: 400 })
   }
 
   const payload = await getPayload({ config: configPromise })
 
-  // 5. General inquiry path (no activity)
+  // 6. General inquiry path (no activity)
   if (!body.activity) {
     if (!body.location) {
       return NextResponse.json({ error: 'location_required_for_inquiry' }, { status: 400 })
@@ -120,7 +138,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, id: r.id, kind: 'created' })
   }
 
-  // 6. Activity booking path
+  // 7. Activity booking path
   if (!body.occurrenceId) {
     return NextResponse.json({ error: 'occurrence_required' }, { status: 400 })
   }

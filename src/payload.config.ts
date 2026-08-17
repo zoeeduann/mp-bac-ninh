@@ -18,6 +18,7 @@ import { Reservations } from './collections/Reservations'
 import { EmailJobs } from './collections/EmailJobs'
 import { PortalHome, Settings } from './globals'
 import { migrations } from './migrations'
+import { TURNSTILE_ENABLED } from './lib/site-config'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -39,14 +40,15 @@ function validateProductionEnv(): void {
     'NEXT_PUBLIC_SERVER_URL',
     'GMAIL_USER',
     'GMAIL_APP_PASSWORD',
-    'TURNSTILE_SECRET_KEY',
-    'NEXT_PUBLIC_TURNSTILE_SITE_KEY',
     'S3_BUCKET',
     'S3_ACCESS_KEY_ID',
     'S3_SECRET_ACCESS_KEY',
     'S3_ENDPOINT',
     'ADMIN_EMAIL',
   ]
+  if (TURNSTILE_ENABLED) {
+    required.push('TURNSTILE_SECRET_KEY', 'NEXT_PUBLIC_TURNSTILE_SITE_KEY')
+  }
   const missing = required.filter((name) => !process.env[name])
   if (missing.length > 0) {
     throw new Error(

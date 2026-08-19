@@ -14,9 +14,15 @@ interface HeaderClientProps {
   locale: Locale
   navItems: NavItem[]
   locationSlug: string | null
+  showVietnamese?: boolean
 }
 
-export default function HeaderClient({ locale, navItems, locationSlug }: HeaderClientProps) {
+export default function HeaderClient({
+  locale,
+  navItems,
+  locationSlug,
+  showVietnamese = false,
+}: HeaderClientProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -28,6 +34,7 @@ export default function HeaderClient({ locale, navItems, locationSlug }: HeaderC
         locale={locale}
         navItems={navItems}
         locationSlug={locationSlug}
+        showVietnamese={showVietnamese}
       />
     </>
   )

@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { resolveLocaleRewrite, resolveSingleLocationRewrite } from '@/middleware'
+import {
+  isStandaloneVietnamesePath,
+  resolveLocaleRewrite,
+  resolveSingleLocationRewrite,
+} from '@/middleware'
+
+describe('isStandaloneVietnamesePath', () => {
+  it('reserves /vi only for the dedicated Bac Ninh site', () => {
+    expect(isStandaloneVietnamesePath('/vi', 'bac-ninh')).toBe(true)
+    expect(isStandaloneVietnamesePath('/vi/llms.txt', 'bac-ninh')).toBe(true)
+    expect(isStandaloneVietnamesePath('/vi', null)).toBe(false)
+    expect(isStandaloneVietnamesePath('/vi', 'chiangmai')).toBe(false)
+  })
+})
 
 describe('resolveLocaleRewrite', () => {
   it('zh-CN default: no rewrite, pathname unchanged', () => {

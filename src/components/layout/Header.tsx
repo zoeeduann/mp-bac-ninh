@@ -177,6 +177,16 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
       {/* Right: lang toggle + book CTA + hamburger */}
       <div className="flex items-center gap-6">
         <LanguageToggle current={locale} />
+        {isBacNinh && (
+          <Link
+            href="/vi"
+            hrefLang="vi"
+            aria-label="Chuyển sang tiếng Việt"
+            className="hidden min-h-[44px] min-w-[44px] items-center justify-center font-sans text-[11px] font-semibold tracking-[0.1em] text-ink-soft transition-colors hover:text-ink sm:inline-flex"
+          >
+            VI
+          </Link>
+        )}
 
         {currentLocation && (
           <Link
@@ -191,6 +201,7 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
           locale={locale}
           navItems={navItems}
           locationSlug={currentLocation?.slug ?? null}
+          showVietnamese={isBacNinh}
         />
       </div>
     </header>

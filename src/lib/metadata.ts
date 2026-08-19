@@ -10,7 +10,7 @@ export interface BuildMetaOptions {
   imageUrl?: string
   locale: Locale
   siteName?: string
-  alternateLanguages?: { 'zh-CN'?: string; en?: string }
+  alternateLanguages?: { 'zh-CN'?: string; en?: string; vi?: string }
   keywords?: string[]
 }
 

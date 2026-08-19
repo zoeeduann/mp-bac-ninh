@@ -17,9 +17,17 @@ interface MobileNavProps {
   locale: Locale
   navItems: NavItem[]
   locationSlug: string | null
+  showVietnamese?: boolean
 }
 
-export default function MobileNav({ open, onClose, locale, navItems, locationSlug }: MobileNavProps) {
+export default function MobileNav({
+  open,
+  onClose,
+  locale,
+  navItems,
+  locationSlug,
+  showVietnamese = false,
+}: MobileNavProps) {
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
 
@@ -95,6 +103,17 @@ export default function MobileNav({ open, onClose, locale, navItems, locationSlu
           className="font-sans text-[11px] font-semibold tracking-[0.12em] uppercase text-ink bg-sky rounded-full px-5 py-2 no-underline transition-colors duration-150 hover:bg-blue-deep hover:text-paper"
         >
           {t(locale, 'book.cta')}
+        </Link>
+      )}
+
+      {showVietnamese && (
+        <Link
+          href="/vi"
+          hrefLang="vi"
+          onClick={onClose}
+          className="mt-8 inline-flex min-h-[44px] items-center border-t border-hairline pt-6 font-sans text-[12px] font-semibold tracking-[0.12em] text-ink-soft hover:text-ink"
+        >
+          Tiếng Việt · VI
         </Link>
       )}
     </div>

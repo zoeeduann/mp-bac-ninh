@@ -17,12 +17,17 @@ type Entry = MetadataRoute.Sitemap[number]
  * URLs appear as independent sitemap entries so Google sees a return tag for
  * each language.
  */
-function bothLocales(path: string, rest: Omit<Entry, 'url' | 'alternates'>): Entry[] {
-  const languages = {
+function bothLocales(
+  path: string,
+  rest: Omit<Entry, 'url' | 'alternates'>,
+  includeVietnamese = false,
+): Entry[] {
+  const languages: Record<string, string> = {
     'zh-CN': localizedUrl('zh-CN', path, SITE_BASE),
     en: localizedUrl('en', path, SITE_BASE),
     'x-default': localizedUrl('zh-CN', path, SITE_BASE),
   }
+  if (includeVietnamese) languages.vi = `${SITE_BASE}/vi`
   return [
     { url: languages['zh-CN'], alternates: { languages }, ...rest },
     { url: languages.en, alternates: { languages }, ...rest },
@@ -147,13 +152,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
     const journalModified = latestDate(locationModified, journalDates.get(slug) ?? locationModified)
     const locationHomeModified = latestDate(activityModified, journalModified)
+    const includeVietnamese =
+      SITE_LOCATION_SLUG === 'bac-ninh' && slug === 'bac-ninh'
+    const homeLanguages = includeVietnamese
+      ? {
+          'zh-CN': SITE_BASE,
+          en: `${SITE_BASE}/en`,
+          vi: `${SITE_BASE}/vi`,
+          'x-default': SITE_BASE,
+        }
+      : null
 
     entries.push(
       ...bothLocales(locationPublicPath(slug), {
         lastModified: locationHomeModified,
         changeFrequency: 'weekly',
         priority: 0.9,
-      }),
+      }, includeVietnamese),
+      ...(homeLanguages
+        ? [{
+            url: homeLanguages.vi,
+            lastModified: locationHomeModified,
+            changeFrequency: 'weekly' as const,
+            priority: 0.9,
+            alternates: { languages: homeLanguages },
+          }]
+        : []),
       ...bothLocales(locationPublicPath(slug, '/activities'), {
         lastModified: activityModified,
         changeFrequency: 'daily',

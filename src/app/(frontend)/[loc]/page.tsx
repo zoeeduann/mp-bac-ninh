@@ -16,7 +16,12 @@ import { shortName, academyName } from '@/lib/short-name'
 import { RichText } from '@/components/RichText'
 import { formatDateCompact } from '@/lib/time'
 import { buildMetadata } from '@/lib/metadata'
-import { locationPath, locationUrl } from '@/lib/site-config'
+import {
+  locationPath,
+  locationUrl,
+  SITE_BASE,
+  SITE_LOCATION_SLUG,
+} from '@/lib/site-config'
 import { JsonLd } from '@/components/JsonLd'
 import { localBusinessJsonLd } from '@/lib/jsonld'
 import { locationSeoDescription, locationSeoKeywords } from '@/lib/seo'
@@ -67,6 +72,9 @@ export async function generateMetadata({
     alternateLanguages: {
       'zh-CN': locationUrl('zh-CN', p.loc),
       en: locationUrl('en', p.loc),
+      ...(p.loc === 'bac-ninh' && SITE_LOCATION_SLUG === 'bac-ninh'
+        ? { vi: `${SITE_BASE}/vi` }
+        : {}),
     },
   })
 }

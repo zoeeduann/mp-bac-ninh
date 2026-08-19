@@ -3,6 +3,14 @@ import { stripLocale } from '@/lib/locale-url'
 import type { Locale } from '@/lib/i18n'
 import { SITE_LOCATION_SLUG } from '@/lib/site-config'
 
+export function isStandaloneVietnamesePath(
+  pathname: string,
+  siteLocationSlug: string | null,
+): boolean {
+  return siteLocationSlug === 'bac-ninh' &&
+    (pathname === '/vi' || pathname.startsWith('/vi/'))
+}
+
 /**
  * Pure decision for a request path: which locale, whether to rewrite away an
  * `/en` prefix, and the `x-pathname` value (always the stripped path so
@@ -49,6 +57,13 @@ export function resolveSingleLocationRewrite(
 }
 
 export function middleware(req: NextRequest) {
+  if (isStandaloneVietnamesePath(req.nextUrl.pathname, SITE_LOCATION_SLUG)) {
+    const requestHeaders = new Headers(req.headers)
+    requestHeaders.set('x-locale', 'zh-CN')
+    requestHeaders.set('x-pathname', req.nextUrl.pathname)
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
   const { locale, rewritePath, xPathname } = resolveLocaleRewrite(req.nextUrl.pathname)
 
   const requestHeaders = new Headers(req.headers)

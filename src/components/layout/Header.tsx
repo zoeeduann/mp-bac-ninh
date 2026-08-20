@@ -77,26 +77,17 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
         {isBacNinh ? (
           <Link
             href={locationPath(locale, currentLocation.slug)}
-            className="flex items-center gap-3 leading-none"
+            className="flex items-center leading-none"
             aria-label={currentLocation.name}
           >
             <Image
-              src="/brand/mindful-peace-yard-logo.svg"
-              alt="静心小院 · Mindful Peace Yard"
-              width={256}
-              height={101}
+              src="/brand/thien-minh-bac-ninh-logo.png"
+              alt="静心小院 · 北宁善明 · Mindful Peace Yard Bac Ninh"
+              width={540}
+              height={136}
               priority
-              className="h-11 w-auto max-w-[180px] sm:h-12"
+              className="h-11 w-auto max-w-[62vw]"
             />
-            <span aria-hidden="true" className="h-8 w-px bg-ink/25 sm:h-9" />
-            <span className="flex flex-col whitespace-nowrap leading-none">
-              <span className="font-serif text-[16px] font-medium tracking-[0.06em] text-ink sm:text-[18px]">
-                北宁善明
-              </span>
-              <span className="mt-1 translate-y-[7px] font-sans text-[8px] font-medium tracking-[0.08em] text-ink-soft sm:text-[9px]">
-                Bac Ninh
-              </span>
-            </span>
           </Link>
         ) : currentLocation?.logo ? (
           <Link

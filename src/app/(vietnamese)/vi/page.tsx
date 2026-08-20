@@ -6,6 +6,7 @@ import { cache } from 'react'
 import { getPayloadClient } from '@/lib/payload'
 import { getFeaturedActivitiesForLocation } from '@/lib/content'
 import { SITE_BASE } from '@/lib/site-config'
+import BacNinhLogo from '@/components/layout/BacNinhLogo'
 import type { Activity, Location, Media } from '@/payload-types'
 
 const title = 'Thiện Minh Tiểu Viện · Bắc Ninh'
@@ -212,15 +213,8 @@ export default async function VietnameseThienMinhPage() {
       />
 
       <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-ink/10 bg-paper px-[5vw]">
-        <Link href="/vi" className="flex items-center no-underline" aria-label="Thiện Minh Tiểu Viện">
-          <Image
-            src="/brand/thien-minh-bac-ninh-logo.png"
-            alt="静心小院 · 北宁善明 · Mindful Peace Yard Bac Ninh"
-            width={540}
-            height={136}
-            priority
-            className="h-11 w-auto max-w-[62vw]"
-          />
+        <Link href="/vi" className="leading-none no-underline" aria-label="Thiện Minh Tiểu Viện">
+          <BacNinhLogo />
         </Link>
         <nav aria-label="Điều hướng chính" className="hidden items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.12em] md:flex">
           <Link href="#hoat-dong" className="hover:text-blue-deep">Hoạt động</Link>

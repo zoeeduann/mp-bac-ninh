@@ -16,6 +16,7 @@ import { stripLocale, localePath } from '@/lib/locale-url'
 import LocationChip from './LocationChip'
 import LanguageToggle from './LanguageToggle'
 import HeaderClient from './HeaderClient'
+import BacNinhLogo from './BacNinhLogo'
 import { locationPath } from '@/lib/site-config'
 
 interface LocationDoc {
@@ -77,17 +78,10 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
         {isBacNinh ? (
           <Link
             href={locationPath(locale, currentLocation.slug)}
-            className="flex items-center leading-none"
+            className="leading-none"
             aria-label={currentLocation.name}
           >
-            <Image
-              src="/brand/thien-minh-bac-ninh-logo.png"
-              alt="静心小院 · 北宁善明 · Mindful Peace Yard Bac Ninh"
-              width={540}
-              height={136}
-              priority
-              className="h-11 w-auto max-w-[62vw]"
-            />
+            <BacNinhLogo />
           </Link>
         ) : currentLocation?.logo ? (
           <Link

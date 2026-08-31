@@ -91,7 +91,7 @@ export default function CampaignLeadForm({
         </span>
         <h3>已收到你的咨询</h3>
         <p>小院将通过你留下的 Zalo 与你联系。请留意好友申请或消息。</p>
-        <p className="campaign-small">这只是咨询登记，不代表已报名、占位或付款。</p>
+        <p className="campaign-small">这只是咨询登记，不代表已报名或占位。</p>
       </div>
     )
 
@@ -169,7 +169,7 @@ export default function CampaignLeadForm({
         <span aria-hidden="true">↗</span>
       </button>
       <p className="campaign-small campaign-form-note">
-        先了解，再决定是否参加。无需在这里支付费用。
+        所有活动与课程均为公益免费。先了解，再决定是否参加。
       </p>
     </form>
   )

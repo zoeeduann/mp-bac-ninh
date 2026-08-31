@@ -44,12 +44,16 @@ export default async function CampaignPage({ params }: Props) {
       '可以。你可以先留下联系方式，告诉小院你的兴趣和想了解的内容，再一起确认适合的活动或学习方向。',
     ],
     [
-      '课程什么时候开始？需要付费吗？',
-      '不同活动和课程的时间、费用及参加要求各不相同。页面中的案例帮助你了解小院，不代表当前仍在招生；具体安排以小院回复和当期活动说明为准。',
+      '活动和课程收费吗？',
+      '善明小院的所有活动与课程均为公益项目，免费参加。你可以先了解内容与安排，再决定是否参加。',
+    ],
+    [
+      '活动和课程什么时候开始？',
+      '不同活动和课程的时间及参加要求各不相同。页面中的案例帮助你了解小院，不代表当前仍在招生；具体安排以小院回复和当期活动说明为准。',
     ],
     [
       '留资料后，会发生什么？',
-      '小院会通过你填写的 Zalo 与你联系，回复本次咨询。提交资料不代表报名成功、不占用活动名额，也无需付款。',
+      '小院会通过你填写的 Zalo 与你联系，回复本次咨询。提交资料不代表报名成功，也不占用活动名额。',
     ],
     ['小院在哪里？', location.address || '越南北宁。具体到访位置与路线，可在咨询时向小院确认。'],
   ]
@@ -97,7 +101,7 @@ export default async function CampaignPage({ params }: Props) {
               {copy.cta}
               <span aria-hidden="true">↗</span>
             </a>
-            <p className="campaign-hero-note">面向中文用户 · 先了解，再决定</p>
+            <p className="campaign-hero-note">公益免费 · 面向中文用户</p>
             <div className="campaign-hero-bottom">
               <span>{copy.eyebrow}</span>
               <a href="#explore">
@@ -151,7 +155,7 @@ export default async function CampaignPage({ params }: Props) {
             ))}
           </div>
           <p className="campaign-section-footnote">
-            这里介绍的是小院的活动与学习方向，具体开放项目及安排请向小院咨询。
+            所有活动与课程均为公益免费。具体开放项目、时间及参加方式请向小院咨询。
           </p>
         </section>
         <section id="about" className="campaign-about">

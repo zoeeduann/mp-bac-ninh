@@ -4,6 +4,7 @@
  * Payload config object.
  */
 import { enqueueEmail } from '../lib/email-jobs'
+import { emailBrandName } from '../lib/email-brand'
 import { buildIcs } from '../lib/ics'
 
 /**
@@ -211,9 +212,7 @@ export async function reservationsAfterChange({
       }
     }
 
-    const emailBrand =
-      resolvedLocation.name ??
-      (isZh ? '静心学堂 · 泰国' : 'Mindfulpeace Academy Thailand')
+    const emailBrand = emailBrandName(resolvedLocation.name, isZh ? 'zh' : 'en')
 
     await enqueueEmail(req.payload, {
       to: doc.email,
@@ -225,7 +224,7 @@ export async function reservationsAfterChange({
         : `Hi ${doc.name},\n\nYour booking is confirmed. We look forward to seeing you.\n\n${emailBrand}`,
       // Per-academy from-name + reply-to so the recipient sees the right
       // academy as sender and replies route to that academy's mailbox.
-      fromName: resolvedLocation.name,
+      fromName: emailBrand,
       replyTo: resolvedLocation.email,
       relatedReservation: String(doc.id),
       ...(icsAttachments ? { attachments: icsAttachments } : {}),

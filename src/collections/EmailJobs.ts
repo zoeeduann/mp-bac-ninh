@@ -21,7 +21,7 @@ export const EmailJobs: CollectionConfig = {
     {
       name: 'fromName',
       type: 'text',
-      admin: { description: 'Sender display name (defaults to 静心学堂 · 泰国). Per-academy emails set this to the academy name.' },
+      admin: { description: 'Sender display name (defaults to the deployment brand). Per-academy emails set this to the academy name.' },
     },
     {
       name: 'replyTo',

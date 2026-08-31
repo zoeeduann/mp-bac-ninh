@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '../../../../payload.config'
 import { enqueueEmail } from '../../../../lib/email-jobs'
+import { emailBrandName } from '../../../../lib/email-brand'
 
 // Cron iterates over confirmed reservations and sends per-attendee
 // reminder emails — could be many SMTP calls in one invocation.
@@ -116,7 +117,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           // Non-fatal
         }
 
-        const signOff = locationName || (isZh ? '静心学堂 · 泰国' : 'Mindfulpeace Academy Thailand')
+        const signOff = emailBrandName(locationName, isZh ? 'zh' : 'en')
         const timeLabel = locationIsThailandNetwork
           ? (isZh ? '泰国时间' : 'Thailand time')
           : (isZh ? '当地时间' : 'local time')
@@ -130,7 +131,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             ? `明日相见 · ${signOff}`
             : `Tomorrow at ${signOff}`,
           body,
-          fromName: locationName || undefined,
+          fromName: signOff,
           replyTo: locationEmail,
           relatedReservation: String(res.id),
         })

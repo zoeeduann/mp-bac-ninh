@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { emailBrandName } from './email-brand'
 
 // Fresh transport per invocation. Module-level caching is unsafe in
 // Vercel serverless: the underlying socket can be torn down between
@@ -30,8 +31,8 @@ export interface SendMailOpts {
   subject: string
   body: string
   /**
-   * Sender display name shown to the recipient. Defaults to the network
-   * brand "静心学堂 · 泰国". When sending in a per-location context, pass
+   * Sender display name shown to the recipient. Defaults to the deployment's
+   * brand. When sending in a per-location context, pass
    * the specific academy name so replies are visually anchored to that
    * academy (e.g. "曼谷如如学堂" / "清迈心灯学堂").
    */
@@ -56,7 +57,7 @@ export interface SendMailOpts {
 // backoff in processEmailJob), total worst-case is ~31s — under the 60s
 // route ceiling but above the 10s Hobby default.
 async function sendViaResend(opts: SendMailOpts): Promise<void> {
-  const fromName = opts.fromName ?? '静心学堂 · 泰国'
+  const fromName = emailBrandName(opts.fromName)
   const fromAddr = process.env.RESEND_FROM ?? 'onboarding@resend.dev'
   const payload: Record<string, unknown> = {
     from: `${fromName} <${fromAddr}>`,
@@ -101,7 +102,7 @@ async function sendViaResend(opts: SendMailOpts): Promise<void> {
 
 async function sendViaSMTP(opts: SendMailOpts): Promise<void> {
   const t = getTransport()
-  const fromName = opts.fromName ?? '静心学堂 · 泰国'
+  const fromName = emailBrandName(opts.fromName)
   await t.sendMail({
     from: `"${fromName}" <${process.env.GMAIL_USER}>`,
     to: opts.to,

@@ -6,6 +6,7 @@ import { verifyTurnstile } from '../../../lib/turnstile'
 import { rateLimit } from '../../../lib/rate-limit'
 import { computeOccupancy, canBook } from '../../../lib/capacity'
 import { enqueueEmail } from '../../../lib/email-jobs'
+import { emailBrandName } from '../../../lib/email-brand'
 import { isAllowedSameOriginRequest } from '../../../lib/request-origin'
 import { TURNSTILE_ENABLED } from '../../../lib/site-config'
 
@@ -439,12 +440,15 @@ async function sendNotifications(
       `预约通知: ${activityTitleStr}${occurrenceLineShort ? ` · ${occurrenceLineShort}` : ''}`
     : `自由咨询: ${body.name}`
 
+  const notificationBrand = emailBrandName(locationName, isZh ? 'zh' : 'en')
+
   // 3. Admin notification — goes to BOTH the central admin mailbox AND
   //    the academy's own mailbox (locations.email). Deduped via Set so we
   //    don't double-send when they happen to be the same address. This way
   //    each academy's staff sees their own bookings without waiting for
   //    the central team to forward.
   const adminBody = [
+    `地点: ${notificationBrand}`,
     ...(activityTitleStr ? [`活动: ${activityTitleStr}`] : []),
     ...(isSeries
       ? [
@@ -476,10 +480,9 @@ async function sendNotifications(
     try {
       await enqueueEmail(payload, {
         to: recipient,
-        subject: subjLine,
+        subject: `${notificationBrand} · ${subjLine}`,
         body: adminBody,
-        // Admin notification doesn't need per-academy fromName (the recipient
-        // already knows which academy from the data) — keep network default.
+        fromName: notificationBrand,
         // Reply-To is the booker so staff can reply directly to them.
         replyTo: body.email,
         relatedReservation: reservationId,
@@ -492,7 +495,7 @@ async function sendNotifications(
   // 4. User receipt — per-academy from-name + reply-to so replies route to the right academy
   if (body.email) {
     try {
-      const signOff = locationName || (isZh ? '静心学堂 · 泰国' : 'Mindfulpeace Academy Thailand')
+      const signOff = notificationBrand
       await enqueueEmail(payload, {
         to: body.email,
         subject: isZh
@@ -501,7 +504,7 @@ async function sendNotifications(
         body: isZh
           ? `你好 ${body.name},\n\n我们已收到你的预约，会在 24 小时内通过邮件、微信或 Zalo 跟你确认。${activityTitleStr ? `\n\n活动：${activityTitleStr}` : ''}${isSeries && seriesOccurrenceLines.length > 0 ? `\n全部课次：\n${seriesOccurrenceLines.join('\n')}` : occurrenceLineLong ? `\n时间：${occurrenceLineLong}` : ''}\n\n${signOff}`
           : `Hi ${body.name},\n\nWe received your reservation and will confirm within 24 hours via email, WeChat, or Zalo.${activityTitleStr ? `\n\nActivity: ${activityTitleStr}` : ''}${isSeries && seriesOccurrenceLines.length > 0 ? `\nAll sessions:\n${seriesOccurrenceLines.join('\n')}` : occurrenceLineLong ? `\nTime: ${occurrenceLineLong}` : ''}\n\n${signOff}`,
-        fromName: locationName,
+        fromName: signOff,
         replyTo: locationEmail,
         relatedReservation: reservationId,
       })

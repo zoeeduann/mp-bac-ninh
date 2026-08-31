@@ -12,7 +12,7 @@ export async function enqueueEmail(
     to: string
     subject: string
     body: string
-    /** Sender display name (defaults to "静心学堂 · 泰国"). Use per-academy
+    /** Sender display name (defaults to the deployment's brand). Use per-academy
      *  name for booking-related emails so recipients see the right context. */
     fromName?: string
     /** Reply-To address (e.g. chiangmai@mindfulpeaceth.com) — independent

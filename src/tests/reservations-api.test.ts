@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { POST } from '../app/api/reservations/route'
 import { _resetForTest } from '../lib/rate-limit'
 
@@ -46,6 +46,8 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockPayload.findGlobal.mockResolvedValue({ adminEmail: 'admin@test.com' })
 })
+
+afterEach(() => vi.unstubAllEnvs())
 
 describe('POST /api/reservations', () => {
   // ── Validation ────────────────────────────────────────────────────────────
@@ -304,6 +306,51 @@ describe('POST /api/reservations', () => {
 
   // ── Per-academy admin notification routing ────────────────────────────────
 
+  it('brands a Zalo-only Bac Ninh campaign notification with the courtyard name', async () => {
+    const { enqueueEmail } = await import('../lib/email-jobs')
+    mockPayload.findByID.mockResolvedValueOnce({
+      id: 4,
+      name: '越南北宁善明小院',
+      isThailandNetwork: false,
+    })
+    mockPayload.create.mockResolvedValueOnce({ id: 'r-campaign' })
+
+    const res = await POST(makeReq({
+      name: '测试访客', phone: '0912345678', zaloId: '0912345678',
+      turnstileToken: 't', honeypot: '', source: 'book_general_inquiry',
+      direction: 'mindfulness', location: 4, language: 'zh',
+    }))
+
+    expect(res.status).toBe(200)
+    expect(enqueueEmail).toHaveBeenCalledTimes(1)
+    expect(enqueueEmail).toHaveBeenCalledWith(mockPayload, expect.objectContaining({
+      to: 'admin@test.com',
+      fromName: '越南北宁善明小院',
+      subject: '越南北宁善明小院 · 自由咨询: 测试访客',
+      body: expect.stringContaining('地点: 越南北宁善明小院'),
+      replyTo: undefined,
+    }))
+  })
+
+  it('keeps the Bac Ninh brand in notifications and receipts when the location lookup fails', async () => {
+    const { enqueueEmail } = await import('../lib/email-jobs')
+    vi.stubEnv('NEXT_PUBLIC_SITE_LOCATION_SLUG', 'bac-ninh')
+    mockPayload.findByID.mockRejectedValueOnce(new Error('location lookup unavailable'))
+    mockPayload.create.mockResolvedValueOnce({ id: 'r-fallback' })
+
+    const res = await POST(makeReq({ ...validInquiry, location: 4 }))
+
+    expect(res.status).toBe(200)
+    const messages = vi.mocked(enqueueEmail).mock.calls.map((call) => call[1])
+    expect(messages).toHaveLength(2)
+    for (const message of messages) {
+      expect(message.fromName).toBe('越南北宁善明小院')
+      expect(message.subject).toContain('越南北宁善明小院')
+      expect(message.body).toContain('越南北宁善明小院')
+      expect(message.subject + message.body).not.toMatch(/泰国|Thailand/)
+    }
+  })
+
   it('admin notification ALSO goes to location.email when set (Bangkok inquiry → Bangkok mailbox)', async () => {
     const { enqueueEmail } = await import('../lib/email-jobs')
     vi.clearAllMocks()
@@ -322,13 +369,14 @@ describe('POST /api/reservations', () => {
     }, '9.9.9.9'))
 
     const enqueueMock = enqueueEmail as unknown as ReturnType<typeof vi.fn>
-    // Find calls that look like admin notifications (subject starts with 预约通知 or 自由咨询)
+    // Identify notifications by their booking/inquiry label after the academy name.
     const adminCalls = enqueueMock.mock.calls.filter(
       (c: any[]) => /预约通知|自由咨询/.test(c[1]?.subject ?? ''),
     )
     const recipients = adminCalls.map((c: any[]) => c[1].to)
     expect(recipients).toContain('admin@test.com')
     expect(recipients).toContain('bangkok@mindfulpeaceth.com')
+    expect(adminCalls.every((call) => call[1].fromName === '曼谷如如学堂')).toBe(true)
   })
 
   it('only sends one admin notification when location.email == settings.adminEmail (dedupe)', async () => {

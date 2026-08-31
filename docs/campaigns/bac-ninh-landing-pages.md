@@ -41,7 +41,7 @@ https://mindfulpeacebacninh.com/discover/buddhism?utm_source=google&utm_medium=c
 
 ## 本地工作与验证
 
-开发分支：`codex/bac-ninh-ads`，基于包含越南语页面及统一 Logo 的本地分支 `codex/bac-ninh-vietnamese`（ca7e99c），没有覆盖当前泰国站工作分支。发布前应先确认北宁远端最新提交，并仅合入需要的变更。
+开发分支：`codex/bac-ninh-ads`。发布前已同步并基于北宁远端 `main`（dd591ec），本次变更仅包含落地页、文案、测试及说明，不覆盖泰国站，也不改动官网首页和导航。
 
 本地预览服务端口 3017，使用 `CAMPAIGN_CONTENT_ORIGIN=https://mindfulpeacebacninh.com` 读取公开数据；数据库仅配置不可连接的本地预览地址，没有使用生产凭据或写入真实咨询。
 
@@ -49,11 +49,11 @@ https://mindfulpeacebacninh.com/discover/buddhism?utm_source=google&utm_medium=c
 
 测试覆盖：两版页面输出、手机号与联系同意、成功响应、无效成功响应、失败保留输入、历史/进行中系列课状态、参数白名单，并回归已有预约接口和路由测试。
 
-浏览器最终可视检查被工具 URL 安全策略阻止，未绕过。尚未完成桌面/手机截图验收、完整生产构建、生产留资和通知验收；不要将此版本视为已经可以直接开始花费广告预算。
+浏览器工具的最终可视检查被 URL 安全策略阻止，未绕过；用户已自行查看两版预览，确认页面并授权上线。本地自动测试没有写入生产咨询或发送通知。云端构建和正式发布状态以本次变更单及 Vercel 部署结果为准。
 
 ## 上线前还需完成
 
-1. 桌面与手机上检查照片、表单、底部按钮和链接，并进行预发布完整构建。
+1. 用户已确认页面视觉和文案；发布前检查 Vercel 构建，发布后核验两个正式入口及首页导航。
 2. 确认负责跟进 Zalo 咨询的工作人员能看到预约后台的待处理咨询；现有系统的邮件通知也需在部署环境验收。
 3. 用获准的测试资料在预发布环境验证持久化与通知，然后确认发布。
 4. 配置 Google Ads 转化目标时，成功留资与按钮点击要区分。当前仅有后台来源记录，尚未配置 Google Ads 转化回传。
@@ -61,4 +61,6 @@ https://mindfulpeacebacninh.com/discover/buddhism?utm_source=google&utm_medium=c
 
 官方政策：https://support.google.com/adspolicy/answer/16701958
 
-当前状态：本地实现，未推送、未部署、未创建广告、未开始投放。
+发布授权：用户明确要求上线两个独立落地页，不增加官网入口。本次不创建广告、不开始投放。
+
+发布变更单：https://github.com/zoeeduann/mp-bac-ninh/pull/8

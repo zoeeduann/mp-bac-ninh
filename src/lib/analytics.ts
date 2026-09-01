@@ -71,6 +71,24 @@ export function trackInquiryLead(input: {
   })
 }
 
+export function trackCampaignFormStart(focus: 'mindfulness' | 'buddhism'): void {
+  trackEvent('campaign_form_start', {
+    campaign_focus: focus,
+    lead_type: 'campaign_inquiry',
+    location_slug: 'bac-ninh',
+    language: 'zh-CN',
+  })
+}
+
+export function trackCampaignLead(focus: 'mindfulness' | 'buddhism'): void {
+  trackEvent('generate_lead', {
+    campaign_focus: focus,
+    lead_type: 'campaign_inquiry',
+    location_slug: 'bac-ninh',
+    language: 'zh-CN',
+  })
+}
+
 export function trackContactClick(contactMethod: string): void {
   trackEvent('contact_click', { contact_method: contactMethod })
 }

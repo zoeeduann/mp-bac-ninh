@@ -5,7 +5,12 @@ import CampaignLeadForm from '@/components/campaigns/CampaignLeadForm'
 
 vi.mock('@/lib/site-config', () => ({ TURNSTILE_ENABLED: false }))
 const { sendCampaignMetric } = vi.hoisted(() => ({ sendCampaignMetric: vi.fn() }))
+const { trackCampaignFormStart, trackCampaignLead } = vi.hoisted(() => ({
+  trackCampaignFormStart: vi.fn(),
+  trackCampaignLead: vi.fn(),
+}))
 vi.mock('@/lib/campaign-metrics-client', () => ({ sendCampaignMetric }))
+vi.mock('@/lib/analytics', () => ({ trackCampaignFormStart, trackCampaignLead }))
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
@@ -47,6 +52,10 @@ describe('campaign inquiries', () => {
       ['page_view', 'mindfulness'],
       ['form_start', 'mindfulness'],
     ])
+    expect(trackCampaignFormStart).toHaveBeenCalledOnce()
+    expect(trackCampaignFormStart).toHaveBeenCalledWith('mindfulness')
+    expect(trackCampaignLead).toHaveBeenCalledOnce()
+    expect(trackCampaignLead).toHaveBeenCalledWith('mindfulness')
   })
 
   it('counts one form start across multiple edits and never sends contact details to metrics', async () => {
@@ -64,6 +73,9 @@ describe('campaign inquiries', () => {
     ])
     expect(JSON.stringify(sendCampaignMetric.mock.calls)).not.toContain('张三')
     expect(JSON.stringify(sendCampaignMetric.mock.calls)).not.toContain('0912345678')
+    expect(trackCampaignFormStart).toHaveBeenCalledOnce()
+    expect(trackCampaignFormStart).toHaveBeenCalledWith('buddhism')
+    expect(trackCampaignLead).not.toHaveBeenCalled()
   })
 
   it('keeps the entered details and allows retry after a rate limit response', async () => {
@@ -83,6 +95,7 @@ describe('campaign inquiries', () => {
     expect(screen.getByLabelText(/Zalo.*注册手机号/)).toHaveValue('0912 345 678')
     expect(screen.getByRole('button')).toBeEnabled()
     expect(screen.queryByRole('status')).toBeNull()
+    expect(trackCampaignLead).not.toHaveBeenCalled()
   })
 
   it('does not claim success for an invalid success response', async () => {
@@ -92,6 +105,7 @@ describe('campaign inquiries', () => {
     fireEvent.submit(screen.getByRole('form'))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('未能确认提交成功'))
     expect(screen.queryByRole('status')).toBeNull()
+    expect(trackCampaignLead).not.toHaveBeenCalled()
   })
 
   it('does not send a malformed contact number or submit without consent', async () => {

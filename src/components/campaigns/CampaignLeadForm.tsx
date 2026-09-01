@@ -10,6 +10,7 @@ import {
   type CampaignFocus,
 } from '@/lib/campaigns'
 import { sendCampaignMetric } from '@/lib/campaign-metrics-client'
+import { trackCampaignFormStart, trackCampaignLead } from '@/lib/analytics'
 
 export default function CampaignLeadForm({
   focus,
@@ -39,6 +40,7 @@ export default function CampaignLeadForm({
     if (formStartSent.current) return
     formStartSent.current = true
     sendCampaignMetric('form_start', focus)
+    trackCampaignFormStart(focus)
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -90,6 +92,7 @@ export default function CampaignLeadForm({
         setState('idle')
         return
       }
+      trackCampaignLead(focus)
       setState('sent')
     } catch {
       setError('网络连接中断，请检查网络后重试。已填写的内容会保留。')

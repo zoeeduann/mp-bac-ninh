@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   trackActivityLead,
   trackBookingStart,
+  trackCampaignFormStart,
+  trackCampaignLead,
   trackContactClick,
   trackEvent,
   trackInquiryLead,
@@ -64,6 +66,24 @@ describe('GA4 analytics events', () => {
     expect(gtag).toHaveBeenCalledWith('event', 'generate_lead', {
       lead_type: 'general_inquiry',
       booking_source: 'book_general_inquiry',
+      location_slug: 'bac-ninh',
+      language: 'zh-CN',
+    })
+  })
+
+  it('tracks the campaign funnel without personal form data', () => {
+    trackCampaignFormStart('mindfulness')
+    trackCampaignLead('mindfulness')
+
+    expect(gtag).toHaveBeenNthCalledWith(1, 'event', 'campaign_form_start', {
+      campaign_focus: 'mindfulness',
+      lead_type: 'campaign_inquiry',
+      location_slug: 'bac-ninh',
+      language: 'zh-CN',
+    })
+    expect(gtag).toHaveBeenNthCalledWith(2, 'event', 'generate_lead', {
+      campaign_focus: 'mindfulness',
+      lead_type: 'campaign_inquiry',
       location_slug: 'bac-ninh',
       language: 'zh-CN',
     })

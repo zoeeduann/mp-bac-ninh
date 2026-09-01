@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Turnstile from '@/components/booking/Turnstile'
 import { TURNSTILE_ENABLED } from '@/lib/site-config'
 import {
@@ -9,6 +9,7 @@ import {
   normalizeZaloPhone,
   type CampaignFocus,
 } from '@/lib/campaigns'
+import { sendCampaignMetric } from '@/lib/campaign-metrics-client'
 
 export default function CampaignLeadForm({
   focus,
@@ -25,6 +26,20 @@ export default function CampaignLeadForm({
   const [error, setError] = useState('')
   const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle')
   const sending = useRef(false)
+  const pageViewSent = useRef(false)
+  const formStartSent = useRef(false)
+
+  useEffect(() => {
+    if (pageViewSent.current) return
+    pageViewSent.current = true
+    sendCampaignMetric('page_view', focus)
+  }, [focus])
+
+  function markFormStarted() {
+    if (formStartSent.current) return
+    formStartSent.current = true
+    sendCampaignMetric('form_start', focus)
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -53,6 +68,7 @@ export default function CampaignLeadForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           source: 'book_general_inquiry',
+          campaignFocus: focus,
           location: locationId,
           name: name.trim(),
           zaloId: phone,
@@ -106,7 +122,10 @@ export default function CampaignLeadForm({
           required
           maxLength={120}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value)
+            markFormStarted()
+          }}
           placeholder="我们该怎样称呼你"
           disabled={state === 'sending'}
         />
@@ -123,7 +142,10 @@ export default function CampaignLeadForm({
           required
           maxLength={40}
           value={zalo}
-          onChange={(e) => setZalo(e.target.value)}
+          onChange={(e) => {
+            setZalo(e.target.value)
+            markFormStarted()
+          }}
           placeholder="例如 0912 345 678"
           aria-describedby="zalo-help"
           disabled={state === 'sending'}

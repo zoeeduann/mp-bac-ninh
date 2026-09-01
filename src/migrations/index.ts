@@ -4,6 +4,7 @@ import * as separateStandaloneLocations from './20260729_120000_separate_standal
 import * as addLocationTimeZone from './20260816_120000_add_location_time_zone'
 import * as addSeriesRegistration from './20260817_120000_add_series_registration'
 import * as addTeaCourseSeriesOccurrences from './20260817_130000_add_tea_course_series_occurrences'
+import * as addCampaignMetrics from './20260901_120000_add_campaign_metrics'
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     name: '20260817_130000_add_tea_course_series_occurrences',
     up: addTeaCourseSeriesOccurrences.up,
     down: addTeaCourseSeriesOccurrences.down,
+  },
+  {
+    name: '20260901_120000_add_campaign_metrics',
+    up: addCampaignMetrics.up,
+    down: addCampaignMetrics.down,
   },
 ]

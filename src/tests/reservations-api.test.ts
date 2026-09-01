@@ -4,6 +4,10 @@ import { _resetForTest } from '../lib/rate-limit'
 
 vi.mock('../lib/turnstile', () => ({ verifyTurnstile: vi.fn().mockResolvedValue(true) }))
 vi.mock('../lib/email-jobs', () => ({ enqueueEmail: vi.fn().mockResolvedValue({ id: 'j1' }) }))
+vi.mock('../lib/campaign-metrics', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../lib/campaign-metrics')>()
+  return { ...actual, recordCampaignMetric: vi.fn().mockResolvedValue(undefined) }
+})
 
 // Mock the payload config import — route.ts imports this at the top
 vi.mock('../payload.config', () => ({ default: {} }))
@@ -127,6 +131,47 @@ describe('POST /api/reservations', () => {
         data: expect.objectContaining({ zaloId: '0900000000', emailStatus: 'no_email' }),
       }),
     )
+  })
+
+  it('counts a campaign success only after persistence and keeps analytics fields out of the reservation', async () => {
+    const { recordCampaignMetric } = await import('../lib/campaign-metrics')
+    mockPayload.create.mockResolvedValueOnce({ id: 'r-funnel' })
+
+    const res = await POST(makeReq({
+      name: 'Campaign User', phone: '0912345678', zaloId: '0912345678',
+      turnstileToken: 't', honeypot: '', source: 'book_general_inquiry',
+      campaignFocus: 'buddhism', direction: 'other', location: '4',
+      notes: '广告落地页咨询\nutm_source: google\nutm_campaign: bacninh_launch\nutm_content: creative_b',
+    }))
+
+    expect(res.status).toBe(200)
+    expect(mockPayload.create.mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(recordCampaignMetric).mock.invocationCallOrder[0],
+    )
+    expect(recordCampaignMetric).toHaveBeenCalledWith(mockPayload, {
+      event: 'lead_success',
+      focus: 'buddhism',
+      utmSource: 'google',
+      utmMedium: '',
+      utmCampaign: 'bacninh_launch',
+      utmContent: 'creative_b',
+    })
+    const saved = mockPayload.create.mock.calls[0][0].data
+    expect(saved.campaignFocus).toBeUndefined()
+  })
+
+  it('does not count failed or ordinary inquiries as campaign successes', async () => {
+    const { recordCampaignMetric } = await import('../lib/campaign-metrics')
+    mockPayload.create.mockRejectedValueOnce(new Error('DB unavailable'))
+    await expect(
+      POST(makeReq({ ...validInquiry, campaignFocus: 'mindfulness' }, '1.1.1.20')),
+    ).rejects.toThrow('DB unavailable')
+    expect(recordCampaignMetric).not.toHaveBeenCalled()
+
+    mockPayload.create.mockResolvedValueOnce({ id: 'ordinary' })
+    const res = await POST(makeReq(validInquiry, '1.1.1.21'))
+    expect(res.status).toBe(200)
+    expect(recordCampaignMetric).not.toHaveBeenCalled()
   })
 
   // ── Activity booking: capacity available → created ────────────────────────

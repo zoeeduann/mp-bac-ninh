@@ -312,6 +312,11 @@ export default async function CampaignPage({ params }: Props) {
             Zalo 联系你时提出，也可通过官网公布的联系渠道提出。
           </p>
           <p>
+            为分析页面效果，系统按日期、页面类型和广告来源汇总访问次数、开始填写次数和成功咨询数。漏斗统计表不保存姓名、Zalo、IP、Cookie
+            或可识别个人的事件记录，也不向 Google
+            发送这些统计。统计按次数汇总，刷新页面可能增加访问次数，因此不代表精确的独立人数。
+          </p>
+          <p>
             不想留下资料，也可以继续浏览。
             <a href={locationPath('zh-CN', loc, `/discover/${otherFocus}`)}>
               了解{campaignCopy[otherFocus].label} ↗

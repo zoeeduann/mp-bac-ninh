@@ -16,6 +16,7 @@ import { Activities } from './collections/Activities'
 import { Journal } from './collections/Journal'
 import { Reservations } from './collections/Reservations'
 import { EmailJobs } from './collections/EmailJobs'
+import { CampaignMetrics } from './collections/CampaignMetrics'
 import { PortalHome, Settings } from './globals'
 import { migrations } from './migrations'
 import { TURNSTILE_ENABLED } from './lib/site-config'
@@ -95,7 +96,17 @@ export default buildConfig({
     supportedLanguages: { zh, en },
     fallbackLanguage: 'zh',
   },
-  collections: [Users, Media, Categories, Locations, Activities, Journal, Reservations, EmailJobs],
+  collections: [
+    Users,
+    Media,
+    Categories,
+    Locations,
+    Activities,
+    Journal,
+    Reservations,
+    EmailJobs,
+    CampaignMetrics,
+  ],
   globals: [PortalHome, Settings],
   editor: lexicalEditor(),
   secret: PAYLOAD_SECRET,

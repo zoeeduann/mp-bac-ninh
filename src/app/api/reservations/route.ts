@@ -9,6 +9,10 @@ import { enqueueEmail } from '../../../lib/email-jobs'
 import { emailBrandName } from '../../../lib/email-brand'
 import { isAllowedSameOriginRequest } from '../../../lib/request-origin'
 import { TURNSTILE_ENABLED } from '../../../lib/site-config'
+import {
+  campaignAttributionFromNotes,
+  recordCampaignMetric,
+} from '../../../lib/campaign-metrics'
 
 // Synchronous SMTP to Gmail can take 2-3 s per email; with the admin +
 // user notifications + DB writes + advisory lock work, the default 10 s
@@ -28,6 +32,7 @@ const Body = z.object({
       'shared_link',
     ])
     .default('activity_detail'),
+  campaignFocus: z.enum(['mindfulness', 'buddhism']).optional(),
   // Payload postgres adapter uses numeric IDs; accept string or number and coerce to string
   // (the `as any` cast in payload.create handles the type mismatch at the DB layer)
   activity: z.union([z.string(), z.number()]).transform(v => String(v)).optional(),
@@ -135,6 +140,19 @@ export async function POST(req: NextRequest) {
       } as any,
       context: { internal: true },
     })
+    if (body.source === 'book_general_inquiry' && body.campaignFocus) {
+      try {
+        await recordCampaignMetric(payload, {
+          event: 'lead_success',
+          focus: body.campaignFocus,
+          ...campaignAttributionFromNotes(body.notes),
+        })
+      } catch (error) {
+        // The inquiry is already safely persisted. Analytics must never make
+        // a genuine consultation look like a failed submission.
+        console.error('[campaign-metrics] Failed to record persisted inquiry:', error)
+      }
+    }
     await sendNotifications(payload, String(r.id), body, null)
     return NextResponse.json({ ok: true, id: r.id, kind: 'created' })
   }
@@ -297,7 +315,13 @@ async function hashToBigInt(input: string): Promise<bigint> {
 
 /** Strip fields that should not be written to the DB directly */
 function stripInternalFields(body: ParsedBody) {
-  const { turnstileToken: _t, honeypot: _h, acceptWaitlist: _w, ...rest } = body
+  const {
+    turnstileToken: _t,
+    honeypot: _h,
+    acceptWaitlist: _w,
+    campaignFocus: _c,
+    ...rest
+  } = body
   return rest
 }
 

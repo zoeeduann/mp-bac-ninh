@@ -75,6 +75,7 @@ export interface Config {
     journal: Journal;
     reservations: Reservation;
     'email-jobs': EmailJob;
+    'campaign-metrics': CampaignMetric;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     journal: JournalSelect<false> | JournalSelect<true>;
     reservations: ReservationsSelect<false> | ReservationsSelect<true>;
     'email-jobs': EmailJobsSelect<false> | EmailJobsSelect<true>;
+    'campaign-metrics': CampaignMetricsSelect<false> | CampaignMetricsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -582,7 +584,7 @@ export interface EmailJob {
   subject: string;
   body: string;
   /**
-   * Sender display name (defaults to 静心学堂 · 泰国). Per-academy emails set this to the academy name.
+   * Sender display name (defaults to the deployment brand). Per-academy emails set this to the academy name.
    */
   fromName?: string | null;
   /**
@@ -605,6 +607,31 @@ export interface EmailJob {
   attempts?: number | null;
   lastError?: string | null;
   status?: ('pending' | 'sent' | 'failed') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campaign-metrics".
+ */
+export interface CampaignMetric {
+  id: number;
+  metricKey: string;
+  metricDate: string;
+  focus: 'mindfulness' | 'buddhism';
+  focusLabel?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  utmContent?: string | null;
+  pageViews: number;
+  formStarts: number;
+  leadSuccesses: number;
+  visitDropoff?: number | null;
+  formDropoff?: number | null;
+  formStartRate?: string | null;
+  completionRate?: string | null;
+  leadRate?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -663,6 +690,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'email-jobs';
         value: number | EmailJob;
+      } | null)
+    | ({
+        relationTo: 'campaign-metrics';
+        value: number | CampaignMetric;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -966,6 +997,30 @@ export interface EmailJobsSelect<T extends boolean = true> {
   attempts?: T;
   lastError?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campaign-metrics_select".
+ */
+export interface CampaignMetricsSelect<T extends boolean = true> {
+  metricKey?: T;
+  metricDate?: T;
+  focus?: T;
+  focusLabel?: T;
+  utmSource?: T;
+  utmMedium?: T;
+  utmCampaign?: T;
+  utmContent?: T;
+  pageViews?: T;
+  formStarts?: T;
+  leadSuccesses?: T;
+  visitDropoff?: T;
+  formDropoff?: T;
+  formStartRate?: T;
+  completionRate?: T;
+  leadRate?: T;
   updatedAt?: T;
   createdAt?: T;
 }

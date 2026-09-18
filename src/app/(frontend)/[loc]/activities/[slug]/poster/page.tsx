@@ -2,7 +2,6 @@
 import { pageTitle } from '@/lib/page-title'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 
 import { getLocationBySlug, locationSiteName } from '@/lib/current-location'
 import { getLocale, t } from '@/lib/i18n'
@@ -16,6 +15,8 @@ import type { Activity, Media, Category } from '@/payload-types'
 import BookSessionButton from '@/components/booking/BookSessionButton'
 import ShareButton from '@/components/activities/ShareButton'
 import PosterControls from '@/components/activities/PosterControls'
+import PosterBookingBlock from '@/components/activities/PosterBookingBlock'
+import { activityExcerpt } from '@/lib/activity-text'
 import QRCode from 'qrcode'
 import { buildPosterQrTarget } from '@/lib/poster-download'
 import { fetchInlineImage } from '@/lib/poster-image'
@@ -176,19 +177,26 @@ export default async function ActivityPosterPage({
   // UpcomingSessionsList autoOpen). Generated as a data URL on the server so
   // it's part of the captured DOM at html-to-image time — no client fetch,
   // no CORS issue.
-  const qrTarget = buildPosterQrTarget({
-    base: SITE_BASE,
-    locSlug,
-    activitySlug: p.slug,
-    occurrenceId: occ && occId ? occId : null,
-    locale,
-  })
-  const qrDataUrl = await QRCode.toDataURL(qrTarget, {
-    width: 240,
-    margin: 1,
-    errorCorrectionLevel: 'M',
-    color: { dark: '#2A2A33', light: '#FFFFFF' },
-  })
+  // Only generated when there is an upcoming session to book.
+  const hasSession = Boolean(occ && occId)
+  const qrDataUrl = hasSession
+    ? await QRCode.toDataURL(
+        buildPosterQrTarget({
+          base: SITE_BASE,
+          locSlug,
+          activitySlug: p.slug,
+          occurrenceId: occId,
+          locale,
+        }),
+        {
+          width: 240,
+          margin: 1,
+          errorCorrectionLevel: 'M',
+          color: { dark: '#2A2A33', light: '#FFFFFF' },
+        },
+      )
+    : null
+  const excerpt = activityExcerpt(activity.shortDesc, activity.title)
 
   return (
     <div className="min-h-svh bg-gradient-to-b from-sky-pale via-paper to-sky-pale flex flex-col items-center px-4 py-10 pt-24">
@@ -240,7 +248,7 @@ export default async function ActivityPosterPage({
         <div className="px-7 pt-7 pb-8">
           {category && (
             <p
-              className={`font-sans text-[11px] font-semibold ${isZh ? 'tracking-[0.3em]' : 'tracking-[0.18em] uppercase'} text-sky mb-3`}
+              className={`font-sans text-[11px] font-semibold ${isZh ? 'tracking-[0.3em]' : 'tracking-[0.18em] uppercase'} text-ink-soft mb-3`}
             >
               {category.name as string}
             </p>
@@ -271,77 +279,47 @@ export default async function ActivityPosterPage({
               rel="noreferrer"
               analyticsEvent="map_open"
               analyticsParameters={{ location_slug: locSlug }}
-              className="font-sans text-[14px] text-ink-soft flex items-start gap-2 no-underline transition-colors duration-150 hover:text-sky group"
+              className="font-sans text-[14px] text-ink-soft flex items-start gap-2 no-underline transition-colors duration-150 hover:text-blue-deep group"
             >
               <span aria-hidden="true" className="leading-[1.5]">📍</span>
-              <span className="underline decoration-ink-soft/30 underline-offset-2 group-hover:decoration-sky">
+              <span className="underline decoration-ink-soft/30 underline-offset-2 group-hover:decoration-blue-deep">
                 {venueText}
               </span>
             </TrackedLink>
           </div>
 
-          {activity.shortDesc && (
-            <p className="font-serif text-[16px] text-ink leading-[1.7] mb-7 whitespace-pre-line">
-              {activity.shortDesc}
+          {excerpt && (
+            <p className="font-serif text-[16px] text-ink leading-[1.7] mb-7">
+              {excerpt}
             </p>
           )}
 
-          {/* Register */}
-          <div className="flex flex-col items-stretch gap-3">
-            {occ && occId ? (
-              <BookSessionButton
-                activityId={activity.id}
-                activitySlug={activity.slug}
-                activityTitle={activity.title}
-                occurrenceId={occId}
-                sessionLabel={sessionLabel}
-                locationId={location.id}
-                locationSlug={locSlug}
-                locationName={academyDisplayName}
-                locationWechatId={location.wechatId ?? undefined}
-                locale={locale}
-                source="shared_link"
-                isFull={isFull}
-              />
-            ) : (
-              <Link
-                href={locationPath(locale, locSlug, '/activities')}
-                className="font-sans text-[12px] font-semibold tracking-[0.1em] uppercase text-ink bg-sky rounded-full px-6 py-3 no-underline text-center transition-colors duration-150 hover:bg-blue-deep hover:text-paper"
-              >
-                {t(locale, 'cta.all_activities')}
-              </Link>
-            )}
-
-            {/* Scan-to-book QR. The poster's main reason for existing —
-                someone snaps it from a WeChat group, points their phone at
-                the QR, and lands on the booking modal for this session. */}
-            <div className="flex items-center justify-center gap-4 pt-4 mt-2 border-t border-hairline">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={qrDataUrl}
-                alt=""
-                aria-hidden="true"
-                width={96}
-                height={96}
-                className="w-24 h-24 rounded-md"
-              />
-              <div className="flex flex-col text-left">
-                <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
-                  {isZh ? '扫码报名' : 'Scan to book'}
-                </span>
-                <span className="font-serif text-[14px] text-ink mt-1">
-                  {isZh ? '直达预约表单' : 'Goes straight to the form'}
-                </span>
-              </div>
-            </div>
-
-            <Link
-              href={detailPath}
-              className="font-sans text-[12px] font-semibold tracking-[0.06em] text-sky no-underline text-center transition-colors duration-150 hover:text-ink"
-            >
-              {t(locale, 'poster.view_detail')} →
-            </Link>
-          </div>
+          {/* Register: book + scan-to-book only when a session is upcoming */}
+          <PosterBookingBlock
+            locale={locale}
+            qrDataUrl={qrDataUrl}
+            activitiesHref={locationPath(locale, locSlug, '/activities')}
+            detailHref={detailPath}
+            bookButton={
+              hasSession && occ ? (
+                <BookSessionButton
+                  activityId={activity.id}
+                  activitySlug={activity.slug}
+                  activityTitle={activity.title}
+                  occurrenceId={occId}
+                  sessionLabel={sessionLabel}
+                  locationId={location.id}
+                  locationSlug={locSlug}
+                  locationName={academyDisplayName}
+                  locationWechatId={location.wechatId ?? undefined}
+                  locale={locale}
+                  source="shared_link"
+                  isFull={isFull}
+                  className="w-full py-3 text-[12px]"
+                />
+              ) : null
+            }
+          />
         </div>
 
         {/* Footer mark */}

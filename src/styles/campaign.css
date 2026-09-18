@@ -342,7 +342,8 @@
   border: 1px solid var(--line);
 }
 .campaign-example-image {
-  height: 250px;
+  /* Generated activity covers are 3:2; match the frame so they fill it. */
+  aspect-ratio: 3 / 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -352,7 +353,7 @@
 .campaign-example-image img {
   height: 100%;
   width: 100%;
-  object-fit: contain;
+  object-fit: cover;
   transition: transform 0.3s;
 }
 .campaign-example-image:hover img {
@@ -689,9 +690,6 @@
     margin-left: 40px;
     margin-right: 40px;
   }
-  .campaign-example-image {
-    height: 220px;
-  }
 }
 @media (max-width: 760px) {
   .campaign-header {
@@ -825,13 +823,7 @@
     gap: 17px;
   }
   .campaign-examples article {
-    display: grid;
-    grid-template-columns: 115px 1fr;
-    min-height: 173px;
-  }
-  .campaign-example-image {
-    height: 100%;
-    min-height: 173px;
+    display: block;
   }
   .campaign-example-copy {
     padding: 19px 17px;

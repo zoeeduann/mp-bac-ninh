@@ -24,9 +24,8 @@ export function buildMetadata(opts: BuildMetaOptions): Metadata {
   const isThailandNetworkSite =
     siteName === '静心学堂 · 泰国' || siteName === 'Mindfulpeace Academy Thailand'
   return {
-    // Resolves relative OG/Twitter image URLs (incl. the file-convention
-    // opengraph-image fallback) to absolute URLs. Without it Next warns and
-    // falls back to localhost.
+    // Resolves relative OG/Twitter image URLs to absolute URLs. Without it
+    // Next warns and falls back to localhost.
     metadataBase: new URL(new URL(opts.url).origin),
     title: opts.title,
     description: opts.description,

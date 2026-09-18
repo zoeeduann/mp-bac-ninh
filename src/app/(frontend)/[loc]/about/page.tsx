@@ -308,7 +308,7 @@ export default async function AboutPage({
           href="https://mindfulpeace.org"
           target="_blank"
           rel="noreferrer"
-          className="font-sans text-[12px] font-semibold tracking-[0.08em] text-sky no-underline transition-colors duration-150 hover:text-ink"
+          className="inline-flex min-h-11 items-center font-sans text-[12px] font-semibold tracking-[0.08em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
         >
           {t(locale, 'cta.about_international')}
         </a>

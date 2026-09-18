@@ -311,7 +311,7 @@ export default async function JournalDetailPage({
       <div className="px-[6vw] pb-24 pt-4 border-t border-hairline">
         <Link
           href={locationPath(locale, locSlug, '/journal')}
-          className="font-sans text-[13px] font-semibold tracking-[0.06em] text-sky no-underline transition-colors duration-150 hover:text-ink"
+          className="inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.06em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
         >
           {t(locale, 'cta.more_journal')}
         </Link>

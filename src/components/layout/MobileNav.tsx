@@ -100,7 +100,7 @@ export default function MobileNav({
         <Link
           href={locationPath(locale, locationSlug, '/book')}
           onClick={onClose}
-          className="font-sans text-[11px] font-semibold tracking-[0.12em] uppercase text-ink bg-sky rounded-full px-5 py-2 no-underline transition-colors duration-150 hover:bg-blue-deep hover:text-paper"
+          className="inline-flex min-h-11 items-center font-sans text-[11px] font-semibold tracking-[0.12em] uppercase text-paper bg-blue-deep rounded-full px-5 py-2 no-underline transition-colors duration-150 hover:bg-ink"
         >
           {t(locale, 'book.cta')}
         </Link>

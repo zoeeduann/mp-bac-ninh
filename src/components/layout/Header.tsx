@@ -150,7 +150,7 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink no-underline transition-colors duration-150 hover:text-sky"
+                className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink no-underline transition-colors duration-150 hover:text-blue-deep"
               >
                 {item.label}
               </Link>
@@ -176,7 +176,7 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
         {currentLocation && (
           <Link
             href={locationPath(locale, currentLocation.slug, '/book')}
-            className="hidden sm:inline-flex font-sans text-[11px] font-semibold tracking-[0.12em] uppercase text-ink bg-sky rounded-full px-5 py-[0.45rem] no-underline whitespace-nowrap transition-colors duration-150 hover:bg-blue-deep hover:text-paper"
+            className="hidden sm:inline-flex min-h-11 md:min-h-0 items-center font-sans text-[11px] font-semibold tracking-[0.12em] uppercase text-paper bg-blue-deep rounded-full px-5 py-[0.45rem] no-underline whitespace-nowrap transition-colors duration-150 hover:bg-ink"
           >
             {t(locale, 'book.cta')}
           </Link>

@@ -1,6 +1,6 @@
 import React from 'react'
 import Script from 'next/script'
-import { Noto_Sans_SC, Noto_Serif_SC } from 'next/font/google'
+import { Noto_Sans, Noto_Sans_SC, Noto_Serif, Noto_Serif_SC } from 'next/font/google'
 import '../../styles/tokens.css'
 import { getLocale } from '@/lib/i18n'
 import { getAllLocations, isThailandNetworkLocation } from '@/lib/current-location'
@@ -32,6 +32,21 @@ const notoSerifSC = Noto_Serif_SC({
   preload: false,
   weight: ['400', '500', '700'],
   variable: '--font-serif',
+  display: 'swap',
+})
+
+// Latin faces placed ahead of the CJK faces on English pages (tokens.css).
+const notoSans = Noto_Sans({
+  subsets: ['latin', 'latin-ext', 'vietnamese'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-latin-sans',
+  display: 'swap',
+})
+
+const notoSerif = Noto_Serif({
+  subsets: ['latin', 'latin-ext', 'vietnamese'],
+  weight: ['400', '500', '700'],
+  variable: '--font-latin-serif',
   display: 'swap',
 })
 
@@ -95,7 +110,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
       lang={locale}
-      className={`${notoSansSC.variable} ${notoSerifSC.variable}`}
+      className={`${notoSansSC.variable} ${notoSerifSC.variable} ${notoSans.variable} ${notoSerif.variable}`}
     >
       <body>
         {GOOGLE_ANALYTICS_ID && (

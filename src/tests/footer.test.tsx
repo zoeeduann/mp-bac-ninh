@@ -68,7 +68,7 @@ describe('standalone Bac Ninh Footer', () => {
       'href',
       '/en/activities',
     )
-    expect(screen.getByRole('link', { name: 'bacninh@example.com' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /bacninh@example\.com/ })).toHaveAttribute(
       'href',
       'mailto:bacninh@example.com',
     )
@@ -77,6 +77,31 @@ describe('standalone Bac Ninh Footer', () => {
       'https://wa.me/84911111111',
     )
     expect(screen.getByRole('button', { name: /mindful_bacninh/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Phone/ })).toHaveAttribute('href', 'tel:+84911111111')
+  })
+
+  it('shortens the English place name and never repeats the country', () => {
+    const english = [
+      {
+        slug: 'bac-ninh',
+        name: 'Thien Minh Courtyard · Bac Ninh, Vietnam',
+        city: 'Bac Ninh, Vietnam',
+        social: [],
+      },
+    ]
+    const { container } = render(
+      <Footer locale="en" allLocations={english} siteLocationSlug="bac-ninh" />,
+    )
+    expect(screen.getAllByText(/Thien Minh Courtyard/)[0]).toHaveTextContent(/^Thien Minh Courtyard$/)
+    expect(container.textContent).not.toContain('Vietnam · Vietnam')
+    expect(container.textContent).toContain('Bac Ninh, Vietnam')
+  })
+
+  it('collapses the contact column to one inquiry link when nothing is published', () => {
+    const bare = [{ slug: 'bac-ninh', name: '越南北宁善明小院', city: '越南北宁', social: [] }]
+    render(<Footer locale="zh-CN" allLocations={bare} siteLocationSlug="bac-ninh" />)
+    expect(screen.getByRole('link', { name: /在线留言咨询/ })).toHaveAttribute('href', '/book#inquiry')
+    expect(screen.queryByText('越南北宁', { selector: 'p.font-serif' })).not.toBeInTheDocument()
   })
 })
 

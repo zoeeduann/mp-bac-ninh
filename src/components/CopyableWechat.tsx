@@ -47,7 +47,7 @@ export default function CopyableWechat({
       type="button"
       onClick={handleClick}
       aria-label={aria}
-      className={`bg-transparent border-none p-0 m-0 cursor-pointer transition-colors duration-150 hover:text-sky ${className}`}
+      className={`bg-transparent border-none p-0 m-0 cursor-pointer transition-colors duration-150 hover:text-blue-deep ${className}`}
     >
       {label}
     </button>

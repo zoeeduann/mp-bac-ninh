@@ -99,13 +99,21 @@ export function socialMethod(link: { label?: string | null; url?: string | null 
   return 'social'
 }
 
-function socialDisplay(label: string, url: string): string {
-  if (label) return label
+/** "https://www.facebook.com/mindfulpeaceshanming/" → "facebook.com/mindfulpeaceshanming". */
+export function shortUrl(url: string): string {
   try {
-    return new URL(url).hostname.replace(/^www\./, '')
+    const u = new URL(url)
+    return `${u.hostname.replace(/^www\./, '')}${u.pathname.replace(/\/+$/, '')}`
   } catch {
     return url
   }
+}
+
+function socialDisplay(label: string, url: string, method: ContactMethod): string {
+  // A label that merely names the network ("Facebook") would repeat the row
+  // label, so show where the link goes instead.
+  if (label && label.toLowerCase() !== method) return label
+  return shortUrl(url)
 }
 
 export function contactChannels(source: ContactSource, locale: ContactLocale): ContactChannel[] {
@@ -138,7 +146,7 @@ export function contactChannels(source: ContactSource, locale: ContactLocale): C
       out.push({
         method,
         label: contactLabel(locale, 'zalo'),
-        value: isUrl ? (label && label.toLowerCase() !== 'zalo' ? label : 'Zalo') : url,
+        value: isUrl ? socialDisplay(label, url, 'zalo') : url,
         href,
         external: true,
       })
@@ -148,7 +156,7 @@ export function contactChannels(source: ContactSource, locale: ContactLocale): C
     out.push({
       method,
       label: contactLabel(locale, method),
-      value: socialDisplay(label, url),
+      value: socialDisplay(label, url, method),
       href: url,
       external: true,
     })

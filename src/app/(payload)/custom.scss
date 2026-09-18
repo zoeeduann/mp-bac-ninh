@@ -1,0 +1,21 @@
+
+// Replace the technical size action only on Media; preserve upload/edit controls.
+.collection-edit--media .file-field__previewSizes { display: none; }
+.media-placements-trigger { padding: 8px 12px; cursor: pointer; }
+.media-placements {
+  color: var(--theme-text); background: var(--theme-elevation-0);
+  width: min(760px, 94vw); max-height: 92vh; padding: 24px;
+  border: 1px solid var(--theme-elevation-150); border-radius: 12px;
+  &::backdrop { background: rgba(0, 0, 0, .4); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  header button { padding: 8px 12px; cursor: pointer; }
+  section { border-top: 1px solid var(--theme-elevation-150); margin-top: 24px; padding-top: 12px; }
+  summary { cursor: pointer; margin-top: 24px; }
+  .media-placements-note { font-size: 13px; opacity: .7; }
+}
+.media-placement-preview {
+  padding: 16px 0;
+  h4 { margin: 0 0 8px; }
+  p { font-size: 14px; }
+  img { display: block; max-width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 8px; }
+}

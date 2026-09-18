@@ -2,7 +2,7 @@ import sharp from 'sharp'
 
 /**
  * Fetch an external image URL on the server, resize via sharp, and return it
- * as a base64 `data:image/webp;base64,…` URL.
+ * as a base64 `data:image/${format};base64,…` URL.
  *
  * Why we need this for the poster page: html-to-image clones the target node
  * into an SVG `<foreignObject>` and rasterises to canvas. iOS Safari's
@@ -18,17 +18,18 @@ export async function fetchInlineImage(
   url: string,
   width = 920,
   quality = 82,
+  format: 'webp' | 'png' = 'webp',
 ): Promise<string | null> {
   if (!url) return null
   try {
-    const res = await fetch(url, { cache: 'force-cache' })
+    const res = await fetch(url, { cache: 'force-cache', signal: AbortSignal.timeout(15_000) })
     if (!res.ok) return null
     const input = Buffer.from(await res.arrayBuffer())
     const out = await sharp(input)
       .resize({ width, withoutEnlargement: true })
-      .webp({ quality })
+      .toFormat(format, { quality })
       .toBuffer()
-    return `data:image/webp;base64,${out.toString('base64')}`
+    return `data:image/${format};base64,${out.toString('base64')}`
   } catch {
     return null
   }

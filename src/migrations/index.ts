@@ -5,6 +5,9 @@ import * as addLocationTimeZone from './20260816_120000_add_location_time_zone'
 import * as addSeriesRegistration from './20260817_120000_add_series_registration'
 import * as addTeaCourseSeriesOccurrences from './20260817_130000_add_tea_course_series_occurrences'
 import * as addCampaignMetrics from './20260901_120000_add_campaign_metrics'
+// Shared with the Thailand site under the same name: already recorded in the
+// shared payload_migrations table, and idempotent on a fresh database.
+import * as mediaLandscapeCover from './20260906_140000_media_landscape_cover'
 
 export const migrations = [
   {
@@ -41,5 +44,10 @@ export const migrations = [
     name: '20260901_120000_add_campaign_metrics',
     up: addCampaignMetrics.up,
     down: addCampaignMetrics.down,
+  },
+  {
+    name: '20260906_140000_media_landscape_cover',
+    up: mediaLandscapeCover.up,
+    down: mediaLandscapeCover.down,
   },
 ]

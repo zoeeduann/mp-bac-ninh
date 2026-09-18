@@ -28,6 +28,9 @@ const nextConfig: NextConfig = {
       allowedOrigins: ['mindfulpeaceth.com', 'www.mindfulpeaceth.com'],
     },
   },
+  outputFileTracingIncludes: {
+    '/api/activities/*/share-image': ['./assets/fonts/ShareSans.ttf'],
+  },
   images: {
     localPatterns: [{ pathname: '/api/media/file/**' }, { pathname: '/brand/**' }],
     remotePatterns: [

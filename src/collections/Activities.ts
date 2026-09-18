@@ -129,6 +129,12 @@ export const Activities: CollectionConfig = {
       label: { zh: '主图', en: 'Hero image' },
       relationTo: 'media',
       required: true,
+      admin: {
+        description: {
+          zh: '可直接上传竖版海报。系统自动重排为 3:2 横版封面，保留主题和主要文字，去掉二维码。前台只展示横版封面，原图仅作生成素材。在媒体页面可预览和重新生成。',
+          en: 'Portrait posters are automatically recomposed into 3:2 landscape covers, preserving the theme and main text while removing QR codes. Public pages show only the cover; the original is kept as source material. Preview or regenerate in Media.',
+        },
+      },
     },
     {
       name: 'gallery',

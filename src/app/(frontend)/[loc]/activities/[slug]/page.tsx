@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 
 import {
@@ -16,7 +15,10 @@ import { formatDateCompact } from '@/lib/time'
 import { isSessionPast } from '@/lib/calendar'
 import { toZonedTime, format as fmtTz } from 'date-fns-tz'
 import { buildMetadata } from '@/lib/metadata'
-import { locationPath, locationUrl } from '@/lib/site-config'
+import { locationPath, locationUrl, SITE_BASE } from '@/lib/site-config'
+import { activityImageUrl } from '@/lib/activity-image'
+import { activityShareImageUrl } from '@/lib/activity-share'
+import ActivityImage from '@/components/activities/ActivityImage'
 import { JsonLd } from '@/components/JsonLd'
 import { breadcrumbJsonLd } from '@/lib/jsonld'
 import { activitySeoDescription, activitySeoKeywords } from '@/lib/seo'
@@ -49,17 +51,15 @@ export async function generateMetadata({
     },
     locale: locale as any,
     fallbackLocale: 'zh-CN' as any,
-    depth: 1,
+    // depth 2 populates heroImage.cardCover, the only artwork shared publicly.
+    depth: 2,
     overrideAccess: true,
     limit: 1,
   })
   const activity = result.docs[0] as Activity | undefined
   if (!activity) return {}
 
-  const heroImgUrl =
-    activity.heroImage && typeof activity.heroImage !== 'number'
-      ? (activity.heroImage as Media).url ?? undefined
-      : undefined
+  const heroImgUrl = activityShareImageUrl(activity, locale, SITE_BASE)
 
   const displayName = academyName(location.city, location.name)
   const category =
@@ -99,10 +99,6 @@ export async function generateMetadata({
 const TZ = 'Asia/Bangkok'
 
 // ─── Media helpers ─────────────────────────────────────────────────────────
-function mediaUrl(img: number | Media | null | undefined): string | null {
-  if (!img || typeof img === 'number') return null
-  return (img as Media).url ?? null
-}
 function mediaAlt(img: number | Media | null | undefined, fallback = ''): string {
   if (!img || typeof img === 'number') return fallback
   return (img as Media).alt ?? fallback
@@ -273,14 +269,14 @@ export default async function ActivityDetailPage({
   )
 
   // ─ Meta ─────────────────────────────────────────────────────────────
-  const heroUrl = mediaUrl(activity.heroImage)
+  const heroUrl = activityImageUrl(activity.heroImage, 'hero')
   const heroAlt = mediaAlt(activity.heroImage, activity.title)
-  // Hero + gallery merged into one swipeable carousel.
+  // Only recomposed artwork may appear in the public carousel.
   const carouselImages = [
     ...(heroUrl ? [{ url: heroUrl, alt: heroAlt }] : []),
     ...((activity.gallery ?? [])
       .map((g) => ({
-        url: mediaUrl((g as { image?: number | Media }).image),
+        url: activityImageUrl((g as { image?: number | Media }).image, 'hero'),
         alt: mediaAlt((g as { image?: number | Media }).image, activity.title),
       }))
       .filter((im): im is { url: string; alt: string } => Boolean(im.url))),
@@ -362,9 +358,9 @@ export default async function ActivityDetailPage({
       {carouselImages.length > 0 && (
         <ImageCarousel
           images={carouselImages}
-          className="w-full h-[clamp(480px,72svh,680px)] md:h-[clamp(420px,52vw,680px)]"
+          className="w-full max-w-[960px] mx-auto aspect-[3/2]"
           priority
-          sizes="100vw"
+          sizes="(min-width: 960px) 960px, 100vw"
         />
       )}
 
@@ -668,7 +664,7 @@ export default async function ActivityDetailPage({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[2px]">
             {relatedActivities.map((rel) => {
-              const imgUrl = mediaUrl(rel.heroImage)
+              const imgUrl = activityImageUrl(rel.heroImage)
               const imgAlt = mediaAlt(rel.heroImage, rel.title)
               const upcoming = nextOccurrenceDate(rel)
 
@@ -676,20 +672,20 @@ export default async function ActivityDetailPage({
                 <Link
                   key={rel.id}
                   href={locationPath(locale, locSlug, `/activities/${rel.slug}`)}
-                  className="block no-underline text-inherit group"
+                  className="flex h-full min-w-0 flex-col no-underline text-inherit group"
                 >
                   {imgUrl ? (
-                    <Image
+                    <ActivityImage
                       src={imgUrl}
                       alt={imgAlt}
                       width={900}
-                      height={540}
-                      className="w-full aspect-[5/3] object-contain bg-ink/[0.04] saturate-[0.85] block"
+                      height={600}
+                      sizes="(min-width: 768px) 44vw, 88vw"
                     />
                   ) : (
-                    <div className="w-full aspect-[5/3] bg-ink/15" />
+                    <div className="w-full aspect-[3/2] bg-ink/15" />
                   )}
-                  <div className="pt-5 pb-6 border-t border-hairline">
+                  <div className="flex flex-1 flex-col pt-5 pb-6 border-t border-hairline">
                     {upcoming && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
                         {formatDateCompact(new Date(upcoming), locale)}
@@ -703,7 +699,7 @@ export default async function ActivityDetailPage({
                         {rel.shortDesc}
                       </p>
                     )}
-                    <span className="font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
+                    <span className="mt-auto font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
                       {t(locale, 'cta.view_details')}
                     </span>
                   </div>

@@ -7,6 +7,8 @@ import { getPayloadClient } from '@/lib/payload'
 import { getFeaturedActivitiesForLocation } from '@/lib/content'
 import { SITE_BASE } from '@/lib/site-config'
 import BacNinhLogo from '@/components/layout/BacNinhLogo'
+import ActivityImage from '@/components/activities/ActivityImage'
+import { activityImageUrl } from '@/lib/activity-image'
 import type { Activity, Location, Media } from '@/payload-types'
 
 const title = 'Thiện Minh Tiểu Viện · Bắc Ninh'
@@ -199,7 +201,7 @@ export default async function VietnameseThienMinhPage() {
         eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         eventStatus: 'https://schema.org/EventScheduled',
         location: { '@id': placeId },
-        image: mediaUrl(activity.heroImage as number | Media | null | undefined) || undefined,
+        image: activityImageUrl(activity.heroImage as number | Media | null | undefined) || undefined,
         inLanguage: 'vi-VN',
       }]
     }),
@@ -269,20 +271,21 @@ export default async function VietnameseThienMinhPage() {
               <div className="grid gap-[2px] md:grid-cols-3">
                 {activities.map((activity) => {
                   const translated = activityTranslations[activity.slug]
-                  const imageUrl = mediaUrl(activity.heroImage as number | Media | null | undefined)
+                  // Generated landscape covers only; source posters are never public.
+                  const imageUrl = activityImageUrl(activity.heroImage as number | Media | null | undefined)
                   const upcoming = nextOccurrence(activity)
                   return (
                     <article key={activity.id}>
                       {imageUrl ? (
-                        <Image
+                        <ActivityImage
                           src={imageUrl}
                           alt={mediaAlt(activity.heroImage as number | Media | null | undefined, translated?.title || activity.title)}
-                          width={800}
-                          height={960}
-                          className="aspect-[5/6] w-full object-cover saturate-[0.85]"
+                          width={900}
+                          height={600}
+                          sizes="(min-width: 768px) 33vw, 100vw"
                         />
                       ) : (
-                        <div className="aspect-[5/6] w-full bg-sky-pale" />
+                        <div className="aspect-[3/2] w-full bg-sky-pale" />
                       )}
                       <div className="border-t border-hairline pb-6 pt-5">
                         {upcoming && <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-soft">{formatVietnameseDate(upcoming)}</p>}

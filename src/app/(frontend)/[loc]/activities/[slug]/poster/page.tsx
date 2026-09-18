@@ -18,15 +18,13 @@ import PosterControls from '@/components/activities/PosterControls'
 import QRCode from 'qrcode'
 import { buildPosterQrTarget } from '@/lib/poster-download'
 import { fetchInlineImage } from '@/lib/poster-image'
+import { activityImageUrl } from '@/lib/activity-image'
+import { activityShareImageUrl } from '@/lib/activity-share'
 import TrackedLink from '@/components/analytics/TrackedLink'
 
 const TZ = 'Asia/Bangkok'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-function mediaUrl(img: number | Media | null | undefined): string | null {
-  if (!img || typeof img === 'number') return null
-  return (img as Media).url ?? null
-}
 function mediaAlt(img: number | Media | null | undefined, fallback = ''): string {
   if (!img || typeof img === 'number') return fallback
   return (img as Media).alt ?? fallback
@@ -92,7 +90,7 @@ export async function generateMetadata({
   const activity = await fetchActivity(location.id, p.slug, locale)
   if (!activity) return {}
 
-  const heroImgUrl = mediaUrl(activity.heroImage) ?? undefined
+  const heroImgUrl = activityShareImageUrl(activity, locale, SITE_BASE)
   const displayName = academyName(location.city, location.name)
   const description =
     (activity.shortDesc as string | null | undefined) ??
@@ -135,13 +133,12 @@ export default async function ActivityPosterPage({
   const activity = await fetchActivity(location.id, p.slug, locale)
   if (!activity) notFound()
 
-  const heroUrl = mediaUrl(activity.heroImage)
+  const heroUrl = activityImageUrl(activity.heroImage, 'hero')
   const heroAlt = mediaAlt(activity.heroImage, activity.title)
-  // Hero + gallery merged into one swipeable carousel.
   // Poster hero: inline as a data URL on the server so html-to-image can
   // capture it on iOS Safari (see fetchInlineImage docstring). The poster
   // intentionally renders a single static hero — it's a promo card, not a
-  // browseable gallery; the gallery still lives on the activity detail page.
+  // browseable gallery. Source posters remain in the CMS only.
   const inlineHeroDataUrl = heroUrl ? await fetchInlineImage(heroUrl) : null
   const category = typeof activity.category === 'object' ? (activity.category as Category) : null
   const academyDisplayName = academyName(location.city, location.name)
@@ -230,10 +227,10 @@ export default async function ActivityPosterPage({
           <img
             src={inlineHeroDataUrl}
             alt={heroAlt}
-            className="block w-full aspect-[4/5] object-contain bg-ink/[0.04]"
+            className="block w-full h-auto"
           />
         ) : (
-          <div className="relative aspect-[4/5] overflow-hidden">
+          <div className="relative aspect-[3/2] overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-sky-pale to-sky" />
           </div>
         )}

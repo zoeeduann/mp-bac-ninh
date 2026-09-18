@@ -1,0 +1,1 @@
+ShareSans is a regular-weight subset of Noto Sans SC, from https://github.com/google/fonts/tree/main/ofl/notosanssc, distributed under the included SIL Open Font License. Instantiated at weight 400 with fontTools; includes Latin, CJK, full-width and punctuation characters for activity share artwork. The derived font was renamed ShareSans.

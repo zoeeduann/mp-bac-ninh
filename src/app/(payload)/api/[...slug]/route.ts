@@ -16,9 +16,10 @@ import {
 // (reservation confirm fires afterChange → Resend) don't get killed
 // mid-flight. Resend now has an AbortController-bounded 8s timeout per
 // attempt (see src/lib/email.ts) so happy path stays under 2s; this is
-// purely a safety ceiling. If Payload's `pnpm payload generate` ever
-// regenerates this file, re-add this line.
-export const maxDuration = 60
+// purely a safety ceiling. Portrait uploads also generate landscape covers
+// after the response, with a 180s provider timeout, so the ceiling is 300s.
+// If Payload's `pnpm payload generate` ever regenerates this file, re-add this line.
+export const maxDuration = 300
 
 export const GET = REST_GET(config)
 export const POST = REST_POST(config)

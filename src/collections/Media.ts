@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { isAdminOrStaff } from '../access'
 import { autoGenerateMediaAltAfterChange, syncMediaUrlAfterChange } from './Media.hooks'
+import { activityImageSizes } from '../lib/activity-image'
+import { prepareMediaCover, scheduleMediaCover } from './Media.cover-hooks'
 
 // Rewrites Payload's default /api/media/file/<name> URLs to the R2 public
 // hostname when S3_PUBLIC_HOSTNAME is set. Two reasons we do this here
@@ -25,7 +27,9 @@ export const Media: CollectionConfig = {
     singular: { zh: '媒体', en: 'Media' },
     plural: { zh: '媒体', en: 'Media' },
   },
+  admin: { components: { beforeList: ['@/components/admin/MediaCoverBatch'] } },
   hooks: {
+    beforeChange: [prepareMediaCover],
     afterRead: [
       ({ doc }) => {
         if (!doc) return doc
@@ -40,19 +44,23 @@ export const Media: CollectionConfig = {
       },
     ],
     // Heal stale `url` after upload-REPLACE — see Media.hooks.ts for context.
-    afterChange: [syncMediaUrlAfterChange, autoGenerateMediaAltAfterChange],
+    afterChange: [
+      // Schedule before alt generation: its nested local updates mutate
+      // req.context with skipAutoAlt, which would suppress this upload's job.
+      scheduleMediaCover,
+      syncMediaUrlAfterChange,
+      autoGenerateMediaAltAfterChange,
+    ],
   },
   upload: {
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
     imageSizes: [
-      // 240×240 square cover — used in admin list and as card thumbnails
+      // Backend browsing only; no separate AI generation.
       { name: 'thumbnail', width: 240, height: 240, fit: 'cover' },
-      // 720px wide, auto-height — for content cards
-      { name: 'card', width: 720, fit: 'inside' },
-      // 1600px wide, auto-height — for hero banners
-      { name: 'hero', width: 1600, fit: 'inside' },
-      // 1200×630 cover — for Open Graph sharing
-      { name: 'og', width: 1200, height: 630, fit: 'cover' },
+      // Full artwork at bounded sizes, with no cropping or upscaling.
+      { name: 'card', ...activityImageSizes.card },
+      { name: 'hero', ...activityImageSizes.hero },
+      // Share previews are composed per activity, not cropped per upload.
     ],
     formatOptions: { format: 'webp', options: { quality: 82 } },
     adminThumbnail: 'thumbnail',
@@ -64,6 +72,23 @@ export const Media: CollectionConfig = {
     delete: isAdminOrStaff,
   },
   fields: [
+    {
+      name: 'cardCover',
+      type: 'upload',
+      relationTo: 'media',
+      label: { zh: '横版封面', en: 'Landscape cover' },
+      admin: { readOnly: true, hidden: true },
+    },
+    {
+      name: 'cardCoverJob',
+      type: 'json',
+      admin: { hidden: true, readOnly: true },
+    },
+    {
+      name: 'coverGenerator',
+      type: 'ui',
+      admin: { components: { Field: '@/components/admin/MediaCoverGenerator' } },
+    },
     {
       name: 'alt',
       type: 'text',

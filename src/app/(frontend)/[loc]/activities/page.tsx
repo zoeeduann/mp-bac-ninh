@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
+import ActivityImage from '@/components/activities/ActivityImage'
+import { activityImageUrl } from '@/lib/activity-image'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
@@ -111,10 +112,6 @@ function chipColorForCategory(slug: string): { bg: string; text: string } {
 }
 
 // ─── Media helpers ─────────────────────────────────────────────────────────
-function mediaUrl(img: number | Media | null | undefined): string | null {
-  if (!img || typeof img === 'number') return null
-  return (img as Media).url ?? null
-}
 function mediaAlt(img: number | Media | null | undefined, fallback = ''): string {
   if (!img || typeof img === 'number') return fallback
   return (img as Media).alt ?? fallback
@@ -278,7 +275,7 @@ export default async function ActivitiesPage({
         name: act.title,
         url: locationUrl(locale, slug, `/activities/${act.slug}`),
         description: act.shortDesc,
-        imageUrl: mediaUrl(act.heroImage),
+        imageUrl: activityImageUrl(act.heroImage),
       }
     }),
   })
@@ -370,7 +367,7 @@ export default async function ActivitiesPage({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px]">
                 {sortedActivities.map((actDoc: any) => {
                   const act = actDoc as Activity & { heroImage: Media | number }
-                  const imgUrl = mediaUrl(act.heroImage)
+                  const imgUrl = activityImageUrl(act.heroImage)
                   const imgAlt = mediaAlt(act.heroImage, act.title)
                   const upcoming = nextOccurrenceDate(act)
                   const seriesOccurrences = act.registrationMode === 'series'
@@ -391,19 +388,19 @@ export default async function ActivitiesPage({
                     <Link
                       key={act.id}
                       href={locationPath(locale, slug, `/activities/${act.slug}`)}
-                      className="block no-underline text-inherit group"
+                      className="flex h-full min-w-0 flex-col no-underline text-inherit group"
                     >
-                      <div className="relative">
+                      <div className="relative shrink-0">
                         {imgUrl ? (
-                          <Image
+                          <ActivityImage
                             src={imgUrl}
                             alt={imgAlt}
-                            width={700}
-                            height={840}
-                            className="w-full aspect-[5/6] object-contain bg-ink/[0.04] saturate-[0.85] block"
+                            width={900}
+                            height={600}
+                            sizes="(min-width: 768px) 33vw, 100vw"
                           />
                         ) : (
-                          <div className="w-full aspect-[5/6] bg-ink/15" />
+                          <div className="w-full aspect-[3/2] bg-ink/15" />
                         )}
                         {/* Share the activity poster — preventDefault keeps the
                             card link from firing */}
@@ -416,7 +413,7 @@ export default async function ActivitiesPage({
                           className="absolute top-3 right-3"
                         />
                       </div>
-                      <div className="pt-5 pb-6 border-t border-hairline">
+                      <div className="flex flex-1 flex-col pt-5 pb-6 border-t border-hairline">
                         {upcoming ? (
                           <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
                             {seriesOccurrences.length > 0
@@ -436,7 +433,7 @@ export default async function ActivitiesPage({
                             {act.shortDesc}
                           </p>
                         )}
-                        <span className="font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
+                        <span className="mt-auto font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
                           {t(locale, 'cta.view_details')}
                         </span>
                       </div>
@@ -698,26 +695,26 @@ export default async function ActivitiesPage({
                   style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}
                 >
                   {selectedDayActivities.map((act: any) => {
-                    const imgUrl = mediaUrl(act.heroImage)
+                    const imgUrl = activityImageUrl(act.heroImage)
                     const imgAlt = mediaAlt(act.heroImage, act.title)
                     // Find the specific occurrence on this day
                     const chips = occByDay.get(selectedDay) ?? []
                     const chip = chips.find((c) => c.activitySlug === act.slug)
 
                     return (
-                      <div key={act.id} className="block text-inherit">
+                      <div key={act.id} className="flex h-full min-w-0 flex-col text-inherit">
                         {imgUrl ? (
-                          <Image
+                          <ActivityImage
                             src={imgUrl}
                             alt={imgAlt}
-                            width={500}
-                            height={300}
-                            className="w-full aspect-[5/3] object-contain bg-ink/[0.04] saturate-[0.85] block"
+                            width={900}
+                            height={600}
+                            sizes="(min-width: 1024px) 22vw, (min-width: 640px) 44vw, 88vw"
                           />
                         ) : (
-                          <div className="w-full aspect-[5/3] bg-ink/15" />
+                          <div className="w-full aspect-[3/2] bg-ink/15" />
                         )}
-                        <div className="pt-3 pb-4 border-t border-hairline">
+                        <div className="flex flex-1 flex-col pt-3 pb-4 border-t border-hairline">
                           {chip?.startAt && (
                             <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-1">
                               {formatDateCompact(new Date(chip.startAt), locale)}
@@ -726,7 +723,7 @@ export default async function ActivitiesPage({
                           <h3 className="font-serif text-[18px] font-medium text-ink mb-2">
                             {act.title}
                           </h3>
-                          <div className="flex items-center gap-4 mt-3 flex-wrap">
+                          <div className="mt-auto flex items-center gap-4 pt-3 flex-wrap">
                             <Link
                               href={locationPath(locale, slug, `/activities/${act.slug}`)}
                               className="font-sans text-[11px] font-semibold tracking-[0.06em] text-sky no-underline transition-colors duration-150 hover:text-ink"

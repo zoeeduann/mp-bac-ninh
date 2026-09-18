@@ -305,6 +305,16 @@ export interface Location {
  */
 export interface Media {
   id: number;
+  cardCover?: (number | null) | Media;
+  cardCoverJob?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * AI-generated after upload for accessibility and search. You can edit it; manual text is never overwritten.
    */
@@ -353,14 +363,6 @@ export interface Media {
       filesize?: number | null;
       filename?: string | null;
     };
-    og?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
   };
 }
 /**
@@ -394,6 +396,9 @@ export interface Activity {
   slug: string;
   category: number | Category;
   location: number | Location;
+  /**
+   * Portrait posters are automatically recomposed into 3:2 landscape covers, preserving the theme and main text while removing QR codes. Public pages show only the cover; the original is kept as source material. Preview or regenerate in Media.
+   */
   heroImage: number | Media;
   gallery?:
     | {
@@ -767,6 +772,8 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  cardCover?: T;
+  cardCoverJob?: T;
   alt?: T;
   seedKey?: T;
   isPlaceholder?: T;
@@ -805,16 +812,6 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
         hero?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        og?:
           | T
           | {
               url?: T;

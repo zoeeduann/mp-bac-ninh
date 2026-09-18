@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '../../../../payload.config'
 import { enqueueEmail } from '../../../../lib/email-jobs'
-import { emailBrandName } from '../../../../lib/email-brand'
+import {
+  bookingTimeLabel,
+  formatBookingDate,
+  resolveBookingLocation,
+} from '../../../../lib/booking-context'
 
 // Cron iterates over confirmed reservations and sends per-attendee
 // reminder emails — could be many SMTP calls in one invocation.
@@ -85,45 +89,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
         const isZh = res.language !== 'en'
 
-        // Format date for the reminder body
-        const dateStr = startAt.toLocaleString(isZh ? 'zh-CN' : 'en-US', {
-          timeZone: 'Asia/Bangkok',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        })
-
-        // Fetch location (name + email) for per-academy from-name + reply-to
-        let locationName = ''
-        let locationEmail: string | undefined
-        let locationIsThailandNetwork = true
-        try {
-          const locationId =
-            typeof res.location === 'object' && res.location?.id ? res.location.id : res.location
-          const locationDoc = await p.findByID({
-            collection: 'locations',
-            id: String(locationId),
-            depth: 0,
-            locale: isZh ? 'zh-CN' : 'en',
-            overrideAccess: true,
-          })
-          locationName = locationDoc?.name ?? ''
-          locationEmail = locationDoc?.email ?? undefined
-          locationIsThailandNetwork = locationDoc?.isThailandNetwork !== false
-        } catch {
-          // Non-fatal
-        }
-
-        const signOff = emailBrandName(locationName, isZh ? 'zh' : 'en')
-        const timeLabel = locationIsThailandNetwork
-          ? (isZh ? '泰国时间' : 'Thailand time')
-          : (isZh ? '当地时间' : 'local time')
+        const location = await resolveBookingLocation(
+          p,
+          res.location ?? activity?.location,
+          isZh ? 'zh-CN' : 'en',
+        )
+        const dateStr = formatBookingDate(startAt, isZh ? 'zh-CN' : 'en', location.timeZone)
+        const signOff = location.brandName
+        const timeLabel = bookingTimeLabel(location.timeZone, isZh ? 'zh-CN' : 'en')
         const body = isZh
-          ? `你好 ${res.name},\n\n提醒你明天的活动：\n\n活动：${activity.title ?? '静心活动'}\n时间：${dateStr} (${timeLabel})\n地点：${locationName}\n\n${res.notes ? `备注：${res.notes}\n\n` : ''}期待明日相见。\n\n${signOff}`
-          : `Hi ${res.name},\n\nA reminder for your activity tomorrow:\n\nActivity: ${activity.title ?? 'Mindful event'}\nTime: ${dateStr} (${timeLabel})\nVenue: ${locationName}\n\n${res.notes ? `Notes: ${res.notes}\n\n` : ''}We look forward to seeing you.\n\n${signOff}`
+          ? `你好 ${res.name},\n\n提醒你明天的活动：\n\n活动：${activity.title ?? '学堂活动'}\n时间：${dateStr} (${timeLabel})\n地点：${location.brandName}\n\n${res.notes ? `备注：${res.notes}\n\n` : ''}期待明日相见。\n\n${signOff}`
+          : `Hi ${res.name},\n\nA reminder for your activity tomorrow:\n\nActivity: ${activity.title ?? 'Academy event'}\nTime: ${dateStr} (${timeLabel})\nVenue: ${location.brandName}\n\n${res.notes ? `Notes: ${res.notes}\n\n` : ''}We look forward to seeing you.\n\n${signOff}`
 
         await enqueueEmail(payload, {
           to: res.email,
@@ -132,7 +108,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             : `Tomorrow at ${signOff}`,
           body,
           fromName: signOff,
-          replyTo: locationEmail,
+          replyTo: location.email,
           relatedReservation: String(res.id),
         })
 

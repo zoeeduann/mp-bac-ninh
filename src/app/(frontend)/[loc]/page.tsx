@@ -256,7 +256,7 @@ export default async function AcademyHomePage({
                       alt={imgAlt}
                       width={800}
                       height={960}
-                      className="w-full aspect-[5/6] object-cover saturate-[0.85] block"
+                      className="w-full aspect-[5/6] object-contain bg-ink/[0.04] saturate-[0.85] block"
                     />
                   ) : (
                     <div className="w-full aspect-[5/6] bg-ink/15" />
@@ -391,7 +391,7 @@ export default async function AcademyHomePage({
                       alt={imgAlt}
                       width={600}
                       height={idx === 0 ? 800 : idx === 1 ? 600 : 450}
-                      className={`w-full ${aspectClass} object-cover saturate-[0.82] block`}
+                      className={`w-full ${aspectClass} object-contain bg-ink/[0.04] saturate-[0.82] block`}
                     />
                   ) : (
                     <div className={`w-full ${aspectClass} bg-ink/15`} />

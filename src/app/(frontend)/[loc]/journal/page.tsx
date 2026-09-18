@@ -153,9 +153,9 @@ export default async function JournalPage({
                         width={dims.w}
                         height={dims.h}
                         className={[
-                          'w-full object-cover saturate-[0.82] block',
+                          'w-full object-contain bg-ink/[0.04] saturate-[0.82] block',
                           aspectClass,
-                          'transition-transform duration-500 group-hover:scale-[1.02]',
+                          'transition-[filter] duration-300 group-hover:saturate-100',
                         ].join(' ')}
                       />
                     ) : (

@@ -4,8 +4,14 @@
  * Payload config object.
  */
 import { enqueueEmail } from '../lib/email-jobs'
-import { emailBrandName } from '../lib/email-brand'
 import { buildIcs } from '../lib/ics'
+import {
+  bookingCalendarUid,
+  bookingTimeLabel,
+  calendarFilename,
+  formatBookingDate,
+  resolveBookingLocation,
+} from '../lib/booking-context'
 
 /**
  * Auto-fill audit timestamps when status is set:
@@ -109,32 +115,17 @@ export async function reservationsAfterChange({
   ) {
     const isZh = doc.language !== 'en'
 
-    // Fetch the reservation's location once — used for both fromName/replyTo
-    // (per-academy email routing) and .ics location field below.
-    let resolvedLocation: { name?: string; email?: string } = {}
-    if (doc.location) {
-      try {
-        const locId = typeof doc.location === 'object' && (doc.location as any)?.id
-          ? (doc.location as any).id
-          : doc.location
-        const locDoc = await req.payload.findByID({
-          collection: 'locations',
-          id: String(locId),
-          depth: 0,
-          locale: isZh ? 'zh-CN' : 'en',
-          overrideAccess: true,
-        })
-        resolvedLocation = {
-          name: (locDoc as any)?.name ?? undefined,
-          email: (locDoc as any)?.email ?? undefined,
-        }
-      } catch {
-        // Non-fatal — falls back to defaults
-      }
-    }
+    // Resolve the academy once — used for sender name, Reply-To, session
+    // time zone and the .ics location below.
+    const resolvedLocation = await resolveBookingLocation(
+      req.payload,
+      doc.location,
+      isZh ? 'zh-CN' : 'en',
+    )
 
     // Build .ics attachment if this is an activity reservation (not a general inquiry)
     let icsAttachments: Array<{ filename: string; content: string; contentType: string }> | undefined
+    let confirmedTime: string | undefined
 
     if (doc.activity && doc.occurrenceId) {
       try {
@@ -144,6 +135,7 @@ export async function reservationsAfterChange({
           collection: 'activities',
           id: String(activityId),
           depth: 1,
+          locale: isZh ? 'zh-CN' : 'en',
           overrideAccess: true,
         })
 
@@ -152,55 +144,44 @@ export async function reservationsAfterChange({
         )
 
         if (occurrence?.startAt && occurrence?.endAt) {
-          // Fetch location for the location name
-          let locationName: string | undefined
-          try {
-            const locationId =
-              typeof activity.location === 'object' && (activity.location as any)?.id
-                ? (activity.location as any).id
-                : activity.location
-            const locationDoc = await req.payload.findByID({
-              collection: 'locations',
-              id: String(locationId),
-              depth: 0,
-              overrideAccess: true,
-            })
-            locationName = (locationDoc as any)?.name ?? undefined
-          } catch {
-            // Non-fatal — locationName stays undefined
-          }
-
-          // Fetch settings for admin email
-          let organizerEmail: string | undefined
+          confirmedTime = `${formatBookingDate(new Date(occurrence.startAt), isZh ? 'zh-CN' : 'en', resolvedLocation.timeZone)} (${bookingTimeLabel(resolvedLocation.timeZone, isZh ? 'zh-CN' : 'en')})`
+          // Fetch settings for the organizer fallback
+          let adminEmail: string | undefined
           try {
             const settings = await req.payload.findGlobal({
               slug: 'settings',
               overrideAccess: true,
             })
-            organizerEmail = (settings as any)?.adminEmail ?? undefined
+            adminEmail = (settings as any)?.adminEmail ?? undefined
           } catch {
             // Non-fatal
           }
 
+          const calendarLocation = [resolvedLocation.brandName, resolvedLocation.address]
+            .filter(Boolean)
+            .join(', ')
+
           const descParts: string[] = []
           if (doc.name) descParts.push(isZh ? `预约人: ${doc.name}` : `Booking for: ${doc.name}`)
           if (doc.guests && doc.guests > 1) descParts.push(isZh ? `人数: ${doc.guests}` : `Guests: ${doc.guests}`)
-          if (locationName) descParts.push(isZh ? `学堂: ${locationName}` : `Academy: ${locationName}`)
+          descParts.push(isZh ? `学堂: ${resolvedLocation.brandName}` : `Academy: ${resolvedLocation.brandName}`)
           if (doc.notes) descParts.push(isZh ? `备注: ${doc.notes}` : `Notes: ${doc.notes}`)
 
           const ics = buildIcs({
-            uid: `r-${doc.id}@mindfulpeaceth.com`,
+            uid: bookingCalendarUid(doc.id),
             startUtc: new Date(occurrence.startAt),
             endUtc: new Date(occurrence.endAt),
-            summary: (activity.title as string) ?? (isZh ? '静心学堂活动' : 'Mindfulpeace Academy event'),
+            summary: (activity.title as string) ?? (isZh ? '学堂活动' : 'Academy event'),
             description: descParts.join('\n'),
-            locationName,
-            organizerEmail,
+            locationName: calendarLocation,
+            organizerEmail: resolvedLocation.email ?? adminEmail,
+            productName: resolvedLocation.brandName,
+            timeZone: resolvedLocation.timeZone,
           })
 
           icsAttachments = [
             {
-              filename: 'mindfulpeace-booking.ics',
+              filename: calendarFilename(resolvedLocation.brandName),
               content: ics,
               contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
             },
@@ -212,7 +193,7 @@ export async function reservationsAfterChange({
       }
     }
 
-    const emailBrand = emailBrandName(resolvedLocation.name, isZh ? 'zh' : 'en')
+    const emailBrand = resolvedLocation.brandName
 
     await enqueueEmail(req.payload, {
       to: doc.email,
@@ -220,8 +201,8 @@ export async function reservationsAfterChange({
         ? `${emailBrand} · 预约已确认`
         : `${emailBrand} · Booking confirmed`,
       body: isZh
-        ? `你好 ${doc.name},\n\n你的预约已确认。期待相见。\n\n${emailBrand}`
-        : `Hi ${doc.name},\n\nYour booking is confirmed. We look forward to seeing you.\n\n${emailBrand}`,
+        ? `你好 ${doc.name},\n\n你的预约已确认。${confirmedTime ? `\n时间：${confirmedTime}` : ''}\n期待相见。\n\n${emailBrand}`
+        : `Hi ${doc.name},\n\nYour booking is confirmed.${confirmedTime ? `\nTime: ${confirmedTime}` : ''}\nWe look forward to seeing you.\n\n${emailBrand}`,
       // Per-academy from-name + reply-to so the recipient sees the right
       // academy as sender and replies route to that academy's mailbox.
       fromName: emailBrand,

@@ -17,6 +17,7 @@ import { locationPath, locationUrl } from '@/lib/site-config'
 import { JsonLd } from '@/components/JsonLd'
 import { articleJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
 import { locationSeoKeywords } from '@/lib/seo'
+import { mediaDimensions } from '@/lib/media-dimensions'
 import type { Journal, Media, Activity, Location } from '@/payload-types'
 import { RichText } from '@/components/RichText'
 
@@ -153,6 +154,7 @@ export default async function JournalDetailPage({
   // ─ Meta ─────────────────────────────────────────────────────────────
   const coverUrl = mediaUrl(entry.coverImage)
   const coverAlt = entry.coverAlt?.trim() || mediaAlt(entry.coverImage, entry.title)
+  const coverDimensions = mediaDimensions(entry.coverImage, { width: 1200, height: 800 })
   const academyDisplayName = academyName(location.city, location.name)
 
   const breadcrumb = breadcrumbJsonLd([
@@ -244,11 +246,10 @@ export default async function JournalDetailPage({
             <Image
               src={coverUrl}
               alt={coverAlt}
-              width={1200}
-              height={675}
+              width={coverDimensions.width}
+              height={coverDimensions.height}
               priority
-              className="w-full object-cover saturate-[0.88] block"
-              style={{ aspectRatio: '16/9' }}
+              className="w-full h-auto object-contain saturate-[0.88] block"
             />
           </div>
         </div>
@@ -272,6 +273,7 @@ export default async function JournalDetailPage({
             {entry.photos.map((photo, i) => {
               const pUrl = mediaUrl(photo.image)
               const pAlt = photo.alt?.trim() || mediaAlt(photo.image, entry.title)
+              const dimensions = mediaDimensions(photo.image, { width: 900, height: 600 })
 
               // Pair photos: even index = full-width; odd index = paired with previous
               // For simplicity render each full-width or in pairs of 2
@@ -281,9 +283,9 @@ export default async function JournalDetailPage({
                     <Image
                       src={pUrl}
                       alt={pAlt}
-                      width={900}
-                      height={600}
-                      className="w-full object-cover saturate-[0.88] block"
+                      width={dimensions.width}
+                      height={dimensions.height}
+                      className="w-full h-auto object-contain saturate-[0.88] block"
                     />
                   ) : (
                     <div className="w-full aspect-[3/2] bg-ink/15" />

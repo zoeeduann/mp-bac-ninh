@@ -8,6 +8,41 @@ export interface CarouselImage {
   alt: string
 }
 
+function CarouselSlideImage({
+  image,
+  priority,
+  sizes,
+}: {
+  image: CarouselImage
+  priority: boolean
+  sizes: string
+}) {
+  return (
+    <>
+      {/* A soft crop fills the frame decoratively; the foreground image below
+          remains completely visible. Reusing the same optimized URL keeps the
+          extra layer in the browser cache. */}
+      <Image
+        src={image.url}
+        alt=""
+        aria-hidden="true"
+        fill
+        sizes={sizes}
+        className="pointer-events-none object-cover scale-110 blur-2xl opacity-20 saturate-[0.7]"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-ink/[0.08]" />
+      <Image
+        src={image.url}
+        alt={image.alt}
+        fill
+        priority={priority}
+        sizes={sizes}
+        className="object-contain saturate-[0.9]"
+      />
+    </>
+  )
+}
+
 interface ImageCarouselProps {
   images: CarouselImage[]
   /** Sizing utility for the viewport, e.g. `aspect-[4/5]` or
@@ -51,21 +86,18 @@ export default function ImageCarousel({
 
   if (images.length === 1) {
     return (
-      <div className={`relative overflow-hidden ${className}`}>
-        <Image
-          src={images[0].url}
-          alt={images[0].alt}
-          fill
+      <div className={`relative overflow-hidden bg-ink/[0.04] ${className}`}>
+        <CarouselSlideImage
+          image={images[0]}
           priority={priority}
           sizes={sizes}
-          className="object-cover saturate-[0.9]"
         />
       </div>
     )
   }
 
   return (
-    <div className={`relative overflow-hidden group ${className}`}>
+    <div className={`relative overflow-hidden bg-ink/[0.04] group ${className}`}>
       {/* Track */}
       <div
         ref={trackRef}
@@ -74,13 +106,10 @@ export default function ImageCarousel({
       >
         {images.map((img, i) => (
           <div key={i} className="relative h-full w-full flex-shrink-0 snap-center">
-            <Image
-              src={img.url}
-              alt={img.alt}
-              fill
+            <CarouselSlideImage
+              image={img}
               priority={priority && i === 0}
               sizes={sizes}
-              className="object-cover saturate-[0.9]"
             />
           </div>
         ))}

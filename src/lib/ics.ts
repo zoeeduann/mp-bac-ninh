@@ -5,13 +5,15 @@
  */
 
 export interface IcsEvent {
-  uid: string              // unique per reservation+occurrence; e.g. `r-{reservationId}@mindfulpeaceth.com`
+  uid: string              // unique per reservation+occurrence
   startUtc: Date
   endUtc: Date
   summary: string          // activity title
   description?: string     // includes session info + location + notes
   locationName?: string    // academy name + address
   organizerEmail?: string  // adminEmail from Settings
+  productName?: string     // local academy brand used in PRODID
+  timeZone?: string        // informational local timezone for calendar clients
 }
 
 /** Format a Date as iCal UTC string: YYYYMMDDTHHMMSSZ */
@@ -40,14 +42,22 @@ function escapeText(s: string): string {
  */
 function foldLine(line: string): string {
   const limit = 75
-  if (line.length <= limit) return line
+  const encoder = new TextEncoder()
+  if (encoder.encode(line).length <= limit) return line
   const parts: string[] = []
-  let remaining = line
-  while (remaining.length > limit) {
-    parts.push(remaining.slice(0, limit))
-    remaining = ' ' + remaining.slice(limit)
+  let current = ''
+  let contentLimit = limit
+  for (const character of line) {
+    if (current && encoder.encode(current + character).length > contentLimit) {
+      parts.push(parts.length === 0 ? current : ` ${current}`)
+      current = character
+      // Continuation lines reserve one octet for their leading space.
+      contentLimit = limit - 1
+    } else {
+      current += character
+    }
   }
-  parts.push(remaining)
+  if (current) parts.push(parts.length === 0 ? current : ` ${current}`)
   return parts.join('\r\n')
 }
 
@@ -57,12 +67,14 @@ function prop(name: string, value: string): string {
 
 export function buildIcs(ev: IcsEvent): string {
   const now = fmtUtc(new Date())
+  const productName = (ev.productName || 'Local Academy').replace(/[\/]/g, '-')
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Mindfulpeace Academy Thailand//Booking//EN',
+    prop('PRODID', escapeText(`-//${productName}//Booking//EN`)),
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
+    ...(ev.timeZone ? [prop('X-WR-TIMEZONE', escapeText(ev.timeZone))] : []),
     'BEGIN:VEVENT',
     prop('UID', escapeText(ev.uid)),
     prop('DTSTAMP', now),

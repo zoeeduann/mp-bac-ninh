@@ -400,7 +400,7 @@ export default async function ActivitiesPage({
                             alt={imgAlt}
                             width={700}
                             height={840}
-                            className="w-full aspect-[5/6] object-cover saturate-[0.85] block"
+                            className="w-full aspect-[5/6] object-contain bg-ink/[0.04] saturate-[0.85] block"
                           />
                         ) : (
                           <div className="w-full aspect-[5/6] bg-ink/15" />
@@ -712,7 +712,7 @@ export default async function ActivitiesPage({
                             alt={imgAlt}
                             width={500}
                             height={300}
-                            className="w-full aspect-[5/3] object-cover saturate-[0.85] block"
+                            className="w-full aspect-[5/3] object-contain bg-ink/[0.04] saturate-[0.85] block"
                           />
                         ) : (
                           <div className="w-full aspect-[5/3] bg-ink/15" />

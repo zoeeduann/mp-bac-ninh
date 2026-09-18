@@ -33,6 +33,7 @@ function makeReq(overrides: Record<string, any> = {}) {
     locale: 'zh-CN',
     payload: {
       findByID: vi.fn(),
+      findGlobal: vi.fn(),
       find: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
       logger: { warn: vi.fn(), info: vi.fn(), error: vi.fn() },
@@ -500,5 +501,55 @@ describe('Reservations.afterChange — status → confirmed email', () => {
     })
 
     expect(enqueueEmail).not.toHaveBeenCalled()
+  })
+
+  it('uses the Bac Ninh brand, local time and clean ICS identifiers', async () => {
+    const { enqueueEmail } = await import('../lib/email-jobs')
+    vi.mocked(enqueueEmail).mockClear()
+    const req = makeReq()
+    req.payload.findGlobal.mockResolvedValue({
+      adminEmail: 'hello@shanmingspace.vn',
+    })
+    req.payload.findByID.mockImplementation(({ collection }: { collection: string }) => {
+      if (collection === 'locations') {
+        return Promise.resolve({
+          id: 4,
+          name: '北宁善明小院',
+          email: 'hello@shanmingspace.vn',
+          address: '越南北宁省',
+          timeZone: 'Asia/Ho_Chi_Minh',
+        })
+      }
+      return Promise.resolve({
+        id: 9,
+        title: '周末共修',
+        occurrences: [{
+          id: 'occ-1',
+          startAt: '2026-08-22T02:00:00.000Z',
+          endAt: '2026-08-22T04:00:00.000Z',
+        }],
+      })
+    })
+
+    await reservationsAfterChange({
+      doc: {
+        id: '88', status: 'confirmed', email: 'guest@example.com', name: '访客',
+        language: 'zh', location: 4, activity: 9, occurrenceId: 'occ-1', guests: 1,
+      },
+      previousDoc: { status: 'pending' },
+      req,
+    })
+
+    const args = vi.mocked(enqueueEmail).mock.calls[0][1]
+    expect(args.subject).toBe('北宁善明小院 · 预约已确认')
+    expect(args.body).toContain('2026年8月22日 09:00 (当地时间)')
+    expect(args.fromName).toBe('北宁善明小院')
+    expect(args.replyTo).toBe('hello@shanmingspace.vn')
+    expect(args.attachments?.[0].filename).toBe('北宁善明小院.ics')
+    const ics = args.attachments?.[0].content ?? ''
+    expect(ics).toContain('PRODID:-//北宁善明小院//Booking//EN')
+    expect(ics).toContain('X-WR-TIMEZONE:Asia/Ho_Chi_Minh')
+    expect(ics).toContain('UID:booking-88@localhost')
+    expect(ics).not.toMatch(/Thailand|Bangkok|mindfulpeaceth\.com/i)
   })
 })

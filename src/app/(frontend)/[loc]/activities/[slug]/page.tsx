@@ -362,7 +362,7 @@ export default async function ActivityDetailPage({
       {carouselImages.length > 0 && (
         <ImageCarousel
           images={carouselImages}
-          className="w-full h-[clamp(320px,52vw,680px)]"
+          className="w-full h-[clamp(480px,72svh,680px)] md:h-[clamp(420px,52vw,680px)]"
           priority
           sizes="100vw"
         />
@@ -684,7 +684,7 @@ export default async function ActivityDetailPage({
                       alt={imgAlt}
                       width={900}
                       height={540}
-                      className="w-full aspect-[5/3] object-cover saturate-[0.85] block"
+                      className="w-full aspect-[5/3] object-contain bg-ink/[0.04] saturate-[0.85] block"
                     />
                   ) : (
                     <div className="w-full aspect-[5/3] bg-ink/15" />

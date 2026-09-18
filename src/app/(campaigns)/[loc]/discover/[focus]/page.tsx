@@ -85,7 +85,7 @@ export default async function CampaignPage({ params }: Props) {
             认识小院
           </a>
           <a className="campaign-nav-cta" href="#inquiry">
-            {copy.cta} <span aria-hidden="true">↗</span>
+            {copy.anchorCta} <span aria-hidden="true">↓</span>
           </a>
         </nav>
       </header>
@@ -102,9 +102,10 @@ export default async function CampaignPage({ params }: Props) {
               <span>{copy.title[1]}</span>
             </h1>
             <p className="campaign-hero-description">{copy.description}</p>
+            {/* Scrolls to the form; the form's submit keeps copy.cta. */}
             <a className="campaign-button" href="#inquiry">
-              {copy.cta}
-              <span aria-hidden="true">↗</span>
+              {copy.anchorCta}
+              <span aria-hidden="true">↓</span>
             </a>
             <p className="campaign-hero-note">公益免费 · 面向中文用户</p>
             <div className="campaign-hero-bottom">
@@ -338,7 +339,7 @@ export default async function CampaignPage({ params }: Props) {
       </footer>
       <div className="campaign-mobile-action">
         <span>善明小院 · 北宁</span>
-        <a href="#inquiry">{copy.cta} ↗</a>
+        <a href="#inquiry">{copy.anchorCta} ↓</a>
       </div>
     </div>
   )

@@ -16,7 +16,7 @@ export const DICT = {
   'zh-CN': {
     brand: {
       tagline: '此心安处是吾乡',
-      positioning: '传承两千多年生命觉醒教育,为现代人提供安顿身心之道',
+      positioning: '传承两千多年生命觉醒教育，为现代人提供安顿身心之道',
     },
     nav: {
       home: '首页',
@@ -104,7 +104,7 @@ export const DICT = {
       no_sessions: '暂无场次安排。',
       no_journal: '暂无学堂笔记。',
       map_soon: '地图即将上线。',
-      related_activity: '关联活动:',
+      related_activity: '关联活动：',
     },
     form: {
       name: '姓名',
@@ -152,7 +152,7 @@ export const DICT = {
     },
     wechat: {
       hint_label_portal: '想直接联系某家学堂？搜索微信号：',
-      hint_label_inquiry: '想直接微信沟通?搜索学堂微信号:',
+      hint_label_inquiry: '想直接微信沟通？搜索学堂微信号：',
       alt_inline: '或直接添加学堂微信咨询：',
       search: '搜索：',
     },

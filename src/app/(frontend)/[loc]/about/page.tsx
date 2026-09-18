@@ -220,7 +220,7 @@ export default async function AboutPage({
                       alt={photoAlt}
                       width={400}
                       height={400}
-                      className="w-full aspect-square object-contain bg-ink/[0.04] saturate-[0.85] mb-5"
+                      className="w-full aspect-square object-cover saturate-[0.85] mb-5"
                     />
                   ) : (
                     <div className="w-full aspect-square bg-ink/10 mb-5" />

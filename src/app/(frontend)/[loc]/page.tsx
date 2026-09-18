@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import ActivityImage from '@/components/activities/ActivityImage'
+import { activityImageUrl } from '@/lib/activity-image'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getLocale, t } from '@/lib/i18n'
@@ -240,7 +242,7 @@ export default async function AcademyHomePage({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] mb-14">
             {activities.map((activityDoc) => {
               const activity = activityDoc as Activity & { heroImage: Media | number }
-              const imgUrl = mediaUrl(activity.heroImage)
+              const imgUrl = activityImageUrl(activity.heroImage)
               const imgAlt = mediaAlt(activity.heroImage, activity.title)
               const upcoming = nextOccurrence(activity)
 
@@ -248,20 +250,20 @@ export default async function AcademyHomePage({
                 <Link
                   key={activity.id}
                   href={locationPath(locale, slug, `/activities/${activity.slug}`)}
-                  className="block no-underline text-inherit group"
+                  className="flex h-full min-w-0 flex-col no-underline text-inherit group"
                 >
                   {imgUrl ? (
-                    <Image
+                    <ActivityImage
                       src={imgUrl}
                       alt={imgAlt}
-                      width={800}
-                      height={960}
-                      className="w-full aspect-[5/6] object-contain bg-ink/[0.04] saturate-[0.85] block"
+                      width={900}
+                      height={600}
+                      sizes="(min-width: 768px) 33vw, 100vw"
                     />
                   ) : (
-                    <div className="w-full aspect-[5/6] bg-ink/15" />
+                    <div className="w-full aspect-[3/2] bg-ink/15" />
                   )}
-                  <div className="pt-5 pb-6 border-t border-hairline">
+                  <div className="flex flex-1 flex-col pt-5 pb-6 border-t border-hairline">
                     {upcoming && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
                         {formatDateCompact(new Date(upcoming), locale)}
@@ -275,7 +277,7 @@ export default async function AcademyHomePage({
                         {activity.shortDesc}
                       </p>
                     )}
-                    <span className="font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
+                    <span className="mt-auto font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
                       {t(locale, 'cta.view_details')}
                     </span>
                   </div>

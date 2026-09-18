@@ -1,5 +1,6 @@
 import type { Activity, Location, Media } from '@/payload-types'
 import type { CampaignFocus } from './campaigns'
+import { activityImageUrl } from './activity-image'
 import { SITE_BASE } from './site-config'
 
 /** Public, read-only content API. Preview never connects to the shared database. */
@@ -23,7 +24,8 @@ export async function getCampaignContent() {
     'where[location][equals]': String(location.id),
     'where[status][equals]': 'published',
     locale: 'zh-CN',
-    depth: '1',
+    // depth 2 populates heroImage.cardCover, the only public activity artwork.
+    depth: '2',
     limit: '100',
   })
   let activities: Activity[] = []
@@ -48,6 +50,13 @@ export function campaignMedia(value: number | Media | null | undefined) {
     small: value.sizes?.card?.url || value.url || '',
     alt: value.alt || '',
   }
+}
+
+/** Activity examples show only the generated landscape cover, never the source poster. */
+export function campaignActivityImage(value: number | Media | null | undefined) {
+  const src = activityImageUrl(value)
+  if (!src || !value || typeof value === 'number') return null
+  return { src, alt: value.alt || '' }
 }
 
 export function campaignExamples(activities: Activity[], focus: CampaignFocus, now = Date.now()) {

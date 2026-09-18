@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { Activity } from '@/payload-types'
-import { campaignExamples } from '@/lib/campaign-content'
+import type { Activity, Media } from '@/payload-types'
+import { campaignActivityImage, campaignExamples } from '@/lib/campaign-content'
 import { campaignInquiryNotes, normalizeZaloPhone } from '@/lib/campaigns'
 
 it('normalizes contact numbers without inventing an extra phone number', () => {
@@ -49,4 +49,16 @@ describe('activity examples', () => {
       [],
     )
   })
+})
+
+it('shows only generated landscape covers for activity examples, never the source poster', () => {
+  const poster = { id: 1, filename: 'poster.webp', url: '/poster.webp', alt: '禅茶', sizes: { card: { url: '/poster-card.webp' } } } as Media
+  expect(campaignActivityImage(poster)).toBeNull()
+  expect(campaignActivityImage(12)).toBeNull()
+  const covered = {
+    ...poster,
+    cardCover: { url: '/cover.webp', sizes: { card: { url: '/cover-card.webp' } } } as Media,
+    cardCoverJob: { token: 't', sourceFilename: 'poster.webp', status: 'ready', requestedAt: '2026-09-18' },
+  } as Media
+  expect(campaignActivityImage(covered)).toEqual({ src: '/cover-card.webp', alt: '禅茶' })
 })

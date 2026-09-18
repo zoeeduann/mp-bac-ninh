@@ -2,7 +2,12 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { campaignCopy, isCampaignFocus } from '@/lib/campaigns'
-import { campaignExamples, campaignMedia, getCampaignContent } from '@/lib/campaign-content'
+import {
+  campaignActivityImage,
+  campaignExamples,
+  campaignMedia,
+  getCampaignContent,
+} from '@/lib/campaign-content'
 import { locationPath, locationUrl } from '@/lib/site-config'
 import CampaignLeadForm from '@/components/campaigns/CampaignLeadForm'
 
@@ -207,25 +212,26 @@ export default async function CampaignPage({ params }: Props) {
             </div>
             <div className="campaign-examples">
               {examples.map(({ activity, state }) => {
-                const photo = campaignMedia(activity.heroImage)
+                const photo = campaignActivityImage(activity.heroImage)
                 return (
                   <article key={activity.id}>
-                    {photo?.small && (
-                      <a
-                        className="campaign-example-image"
-                        href={locationPath('zh-CN', loc, `/activities/${activity.slug}`)}
-                        aria-label={`查看${activity.title}活动介绍`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {/* Without a generated cover, keep the neutral frame as a placeholder. */}
+                    <a
+                      className="campaign-example-image"
+                      href={locationPath('zh-CN', loc, `/activities/${activity.slug}`)}
+                      aria-label={`查看${activity.title}活动介绍`}
+                    >
+                      {photo && (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={photo.small}
+                          src={photo.src}
                           alt={photo.alt || activity.title}
                           width="720"
                           height="480"
                           loading="lazy"
                         />
-                      </a>
-                    )}
+                      )}
+                    </a>
                     <div className="campaign-example-copy">
                       <p className="campaign-example-status">{state}</p>
                       <h3>{activity.title.replace(/招生$/, '')}</h3>

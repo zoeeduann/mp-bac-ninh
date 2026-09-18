@@ -6,6 +6,8 @@
  */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { enqueueEmail } from '../lib/email-jobs'
+import { getPayload } from 'payload'
+import { GET } from '../app/api/cron/reminders/route'
 
 vi.mock('../lib/email-jobs', () => ({ enqueueEmail: vi.fn().mockResolvedValue({ id: 'j1' }) }))
 vi.mock('payload', () => ({ getPayload: vi.fn() }))
@@ -151,5 +153,45 @@ describe('cron/reminders logic', () => {
       expect.anything(),
       expect.objectContaining({ subject: '明日相见 · 静心学堂 · 泰国' }),
     )
+  })
+
+  it('sends the real Bac Ninh reminder with configured brand and local time', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(NOW)
+    const payload = {
+      find: vi.fn().mockResolvedValue({
+        docs: [{
+          id: 'r-bn', status: 'confirmed', email: 'guest@example.com', name: '访客',
+          language: 'zh', activity: 9, location: 4, occurrenceId: 'occ-bn',
+        }],
+      }),
+      findByID: vi.fn(({ collection }: { collection: string }) => {
+        if (collection === 'activities') {
+          return Promise.resolve({
+            id: 9, title: '周末共修',
+            occurrences: [{ id: 'occ-bn', startAt: IN_24H.toISOString() }],
+          })
+        }
+        return Promise.resolve({
+          id: 4, name: '北宁善明小院', email: 'hello@shanmingspace.vn',
+          timeZone: 'Asia/Ho_Chi_Minh',
+        })
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+    vi.mocked(getPayload).mockResolvedValue(payload as any)
+
+    const response = await GET(new Request('http://test/api/cron/reminders') as any)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ok: true, sent: 1 })
+    const args = vi.mocked(enqueueEmail).mock.calls[0][1]
+    expect(args).toMatchObject({
+      subject: '明日相见 · 北宁善明小院',
+      fromName: '北宁善明小院',
+      replyTo: 'hello@shanmingspace.vn',
+    })
+    expect(args.body).toContain('2026年6月11日 17:00 (当地时间)')
+    expect(JSON.stringify(args)).not.toMatch(/Thailand|Bangkok|mindfulpeaceth\.com/i)
+    vi.useRealTimers()
   })
 })

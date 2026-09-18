@@ -6,13 +6,17 @@ import { verifyTurnstile } from '../../../lib/turnstile'
 import { rateLimit } from '../../../lib/rate-limit'
 import { computeOccupancy, canBook } from '../../../lib/capacity'
 import { enqueueEmail } from '../../../lib/email-jobs'
-import { emailBrandName } from '../../../lib/email-brand'
 import { isAllowedSameOriginRequest } from '../../../lib/request-origin'
 import { TURNSTILE_ENABLED } from '../../../lib/site-config'
 import {
   campaignAttributionFromNotes,
   recordCampaignMetric,
 } from '../../../lib/campaign-metrics'
+import {
+  bookingTimeLabel,
+  formatBookingDate,
+  resolveBookingLocation,
+} from '../../../lib/booking-context'
 
 // Synchronous SMTP to Gmail can take 2-3 s per email; with the admin +
 // user notifications + DB writes + advisory lock work, the default 10 s
@@ -345,10 +349,10 @@ async function sendNotifications(
 ): Promise<void> {
   const isZh = body.language === 'zh'
 
-  // ── Resolve which occurrence was booked, format its BKK wall-clock time ──
+  // ── Resolve which occurrence was booked ──
   // The reservation row only stores occurrenceId; without this lookup the
-  // admin email shows no date/time. Format in Asia/Bangkok so the recipient
-  // doesn't have to mentally convert UTC.
+  // admin email shows no date/time.
+  let occurrenceStart: Date | undefined
   let occurrenceLineLong: string | undefined
   let occurrenceLineShort: string | undefined
   if (activity && body.occurrenceId) {
@@ -358,26 +362,7 @@ async function sendNotifications(
     if (occ?.startAt) {
       const startDate = new Date(occ.startAt)
       if (!isNaN(startDate.getTime())) {
-        // Long form for the email body. The location-specific time label is
-        // appended after the academy record is resolved below.
-        occurrenceLineLong = startDate.toLocaleString(isZh ? 'zh-CN' : 'en-US', {
-          timeZone: 'Asia/Bangkok',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        })
-        // Short form for the subject line: "6/15 19:30"
-        occurrenceLineShort = startDate.toLocaleString('en-US', {
-          timeZone: 'Asia/Bangkok',
-          month: 'numeric',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        })
+        occurrenceStart = startDate
       }
     }
   }
@@ -391,37 +376,22 @@ async function sendNotifications(
     console.error('[reservations] Failed to read Settings global — admin email will be skipped:', err)
   }
 
-  // 2. Fetch the booking's location for per-academy from-name + reply-to.
-  //    body.location is guaranteed present (required by validation + auto-derived for activity bookings).
-  let locationName: string | undefined
-  let locationEmail: string | undefined
-  let locationIsThailandNetwork = true
-  try {
-    const locId = body.location
-    const locDoc = await payload.findByID({
-      collection: 'locations',
-      id: String(locId),
-      depth: 0,
-      locale: isZh ? 'zh-CN' : 'en',
-      overrideAccess: true,
-    })
-    locationName = locDoc?.name ?? undefined
-    locationEmail = locDoc?.email ?? undefined
-    locationIsThailandNetwork = locDoc?.isThailandNetwork !== false
-  } catch (err) {
-    console.error('[reservations] Failed to look up location for email routing:', err)
-  }
+  // 2. Fetch the booking's location for brand, timezone and reply-to.
+  //    Activity bookings fall back to activity.location because the collection
+  //    hook, rather than the public request body, derives the stored relationship.
+  const location = await resolveBookingLocation(
+    payload,
+    body.location ?? activity?.location,
+    isZh ? 'zh-CN' : 'en',
+  )
+  const timeLabel = bookingTimeLabel(location.timeZone, isZh ? 'zh-CN' : 'en')
 
-  if (occurrenceLineLong) {
-    occurrenceLineLong += locationIsThailandNetwork
-      ? (isZh ? ' (泰国时间)' : ' (Bangkok time)')
-      : (isZh ? ' (当地时间)' : ' (local time)')
+  if (occurrenceStart) {
+    occurrenceLineLong = `${formatBookingDate(occurrenceStart, isZh ? 'zh-CN' : 'en', location.timeZone)} (${timeLabel})`
+    occurrenceLineShort = formatBookingDate(occurrenceStart, 'en', location.timeZone, true)
   }
 
   const isSeries = activity?.registrationMode === 'series'
-  const seriesTimeSuffix = locationIsThailandNetwork
-    ? (isZh ? ' (泰国时间)' : ' (Bangkok time)')
-    : (isZh ? ' (当地时间)' : ' (local time)')
   const seriesOccurrenceLines = isSeries
     ? ((activity?.occurrences as any[] | undefined) ?? [])
         .filter((occ: any) => occ?.startAt && occ.status !== 'deleted' && occ.status !== 'cancelled')
@@ -431,16 +401,7 @@ async function sendNotifications(
         )
         .map((occ: any, index: number) => {
           const start = new Date(occ.startAt)
-          const formatted = start.toLocaleString(isZh ? 'zh-CN' : 'en-US', {
-            timeZone: 'Asia/Bangkok',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          })
-          return `${index + 1}. ${formatted}${seriesTimeSuffix}`
+          return `${index + 1}. ${formatBookingDate(start, isZh ? 'zh-CN' : 'en', location.timeZone)} (${timeLabel})`
         })
     : []
 
@@ -464,7 +425,7 @@ async function sendNotifications(
       `预约通知: ${activityTitleStr}${occurrenceLineShort ? ` · ${occurrenceLineShort}` : ''}`
     : `自由咨询: ${body.name}`
 
-  const notificationBrand = emailBrandName(locationName, isZh ? 'zh' : 'en')
+  const notificationBrand = location.brandName
 
   // 3. Admin notification — goes to BOTH the central admin mailbox AND
   //    the academy's own mailbox (locations.email). Deduped via Set so we
@@ -498,7 +459,7 @@ async function sendNotifications(
 
   const adminRecipients = new Set<string>()
   if (adminEmail) adminRecipients.add(adminEmail)
-  if (locationEmail) adminRecipients.add(locationEmail)
+  if (location.email) adminRecipients.add(location.email)
 
   for (const recipient of adminRecipients) {
     try {
@@ -529,7 +490,7 @@ async function sendNotifications(
           ? `你好 ${body.name},\n\n我们已收到你的预约，会在 24 小时内通过邮件、微信或 Zalo 跟你确认。${activityTitleStr ? `\n\n活动：${activityTitleStr}` : ''}${isSeries && seriesOccurrenceLines.length > 0 ? `\n全部课次：\n${seriesOccurrenceLines.join('\n')}` : occurrenceLineLong ? `\n时间：${occurrenceLineLong}` : ''}\n\n${signOff}`
           : `Hi ${body.name},\n\nWe received your reservation and will confirm within 24 hours via email, WeChat, or Zalo.${activityTitleStr ? `\n\nActivity: ${activityTitleStr}` : ''}${isSeries && seriesOccurrenceLines.length > 0 ? `\nAll sessions:\n${seriesOccurrenceLines.join('\n')}` : occurrenceLineLong ? `\nTime: ${occurrenceLineLong}` : ''}\n\n${signOff}`,
         fromName: signOff,
-        replyTo: locationEmail,
+        replyTo: location.email,
         relatedReservation: reservationId,
       })
     } catch (err) {

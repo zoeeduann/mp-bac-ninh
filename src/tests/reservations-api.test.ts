@@ -48,6 +48,7 @@ const validInquiry = {
 beforeEach(() => {
   _resetForTest()
   vi.clearAllMocks()
+  mockPayload.findByID.mockReset()
   mockPayload.findGlobal.mockResolvedValue({ adminEmail: 'admin@test.com' })
 })
 
@@ -512,6 +513,46 @@ describe('POST /api/reservations', () => {
     )
     expect(adminCalls).toHaveLength(1)
     expect(adminCalls[0][1].to).toBe('admin@test.com')
+  })
+
+  it('uses Bac Ninh branding in the receipt and formats the session in local time', async () => {
+    const { enqueueEmail } = await import('../lib/email-jobs')
+    mockPayload.findGlobal.mockResolvedValue({
+      adminEmail: 'admin@shanmingspace.vn',
+    })
+    mockPayload.findByID
+      .mockResolvedValueOnce({
+        id: 'a-bn', status: 'published', capacity: 10, title: '周末共修', location: 4,
+        occurrences: [{
+          id: 'o-bn', status: 'open', startAt: '2026-08-22T02:00:00.000Z',
+          endAt: '2026-08-22T04:00:00.000Z',
+        }],
+      })
+      .mockResolvedValueOnce({
+        id: 4, name: '北宁善明小院', email: 'hello@shanmingspace.vn',
+        timeZone: 'Asia/Ho_Chi_Minh',
+      })
+    mockPayload.find.mockResolvedValueOnce({ docs: [] })
+    mockPayload.create.mockResolvedValueOnce({ id: 'r-bn' })
+
+    await POST(makeReq({
+      name: '访客', phone: '+84 90 000 0000', email: 'guest@example.com',
+      turnstileToken: 't', honeypot: '', activity: '9', occurrenceId: 'o-bn',
+      guests: 1, source: 'activity_detail', language: 'zh',
+    }, '8.8.8.8'))
+
+    const calls = vi.mocked(enqueueEmail).mock.calls.map((call) => call[1])
+    const receipt = calls.find((call) => call.to === 'guest@example.com')
+    expect(receipt).toMatchObject({
+      subject: '北宁善明小院 · 已收到你的预约',
+      fromName: '北宁善明小院',
+      replyTo: 'hello@shanmingspace.vn',
+    })
+    expect(receipt?.body).toContain('活动：周末共修')
+    expect(receipt?.body).toContain('2026年8月22日 09:00 (当地时间)')
+    const admin = calls.find((call) => call.to === 'admin@shanmingspace.vn')
+    expect(admin?.body).toContain('2026年8月22日 09:00 (当地时间)')
+    expect(JSON.stringify(calls)).not.toMatch(/Thailand|Bangkok|mindfulpeaceth\.com/i)
   })
 
   // ── Rate limiting ─────────────────────────────────────────────────────────

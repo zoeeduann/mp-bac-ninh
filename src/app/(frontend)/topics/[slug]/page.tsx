@@ -233,7 +233,7 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ sl
                         src={image}
                         alt={mediaAlt(location.heroImage, name)}
                         fill
-                        className="object-cover saturate-[0.82] transition-transform duration-500 group-hover:scale-[1.025]"
+                        className="object-contain saturate-[0.82] transition-[filter] duration-300 group-hover:saturate-100"
                         sizes="(min-width: 1024px) 28vw, (min-width: 640px) 44vw, 88vw"
                       />
                     )}

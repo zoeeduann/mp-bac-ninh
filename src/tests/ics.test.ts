@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildIcs } from '../lib/ics'
 
 const BASE_EVENT = {
-  uid: 'r-42@mindfulpeaceth.com',
+  uid: 'booking-42@shanmingspace.vn',
   startUtc: new Date('2026-06-15T02:00:00Z'),
   endUtc: new Date('2026-06-15T04:00:00Z'),
   summary: 'Introduction to Meditation',
@@ -38,6 +38,15 @@ describe('buildIcs', () => {
     expect(hasFolded).toBe(true)
   })
 
+  it('folds Unicode lines by UTF-8 octets without splitting characters', () => {
+    const ics = buildIcs({ ...BASE_EVENT, description: '北宁善明小院'.repeat(20) })
+    const encoder = new TextEncoder()
+    for (const line of ics.split('\r\n')) {
+      expect(encoder.encode(line).length).toBeLessThanOrEqual(75)
+    }
+    expect(ics).toContain('DESCRIPTION:北宁善明小院')
+  })
+
   it('starts with BEGIN:VCALENDAR and ends with END:VCALENDAR CRLF', () => {
     const ics = buildIcs(BASE_EVENT)
     expect(ics.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true)
@@ -57,5 +66,18 @@ describe('buildIcs', () => {
     expect(ics).toContain('DTEND:20260703T170000Z')
     expect(ics).toContain('LOCATION:Chiang Mai Xindeng Academy\\, Thailand')
     expect(ics).toContain('ORGANIZER:mailto:admin@mindfulpeaceth.com')
+  })
+
+  it('uses configurable Bac Ninh calendar branding and timezone', () => {
+    const ics = buildIcs({
+      ...BASE_EVENT,
+      productName: '北宁善明小院',
+      timeZone: 'Asia/Ho_Chi_Minh',
+      locationName: '北宁善明小院, 越南北宁省',
+      organizerEmail: 'hello@shanmingspace.vn',
+    })
+    expect(ics).toContain('PRODID:-//北宁善明小院//Booking//EN')
+    expect(ics).toContain('X-WR-TIMEZONE:Asia/Ho_Chi_Minh')
+    expect(ics).not.toMatch(/Thailand|Bangkok|mindfulpeaceth\.com/i)
   })
 })

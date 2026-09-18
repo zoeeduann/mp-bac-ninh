@@ -230,7 +230,7 @@ export default async function ActivityPosterPage({
           <img
             src={inlineHeroDataUrl}
             alt={heroAlt}
-            className="block w-full aspect-[4/5] object-cover"
+            className="block w-full aspect-[4/5] object-contain bg-ink/[0.04]"
           />
         ) : (
           <div className="relative aspect-[4/5] overflow-hidden">

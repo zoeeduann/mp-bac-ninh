@@ -1,3 +1,4 @@
+import { hasUsableSlug } from '@/lib/activity-list'
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload'
 import { localizedUrl } from '@/lib/locale-url'
@@ -210,6 +211,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const locSlug = typeof act.location === 'object' ? act.location.slug : null
     if (!locSlug) continue
     if (SITE_LOCATION_SLUG && locSlug !== SITE_LOCATION_SLUG) continue
+    if (!hasUsableSlug(act)) continue
     entries.push(
       ...bothLocales(locationPublicPath(locSlug, `/activities/${act.slug}`), {
         lastModified: validDate(act.updatedAt, fallbackDate),

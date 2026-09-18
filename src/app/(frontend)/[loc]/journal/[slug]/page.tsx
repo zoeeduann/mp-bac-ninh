@@ -1,3 +1,4 @@
+import { hasUsableSlug } from '@/lib/activity-list'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -226,12 +227,12 @@ export default async function JournalDetailPage({
         )}
 
         {/* Related activity link */}
-        {relatedActivity && (
+        {relatedActivity && hasUsableSlug(relatedActivity) && (
           <p className="font-sans text-[13px] text-ink-soft">
             {t(locale, 'meta.related_activity')}{' '}
             <Link
               href={locationPath(locale, locSlug, `/activities/${relatedActivity.slug}`)}
-              className="text-sky no-underline hover:text-ink transition-colors font-semibold"
+              className="inline-flex min-h-11 items-center text-blue-deep no-underline hover:text-ink transition-colors font-semibold md:min-h-0"
             >
               {relatedActivity.title} →
             </Link>

@@ -198,14 +198,14 @@ export default async function PortalHomePage() {
                 href={localePath(locale, `/${location.slug}`)}
                 className="block no-underline text-inherit overflow-hidden group"
               >
-                {/* Stable card frame; contain preserves each academy photo in full. */}
-                <div className="overflow-hidden aspect-[3/4] relative bg-ink/[0.04]">
+                {/* Portrait photo */}
+                <div className="overflow-hidden aspect-[3/4] relative">
                   {imgUrl ? (
                     <Image
                       src={imgUrl}
                       alt={imgAlt}
                       fill
-                      className="object-contain saturate-[0.84] transition-[filter] duration-300 group-hover:saturate-100"
+                      className="object-cover saturate-[0.84] transition-transform duration-[600ms] ease-out group-hover:scale-[1.02]"
                     />
                   ) : (
                     <div className="absolute inset-0 bg-ink/20" />
@@ -381,7 +381,7 @@ export default async function PortalHomePage() {
                       alt={imgAlt}
                       width={800}
                       height={600}
-                      className="w-full aspect-[4/3] object-contain bg-ink/[0.04] saturate-[0.82] block transition-[filter] duration-300 group-hover:saturate-100"
+                      className="w-full aspect-[4/3] object-cover saturate-[0.82] block transition-[filter] duration-300 group-hover:saturate-100"
                     />
                   ) : (
                     <div className="w-full aspect-[4/3] bg-ink/15" />

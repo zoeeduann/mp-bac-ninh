@@ -37,8 +37,8 @@ const notoSerifSC = Noto_Serif_SC({
 
 export const metadata = {
   metadataBase: new URL(SITE_BASE),
-  description: 'Bilingual site for Mindfulpeace Academy Thailand — three meditation academies in Bangkok, Chiang Mai, and Phuket.',
-  title: '静心学堂 · 泰国 / Mindfulpeace Academy Thailand',
+  description: '越南北宁善明小院的禅修、禅茶与正念活动。Meditation, tea and mindfulness in Bac Ninh, Vietnam.',
+  title: '越南北宁善明小院 · Bac Ninh, Vietnam',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -85,7 +85,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     }
   }
 
-  const normalizedAll = (allLocations as any[]).map(normalize)
+  // The database is shared with the Thailand academies. A dedicated
+  // deployment only ships its own academy's details to the browser.
+  const siteLocations = SITE_LOCATION_SLUG
+    ? (allLocations as any[]).filter((doc) => doc.slug === SITE_LOCATION_SLUG)
+    : (allLocations as any[])
+  const normalizedAll = siteLocations.map(normalize)
 
   return (
     <html

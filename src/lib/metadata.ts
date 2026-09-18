@@ -16,6 +16,9 @@ export interface BuildMetaOptions {
 
 export const BASE = SITE_BASE
 
+/** Courtyard photo (public/og-default.jpg, 1200×630) for pages without artwork. */
+const DEFAULT_SHARE_IMAGE = '/og-default.jpg'
+
 export function buildMetadata(opts: BuildMetaOptions): Metadata {
   const ogLocale = opts.locale === 'zh-CN' ? 'zh_CN' : 'en_US'
   const siteName =
@@ -23,6 +26,7 @@ export function buildMetadata(opts: BuildMetaOptions): Metadata {
     (opts.locale === 'zh-CN' ? '静心学堂 · 泰国' : 'Mindfulpeace Academy Thailand')
   const isThailandNetworkSite =
     siteName === '静心学堂 · 泰国' || siteName === 'Mindfulpeace Academy Thailand'
+  const imageUrl = opts.imageUrl ?? (isThailandNetworkSite ? undefined : DEFAULT_SHARE_IMAGE)
   return {
     // Resolves relative OG/Twitter image URLs to absolute URLs. Without it
     // Next warns and falls back to localhost.
@@ -62,21 +66,13 @@ export function buildMetadata(opts: BuildMetaOptions): Metadata {
       locale: ogLocale,
       type: 'website',
       siteName,
-      ...(opts.imageUrl
-        ? { images: [{ url: opts.imageUrl, width: 1200, height: 630 }] }
-        : !isThailandNetworkSite
-          ? { images: [] }
-          : {}),
+      ...(imageUrl ? { images: [{ url: imageUrl, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
-      card: opts.imageUrl ? 'summary_large_image' : 'summary',
+      card: imageUrl ? 'summary_large_image' : 'summary',
       title: opts.title,
       description: opts.description,
-      ...(opts.imageUrl
-        ? { images: [opts.imageUrl] }
-        : !isThailandNetworkSite
-          ? { images: [] }
-          : {}),
+      ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   }
 }

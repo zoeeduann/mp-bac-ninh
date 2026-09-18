@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
-import { pageTitle } from '@/lib/page-title'
+import { pageTitle, splitPlaceName } from '@/lib/page-title'
+import { activityExcerpt } from '@/lib/activity-text'
+import { PAST_ACTIVITIES_INITIAL, splitUpcomingPast } from '@/lib/activity-list'
 import { notFound } from 'next/navigation'
 import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
@@ -116,6 +118,20 @@ function mediaAlt(img: number | Media | null | undefined, fallback = ''): string
   return (img as Media).alt ?? fallback
 }
 
+const CJK = /[\u3400-\u9fff]/
+
+/** Chip classes; untranslated (Chinese) labels on /en skip uppercase tracking. */
+function chipClass(active: boolean, cjkOnEn: boolean): string {
+  return [
+    'inline-flex min-h-11 items-center font-sans text-[11px] font-semibold md:min-h-0',
+    cjkOnEn ? 'tracking-[0.04em]' : 'tracking-[0.12em] uppercase',
+    'px-4 py-[0.45rem] rounded-full border-[1.5px] no-underline transition-all duration-150',
+    active
+      ? 'bg-sky border-sky text-ink ring-1 ring-blue-deep ring-offset-1'
+      : 'border-ink/[0.18] text-ink hover:border-blue-deep hover:text-blue-deep',
+  ].join(' ')
+}
+
 /** Find the first upcoming occurrence's startAt for an activity */
 function nextOccurrenceDate(activity: Activity): string | null {
   const now = Date.now()
@@ -180,19 +196,24 @@ export default async function ActivitiesPage({
       })
     : allActivities
 
-  // Sort for the list view: soonest-upcoming first, activities with no
-  // future session sink to the bottom (same comparator as the detail page's
-  // related-activities block). Calendar view derives its own ordering from
-  // groupOccurrencesByDay below, so this sort affects the list only.
-  const sortedActivities = [...filteredActivities]
-    .map((a: any) => ({ a, next: nextOccurrenceDate(a) }))
-    .sort((x, y) => {
-      if (!x.next && !y.next) return 0
-      if (!x.next) return 1
-      if (!y.next) return -1
-      return new Date(x.next).getTime() - new Date(y.next).getTime()
-    })
-    .map((x) => x.a)
+  // List view: upcoming (soonest first), then past (most recent first).
+  // Past activities show the first PAST_ACTIVITIES_INITIAL server-side;
+  // `?past=all` renders the rest.
+  const { upcoming: upcomingActivities, past: pastActivities } = splitUpcomingPast(
+    filteredActivities as Activity[],
+  )
+  const rawPast = sp['past']
+  const showAllPast = (Array.isArray(rawPast) ? rawPast[0] : rawPast) === 'all'
+  const visiblePast = showAllPast
+    ? pastActivities
+    : pastActivities.slice(0, PAST_ACTIVITIES_INITIAL)
+  const sortedActivities = [...upcomingActivities, ...pastActivities]
+  const morePastHref = (() => {
+    const params = new URLSearchParams()
+    if (activeCat) params.set('cat', activeCat)
+    params.set('past', 'all')
+    return locationPath(locale, slug, `/activities?${params.toString()}#past`)
+  })()
 
   // ─ Calendar grid ─────────────────────────────────────────────────────
   const today = new Date()
@@ -205,7 +226,8 @@ export default async function ActivitiesPage({
   const calMonth0 = parsed ? parsed.month0 : defaultMonth0
 
   const calGrid = buildMonthGrid(calYear, calMonth0, today)
-  const occByDay = groupOccurrencesByDay(allActivities as any[])
+  // The calendar honours the category filter like the list does.
+  const occByDay = groupOccurrencesByDay(filteredActivities as any[])
 
   // Prev / next month links
   function monthParamFor(y: number, m0: number) {
@@ -252,7 +274,7 @@ export default async function ActivitiesPage({
   // Activities on the selected day
   const selectedDayChips = selectedDay ? (occByDay.get(selectedDay) ?? []) : []
   const selectedDayActivities = selectedDayChips
-    .map((chip) => allActivities.find((a: any) => a.slug === chip.activitySlug))
+    .map((chip) => filteredActivities.find((a: any) => a.slug === chip.activitySlug))
     .filter(Boolean) as Activity[]
 
   // Month heading labels
@@ -265,6 +287,95 @@ export default async function ActivitiesPage({
   const [monthZh, monthEn] = monthNames[calMonth0] ?? ['', '']
 
   const academyDisplayName = academyName(location.city, location.name)
+  const academyShortLabel = splitPlaceName(academyDisplayName).primary
+
+  // Mobile agenda: every session inside the visible two-week window.
+  const twoWeekDays = twoWeekGrid.flat().map((cell) => formatYMD(cell.date))
+  const agendaDays = twoWeekDays
+    .map((day) => ({
+      day,
+      chips: [...(occByDay.get(day) ?? [])].sort(
+        (x, y) => new Date(x.startAt).getTime() - new Date(y.startAt).getTime(),
+      ),
+    }))
+    .filter((d) => d.chips.length > 0)
+
+  const inquiryHref = locationPath(locale, slug, '/book#inquiry')
+
+  function renderCard(act: Activity & { heroImage: Media | number }, isPast: boolean) {
+    const imgUrl = activityImageUrl(act.heroImage)
+    const imgAlt = mediaAlt(act.heroImage, act.title)
+    const upcoming = nextOccurrenceDate(act)
+    const excerpt = activityExcerpt(act.shortDesc, act.title)
+    const seriesOccurrences = act.registrationMode === 'series'
+      ? (act.occurrences ?? [])
+          .filter(
+            (occ) =>
+              occ.startAt &&
+              occ.status !== 'cancelled' &&
+              occ.status !== 'deleted',
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+          )
+      : []
+
+    return (
+      <Link
+        key={act.id}
+        href={locationPath(locale, slug, `/activities/${act.slug}`)}
+        className="flex h-full min-w-0 flex-col no-underline text-inherit group"
+      >
+        <div className="relative shrink-0">
+          {imgUrl ? (
+            <ActivityImage
+              src={imgUrl}
+              alt={imgAlt}
+              width={900}
+              height={600}
+              sizes="(min-width: 768px) 33vw, 100vw"
+            />
+          ) : (
+            <div className="w-full aspect-[3/2] bg-ink/15" />
+          )}
+          {/* Share the activity poster (upcoming only; a past poster has
+              nothing to book). preventDefault keeps the card link from firing. */}
+          {!isPast && (
+            <ShareButton
+              url={locationPath(locale, slug, `/activities/${act.slug}/poster`)}
+              title={act.title as string}
+              text={excerpt ?? undefined}
+              locale={locale}
+              variant="icon"
+              className="absolute top-3 right-3"
+            />
+          )}
+        </div>
+        <div className="flex flex-1 flex-col pt-5 pb-6 pr-6 border-t border-hairline">
+          <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
+            {upcoming
+              ? seriesOccurrences.length > 0
+                ? `${formatDateCompact(new Date(seriesOccurrences[0].startAt), locale)} – ${formatDateCompact(new Date(seriesOccurrences[seriesOccurrences.length - 1].startAt), locale)} · ${isZh ? `${seriesOccurrences.length} 次系列课` : `${seriesOccurrences.length}-session series`}`
+                : formatDateCompact(new Date(upcoming), locale)
+              : t(locale, 'meta.past')}
+          </p>
+          <h3 className="font-serif text-[20px] font-medium text-ink mb-2">
+            {act.title}
+          </h3>
+          {excerpt && (
+            <p className="font-sans text-[13px] text-ink-soft mb-4 leading-[1.6] line-clamp-2">
+              {excerpt}
+            </p>
+          )}
+          <span className="mt-auto font-sans text-[12px] font-semibold text-blue-deep tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
+            {t(locale, 'cta.view_details')}
+          </span>
+        </div>
+      </Link>
+    )
+  }
+
   const activityListJsonLd = itemListJsonLd({
     name: isZh ? `${academyDisplayName}活动` : `${academyDisplayName} activities`,
     url: locationUrl(locale, slug, '/activities'),
@@ -290,7 +401,7 @@ export default async function ActivitiesPage({
         <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-5">
           {isZh
             ? `${location.name} · ${t(locale, 'eyebrow.activities')}`
-            : `${academyDisplayName} · ${t(locale, 'eyebrow.activities')}`}
+            : `${academyShortLabel} · ${t(locale, 'eyebrow.activities')}`}
         </p>
         <h1
           className="font-serif font-normal text-ink leading-[1.2] mb-3"
@@ -300,8 +411,8 @@ export default async function ActivitiesPage({
         </h1>
         <p className="font-serif text-[19px] text-ink-soft">
           {isZh
-            ? '禅修、工作坊、茶会、共修——选一个适合你的节奏。'
-            : 'Meditation, workshops, tea gatherings, community sits — find your pace.'}
+            ? '禅修、工作坊、茶会、共修，选一个适合你的节奏。'
+            : 'Meditation, workshops, tea gatherings and community sits. Find your pace.'}
         </p>
       </div>
 
@@ -310,13 +421,7 @@ export default async function ActivitiesPage({
         {/* "All" chip */}
         <Link
           href={locationPath(locale, slug, `/activities${view === 'calendar' ? '?view=calendar' : ''}`)}
-          className={[
-            'font-sans text-[11px] font-semibold tracking-[0.12em] uppercase',
-            'px-4 py-[0.45rem] rounded-full border-[1.5px] no-underline transition-all duration-150',
-            !activeCat
-              ? 'bg-sky border-sky text-ink ring-1 ring-blue-deep ring-offset-1'
-              : 'border-ink/[0.18] text-ink hover:border-sky hover:text-sky',
-          ].join(' ')}
+          className={chipClass(!activeCat, false)}
         >
           {isZh ? '全部' : 'All'}
         </Link>
@@ -328,17 +433,15 @@ export default async function ActivitiesPage({
             `/activities?cat=${cat.slug}${view === 'calendar' ? '&view=calendar' : ''}`,
           )
           const isActive = activeCat === cat.slug
+          // No English name yet: show the Chinese label as-is (marked zh so
+          // the CJK font applies) rather than inventing a translation.
+          const untranslated = !isZh && CJK.test(cat.name)
           return (
             <Link
               key={cat.id}
               href={href}
-              className={[
-                'font-sans text-[11px] font-semibold tracking-[0.12em] uppercase',
-                'px-4 py-[0.45rem] rounded-full border-[1.5px] no-underline transition-all duration-150',
-                isActive
-                  ? 'bg-sky border-sky text-ink ring-1 ring-blue-deep ring-offset-1 scale-[1.04]'
-                  : 'border-ink/[0.18] text-ink hover:border-sky hover:text-sky',
-              ].join(' ')}
+              lang={untranslated ? 'zh-CN' : undefined}
+              className={`${chipClass(isActive, untranslated)}${isActive ? ' scale-[1.04]' : ''}`}
             >
               {cat.name}
             </Link>
@@ -359,98 +462,52 @@ export default async function ActivitiesPage({
         {view === 'list' && (
           <>
             <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-12">
-              {t(locale, 'eyebrow.all_activities')}
+              {t(locale, 'eyebrow.upcoming')}
             </p>
 
-            {sortedActivities.length > 0 ? (
+            {upcomingActivities.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px]">
-                {sortedActivities.map((actDoc: any) => {
-                  const act = actDoc as Activity & { heroImage: Media | number }
-                  const imgUrl = activityImageUrl(act.heroImage)
-                  const imgAlt = mediaAlt(act.heroImage, act.title)
-                  const upcoming = nextOccurrenceDate(act)
-                  const seriesOccurrences = act.registrationMode === 'series'
-                    ? (act.occurrences ?? [])
-                        .filter(
-                          (occ) =>
-                            occ.startAt &&
-                            occ.status !== 'cancelled' &&
-                            occ.status !== 'deleted',
-                        )
-                        .sort(
-                          (a, b) =>
-                            new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
-                        )
-                    : []
-
-                  return (
-                    <Link
-                      key={act.id}
-                      href={locationPath(locale, slug, `/activities/${act.slug}`)}
-                      className="flex h-full min-w-0 flex-col no-underline text-inherit group"
-                    >
-                      <div className="relative shrink-0">
-                        {imgUrl ? (
-                          <ActivityImage
-                            src={imgUrl}
-                            alt={imgAlt}
-                            width={900}
-                            height={600}
-                            sizes="(min-width: 768px) 33vw, 100vw"
-                          />
-                        ) : (
-                          <div className="w-full aspect-[3/2] bg-ink/15" />
-                        )}
-                        {/* Share the activity poster — preventDefault keeps the
-                            card link from firing */}
-                        <ShareButton
-                          url={locationPath(locale, slug, `/activities/${act.slug}/poster`)}
-                          title={act.title as string}
-                          text={(act.shortDesc as string | null | undefined) ?? undefined}
-                          locale={locale}
-                          variant="icon"
-                          className="absolute top-3 right-3"
-                        />
-                      </div>
-                      <div className="flex flex-1 flex-col pt-5 pb-6 border-t border-hairline">
-                        {upcoming ? (
-                          <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
-                            {seriesOccurrences.length > 0
-                              ? `${formatDateCompact(new Date(seriesOccurrences[0].startAt), locale)} — ${formatDateCompact(new Date(seriesOccurrences[seriesOccurrences.length - 1].startAt), locale)} · ${isZh ? `${seriesOccurrences.length} 次系列课` : `${seriesOccurrences.length}-session series`}`
-                              : formatDateCompact(new Date(upcoming), locale)}
-                          </p>
-                        ) : (
-                          <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
-                            {t(locale, 'meta.past')}
-                          </p>
-                        )}
-                        <h3 className="font-serif text-[20px] font-medium text-ink mb-2">
-                          {act.title}
-                        </h3>
-                        {act.shortDesc && (
-                          <p className="font-sans text-[13px] text-ink-soft mb-4 leading-[1.6] whitespace-pre-line line-clamp-3">
-                            {act.shortDesc}
-                          </p>
-                        )}
-                        <span className="mt-auto font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
-                          {t(locale, 'cta.view_details')}
-                        </span>
-                      </div>
-                    </Link>
-                  )
-                })}
+                {upcomingActivities.map((act) =>
+                  renderCard(act as Activity & { heroImage: Media | number }, false),
+                )}
               </div>
             ) : (
-              <div className="min-h-[40vh] flex items-center justify-center">
-                <div className="text-center max-w-[320px]">
-                  <p className="font-serif text-[20px] text-ink-soft/60 mb-3">
-                    {isZh ? '本月暂无活动。' : 'No activities yet.'}
-                  </p>
-                  <p className="font-sans text-[13px] text-ink-soft">
-                    {t(locale, 'meta.no_activities')}
-                  </p>
+              // One short line with a next step; no duplicated placeholders.
+              <p className="font-sans text-[14px] text-ink-soft">
+                {isZh ? '近期暂无活动安排，' : 'No sessions are scheduled right now. '}
+                <Link
+                  href={inquiryHref}
+                  className="inline-flex min-h-11 items-center font-semibold text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
+                >
+                  {isZh ? '留言告诉我们你想参加什么 →' : 'Tell us what you would like to join →'}
+                </Link>
+              </p>
+            )}
+
+            {pastActivities.length > 0 && (
+              <section id="past" className="mt-24 pt-12 border-t border-hairline scroll-mt-20">
+                <h2 className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-12">
+                  {isZh ? '往期活动' : 'Past activities'}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px]">
+                  {visiblePast.map((act) =>
+                    renderCard(act as Activity & { heroImage: Media | number }, true),
+                  )}
                 </div>
-              </div>
+                {!showAllPast && pastActivities.length > visiblePast.length && (
+                  <div className="mt-12 text-center">
+                    <Link
+                      href={morePastHref}
+                      scroll={false}
+                      className="inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.06em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink"
+                    >
+                      {isZh
+                        ? `查看更多往期活动（${pastActivities.length - visiblePast.length}）`
+                        : `Show more past activities (${pastActivities.length - visiblePast.length})`}
+                    </Link>
+                  </div>
+                )}
+              </section>
             )}
           </>
         )}
@@ -476,14 +533,14 @@ export default async function ActivitiesPage({
                 <div className="flex items-center gap-3">
                   <Link
                     href={weekNavHref(prevWeekStart)}
-                    className="flex items-center justify-center w-[28px] h-[28px] rounded-full border border-hairline text-[13px] text-sky leading-none no-underline transition-colors duration-150 hover:border-sky hover:text-ink"
+                    className="flex items-center justify-center w-11 h-11 rounded-full border border-hairline text-[15px] text-blue-deep leading-none no-underline transition-colors duration-150 hover:border-blue-deep hover:text-ink"
                     aria-label={isZh ? '上两周' : 'Previous 2 weeks'}
                   >
                     ←
                   </Link>
                   <Link
                     href={weekNavHref(nextWeekStart)}
-                    className="flex items-center justify-center w-[28px] h-[28px] rounded-full border border-hairline text-[13px] text-sky leading-none no-underline transition-colors duration-150 hover:border-sky hover:text-ink"
+                    className="flex items-center justify-center w-11 h-11 rounded-full border border-hairline text-[15px] text-blue-deep leading-none no-underline transition-colors duration-150 hover:border-blue-deep hover:text-ink"
                     aria-label={isZh ? '下两周' : 'Next 2 weeks'}
                   >
                     →
@@ -491,9 +548,9 @@ export default async function ActivitiesPage({
                 </div>
               </div>
 
-              {/* 7-col grid, 2 rows. min-h-[100px] cells so chip names fit
-                  comfortably. minmax(0,1fr) defeats min-content from nowrap
-                  chips that would otherwise force overflow at 375px. */}
+              {/* 7-col grid, 2 rows. On phones a cell is too narrow for a
+                  readable title, so each session is a coloured dot and the
+                  titles live in the agenda list below the grid. */}
               <div
                 className="grid border-t border-l border-hairline"
                 style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}
@@ -520,14 +577,14 @@ export default async function ActivitiesPage({
                     <Suspense
                       key={`m-${i}`}
                       fallback={
-                        <div className="border-r border-b border-hairline p-[6px_5px] min-h-[100px]" />
+                        <div className="border-r border-b border-hairline p-[6px_5px] min-h-[64px]" />
                       }
                     >
                       <CalendarDayLink
                         dateStr={dayStr}
                         isSelected={isSelected}
                         className={[
-                          'border-r border-b border-hairline p-[6px_5px] min-h-[100px] cursor-pointer',
+                          'border-r border-b border-hairline p-[6px_5px] min-h-[64px] cursor-pointer',
                           'transition-colors duration-150 relative',
                           isSelected ? 'bg-sky/[0.09]' : 'hover:bg-sky/[0.05]',
                         ].join(' ')}
@@ -542,21 +599,23 @@ export default async function ActivitiesPage({
                           )}
                         </span>
                         {chips.length > 0 && (
-                          <div className="flex flex-col gap-[2px] mt-[2px] min-w-0">
-                            {chips.slice(0, 2).map((chip, ci) => {
-                              const { bg, text } = chipColorForCategory(chip.categorySlug)
+                          <div className="flex flex-wrap gap-[3px] mt-[6px]">
+                            <span className="sr-only">
+                              {isZh ? `${chips.length} 场活动` : `${chips.length} sessions`}
+                            </span>
+                            {chips.slice(0, 4).map((chip, ci) => {
+                              const { bg } = chipColorForCategory(chip.categorySlug)
                               return (
                                 <span
                                   key={ci}
-                                  className={`block font-sans text-[10px] font-semibold rounded-[6px] px-[4px] py-[1px] leading-[1.35] tracking-[0.01em] overflow-hidden text-ellipsis whitespace-nowrap min-w-0 ${bg} ${text}`}
-                                >
-                                  {chip.activityTitle}
-                                </span>
+                                  aria-hidden="true"
+                                  className={`block w-[7px] h-[7px] rounded-full ${bg}`}
+                                />
                               )
                             })}
-                            {chips.length > 2 && (
-                              <span className="block font-sans text-[9px] text-ink-soft pl-[2px]">
-                                +{chips.length - 2}
+                            {chips.length > 4 && (
+                              <span className="font-sans text-[9px] leading-[7px] text-ink-soft">
+                                +{chips.length - 4}
                               </span>
                             )}
                           </div>
@@ -565,6 +624,67 @@ export default async function ActivitiesPage({
                     </Suspense>
                   )
                 })}
+              </div>
+
+              {/* Agenda: readable titles for the two weeks shown above. */}
+              <div className="mt-8">
+                {agendaDays.length > 0 ? (
+                  <ol className="list-none flex flex-col">
+                    {agendaDays.map(({ day, chips }) => {
+                      const [y, m, d] = day.split('-').map(Number)
+                      const dateObj = new Date(Date.UTC(y, m - 1, d, 12))
+                      const weekday = isZh
+                        ? ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][dateObj.getUTCDay()]
+                        : dateObj.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })
+                      return (
+                        <li key={day} className="border-t border-hairline py-4 first:border-t-0 first:pt-0">
+                          <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
+                            {isZh
+                              ? `${m}月${d}日 ${weekday}`
+                              : `${weekday}, ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}`}
+                          </p>
+                          <ul className="list-none flex flex-col">
+                            {chips.map((chip, ci) => {
+                              const { bg } = chipColorForCategory(chip.categorySlug)
+                              const time = toZonedTime(new Date(chip.startAt), TZ)
+                              const hhmm = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`
+                              const past = isSessionPast(chip.startAt, today)
+                              return (
+                                <li key={`${chip.occurrenceId}-${ci}`}>
+                                  <Link
+                                    href={locationPath(
+                                      locale,
+                                      slug,
+                                      `/activities/${chip.activitySlug}${chip.occurrenceId ? `?occ=${chip.occurrenceId}` : ''}`,
+                                    )}
+                                    className="flex min-h-11 items-center gap-3 no-underline text-ink transition-colors duration-150 hover:text-blue-deep"
+                                  >
+                                    <span aria-hidden="true" className={`shrink-0 w-2 h-2 rounded-full ${bg}`} />
+                                    <span className="shrink-0 font-sans text-[13px] tabular-nums text-ink-soft">
+                                      {hhmm}
+                                    </span>
+                                    <span className={`min-w-0 font-serif text-[15px] leading-[1.4] ${past ? 'text-ink-soft' : ''}`}>
+                                      {chip.activityTitle}
+                                      {past && (
+                                        <span className="ml-2 font-sans text-[11px] text-ink-soft">
+                                          {isZh ? '已结束' : 'Ended'}
+                                        </span>
+                                      )}
+                                    </span>
+                                  </Link>
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                ) : (
+                  <p className="font-sans text-[13px] text-ink-soft">
+                    {isZh ? '这两周暂无活动安排。' : 'Nothing scheduled in these two weeks.'}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -580,14 +700,14 @@ export default async function ActivitiesPage({
               <div className="flex items-center gap-[1.1rem]">
                 <Link
                   href={calNavHref(prevM.y, prevM.m)}
-                  className="flex items-center justify-center w-[28px] h-[28px] rounded-full border border-hairline text-[13px] text-sky leading-none no-underline transition-colors duration-150 hover:border-sky hover:text-ink"
+                  className="flex items-center justify-center w-[28px] h-[28px] rounded-full border border-hairline text-[13px] text-blue-deep leading-none no-underline transition-colors duration-150 hover:border-blue-deep hover:text-ink"
                   aria-label="Previous month"
                 >
                   ←
                 </Link>
                 <Link
                   href={calNavHref(nextM.y, nextM.m)}
-                  className="flex items-center justify-center w-[28px] h-[28px] rounded-full border border-hairline text-[13px] text-sky leading-none no-underline transition-colors duration-150 hover:border-sky hover:text-ink"
+                  className="flex items-center justify-center w-[28px] h-[28px] rounded-full border border-hairline text-[13px] text-blue-deep leading-none no-underline transition-colors duration-150 hover:border-blue-deep hover:text-ink"
                   aria-label="Next month"
                 >
                   →
@@ -713,7 +833,7 @@ export default async function ActivitiesPage({
                         ) : (
                           <div className="w-full aspect-[3/2] bg-ink/15" />
                         )}
-                        <div className="flex flex-1 flex-col pt-3 pb-4 border-t border-hairline">
+                        <div className="flex flex-1 flex-col pt-3 pb-4 pr-6 border-t border-hairline">
                           {chip?.startAt && (
                             <p className="font-sans text-[13px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-1">
                               {formatDateCompact(new Date(chip.startAt), locale)}
@@ -725,7 +845,7 @@ export default async function ActivitiesPage({
                           <div className="mt-auto flex items-center gap-4 pt-3 flex-wrap">
                             <Link
                               href={locationPath(locale, slug, `/activities/${act.slug}`)}
-                              className="font-sans text-[11px] font-semibold tracking-[0.06em] text-sky no-underline transition-colors duration-150 hover:text-ink"
+                              className="inline-flex min-h-11 items-center font-sans text-[11px] font-semibold tracking-[0.06em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
                             >
                               {t(locale, 'cta.view_details')}
                             </Link>
@@ -737,7 +857,7 @@ export default async function ActivitiesPage({
                               ) : (
                                 <Link
                                   href={locationPath(locale, slug, `/book?activity=${act.slug}&occ=${chip.occurrenceId}&src=calendar`)}
-                                  className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink bg-sky rounded-full px-[1.1rem] py-[0.45rem] no-underline transition-colors duration-150 hover:bg-blue-deep hover:text-paper"
+                                  className="inline-flex min-h-11 items-center font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-paper bg-blue-deep rounded-full px-[1.1rem] py-[0.45rem] no-underline transition-colors duration-150 hover:bg-ink md:min-h-0"
                                 >
                                   {t(locale, 'cta.book_now')}
                                 </Link>

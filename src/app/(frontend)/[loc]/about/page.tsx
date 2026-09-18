@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { pageTitle } from '@/lib/page-title'
+import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -121,7 +121,7 @@ export default async function AboutPage({
               className="font-serif text-paper leading-[1.1]"
               style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
             >
-              {location.name}
+              {splitPlaceName(location.name).primary}
             </h1>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default async function AboutPage({
               className="font-serif font-normal text-ink leading-[1.1]"
               style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
             >
-              {location.name}
+              {splitPlaceName(location.name).primary}
             </h1>
           </div>
         )}

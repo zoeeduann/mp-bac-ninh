@@ -185,7 +185,7 @@ export default async function AcademyHomePage({
         />
         {/* text content */}
         <div
-          className="absolute left-[8%] bottom-[12%] max-w-[580px]"
+          className="absolute left-[8%] right-[6vw] bottom-[12%] max-w-[580px]"
           style={{ textShadow: 'var(--shadow-hero)' }}
         >
           <p className={`font-sans text-[11px] font-semibold ${isZh ? 'tracking-[0.32em]' : 'tracking-[0.22em] uppercase'} text-paper/75 mb-5`}>

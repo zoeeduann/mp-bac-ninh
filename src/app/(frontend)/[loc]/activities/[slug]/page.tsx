@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
@@ -64,7 +65,7 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const category =
     typeof activity.category === 'object' ? (activity.category as Category) : null
-  const title = activity.seoTitle?.trim() || `${activity.title} — ${displayName}`
+  const title = activity.seoTitle?.trim() || pageTitle(locale, activity.title, displayName)
   const description = activitySeoDescription({
     locale,
     title: activity.title,
@@ -450,7 +451,7 @@ export default async function ActivityDetailPage({
             */}
             <ShareButton
               url={locationPath(locale, locSlug, `/activities/${activity.slug}`)}
-              title={`${activity.title} — ${academyDisplayName}`}
+              title={pageTitle(locale, activity.title, academyDisplayName)}
               text={(activity.shortDesc as string | null | undefined) ?? undefined}
               locale={locale}
               variant="label"

@@ -422,7 +422,7 @@ export default function BookingModal({
               )}
               {!contactError && (
                 <p className="font-sans text-[11px] text-ink-soft mt-1">
-                  {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo — at least one'}
+                  {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo (at least one)'}
                 </p>
               )}
             </div>

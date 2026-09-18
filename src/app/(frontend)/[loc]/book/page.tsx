@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 
 import {
@@ -27,9 +28,7 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const siteName = locationSiteName(location, locale)
-  const title = locale === 'zh-CN'
-    ? `预约 — ${displayName}`
-    : `Book a Session — ${displayName}`
+  const title = pageTitle(locale, locale === 'zh-CN' ? '预约' : 'Book a Session', displayName)
   const description = locale === 'zh-CN'
     ? `预约${displayName}的禅修、工作坊或茶会，或留言咨询。`
     : `Reserve a meditation session, workshop, or tea gathering at ${displayName}. Free inquiry welcome.`

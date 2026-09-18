@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { getLocale, t } from '@/lib/i18n'
@@ -31,10 +32,12 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const pageTitle = locale === 'zh-CN'
-    ? `联系 ${displayName}`
-    : `Contact ${displayName}`
-  const title = inThailandNetwork ? `${pageTitle} — ${siteName}` : pageTitle
+  const title = pageTitle(
+    locale,
+    locale === 'zh-CN' ? '联系' : 'Contact',
+    displayName,
+    inThailandNetwork ? siteName : null,
+  )
   const description = locale === 'zh-CN'
     ? `联系${displayName}，了解${location.city}佛学、禅修、正念与静坐活动的微信、邮箱、地址和到访方式。`
     : `Contact ${displayName} in ${location.city} for Buddhism, Zen meditation, mindfulness, and sitting practice by email, WeChat, or in person.`

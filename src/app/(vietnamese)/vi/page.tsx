@@ -309,7 +309,7 @@ export default async function VietnameseThienMinhPage() {
               Thiện Minh Tiểu Viện tọa lạc tại Bắc Ninh, là một không gian yên tĩnh đồng hành cùng việc tu học trong đời sống hằng ngày. Chúng tôi không cố truyền dạy điều gì; chỉ cùng nhau ngồi thiền, uống trà, đọc sách và đi bộ. Người ghé thăm sẽ cảm nhận nơi đây không có sự thúc ép, chỉ có một nhịp sống nhẹ nhàng và khoan thai.
             </p>
             <p className="font-serif text-[18px] leading-[1.75] text-ink-soft">
-              Thiện Minh Tiểu Viện — không gian tu học tại Bắc Ninh. Cùng ngồi thiền, uống trà, đọc sách và bước đi trong tỉnh thức.
+              Thiện Minh Tiểu Viện, không gian tu học tại Bắc Ninh. Cùng ngồi thiền, uống trà, đọc sách và bước đi trong tỉnh thức.
             </p>
           </div>
         </section>

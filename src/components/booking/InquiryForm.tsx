@@ -233,7 +233,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         >
           {isZh ? '邮箱' : 'Email'}
           <span className="text-[10px] font-normal tracking-normal normal-case ml-[0.6rem] opacity-70">
-            {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo — at least one required'}
+            {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo (at least one)'}
           </span>
         </label>
         <input

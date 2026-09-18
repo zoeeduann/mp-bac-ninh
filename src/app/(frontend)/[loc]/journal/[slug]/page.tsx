@@ -1,4 +1,5 @@
 import { hasUsableSlug } from '@/lib/activity-list'
+import { pageTitle } from '@/lib/page-title'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -58,9 +59,12 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = locale === 'zh-CN'
-    ? `${entry.title} — ${displayName} 现场`
-    : `${entry.title} — ${displayName} Journal`
+  const title = pageTitle(
+    locale,
+    entry.title,
+    locale === 'zh-CN' ? '学堂笔记' : 'Journal',
+    displayName,
+  )
   const description = locale === 'zh-CN'
     ? `${displayName}的现场记录：${entry.title}`
     : `A journal entry from ${displayName}: ${entry.title}`

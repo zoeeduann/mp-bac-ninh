@@ -38,7 +38,7 @@ const notoSerifSC = Noto_Serif_SC({
 export const metadata = {
   metadataBase: new URL(SITE_BASE),
   description: '越南北宁善明小院的禅修、禅茶与正念活动。Meditation, tea and mindfulness in Bac Ninh, Vietnam.',
-  title: '越南北宁善明小院 · Bac Ninh, Vietnam',
+  title: '越南北宁善明小院｜Bac Ninh, Vietnam',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

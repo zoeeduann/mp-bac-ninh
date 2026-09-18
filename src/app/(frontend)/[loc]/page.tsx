@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
@@ -49,7 +50,7 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const title = inThailandNetwork ? `${displayName} — ${siteName}` : displayName
+  const title = pageTitle(locale, displayName, inThailandNetwork ? siteName : null)
   const description = locationSeoDescription({
     locale,
     displayName,
@@ -330,7 +331,7 @@ export default async function AcademyHomePage({
             <p className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] mb-6">
               {isZh
                 ? `${location.name}坐落于${location.city}，是一处与日常修学相伴的安静空间。我们不教授什么，只是一起静坐、喝茶、读书、走路。来访的人会发现，这里没有规则，只有一种不疾不徐的节奏。`
-                : `${location.name} is a quiet space for daily practice in ${location.city}. We don't teach anything — we simply sit together, drink tea, read, and walk. Visitors find that there are no rules here, only a gentle, unhurried rhythm.`}
+                : `${location.name} is a quiet space for daily practice in ${location.city}. We don't teach anything; we simply sit together, drink tea, read, and walk. Visitors find that there are no rules here, only a gentle, unhurried rhythm.`}
             </p>
           )}
 

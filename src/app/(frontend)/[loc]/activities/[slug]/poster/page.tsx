@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { pageTitle } from '@/lib/page-title'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -99,7 +100,7 @@ export async function generateMetadata({
       : `Join "${activity.title}" at ${displayName}.`)
 
   return buildMetadata({
-    title: `${activity.title} — ${displayName}`,
+    title: pageTitle(locale, activity.title, displayName),
     description,
     url: locationUrl(locale, p.loc, `/activities/${p.slug}/poster`),
     imageUrl: heroImgUrl,
@@ -214,7 +215,7 @@ export default async function ActivityPosterPage({
           </div>
           <ShareButton
             url={posterPath}
-            title={`${activity.title} — ${academyDisplayName}`}
+            title={pageTitle(locale, activity.title, academyDisplayName)}
             text={(activity.shortDesc as string | null | undefined) ?? undefined}
             locale={locale}
             variant="icon"

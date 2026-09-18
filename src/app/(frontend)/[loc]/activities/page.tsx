@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
@@ -50,9 +51,7 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = locale === 'zh-CN'
-    ? `活动 — ${displayName}`
-    : `Activities — ${displayName}`
+  const title = pageTitle(locale, locale === 'zh-CN' ? '活动' : 'Activities', displayName)
   const description = locale === 'zh-CN'
     ? `${displayName}的全部活动：佛学、禅修、正念、静坐、工作坊、茶会与共修。查看日程并预约。`
     : `All activities at ${displayName}: Buddhism, Zen meditation, mindfulness, workshops, tea gatherings, and community sits.`

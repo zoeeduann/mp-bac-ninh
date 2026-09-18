@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -29,9 +30,7 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = locale === 'zh-CN'
-    ? `现场 — ${displayName}`
-    : `Journal — ${displayName}`
+  const title = pageTitle(locale, locale === 'zh-CN' ? '学堂笔记' : 'Journal', displayName)
   const description = locale === 'zh-CN'
     ? `${displayName}的学堂笔记与现场记录：佛学、禅修、正念、禅茶、读书、共修与日常修学。`
     : `Journal entries from ${displayName}: Buddhism, Zen meditation, mindfulness, tea practice, reading, and daily contemplative life.`

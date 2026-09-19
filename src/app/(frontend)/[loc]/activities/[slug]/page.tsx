@@ -757,7 +757,7 @@ export default async function ActivityDetailPage({
 
       {/* ─── MOBILE STICKY BOOKING BAR ───────────────────────────── */}
       {stickyBooking && (
-        <div className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-paper/95 backdrop-blur-sm px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div data-sticky-booking className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-paper/95 backdrop-blur-sm px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-4">
             <div className="min-w-0 flex-1">
               <p className="font-sans text-[10px] font-semibold tracking-[0.14em] uppercase text-ink-soft">

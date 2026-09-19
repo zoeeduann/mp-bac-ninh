@@ -60,3 +60,11 @@
     outline-offset: 4px;
   }
 }
+
+/* A page with the mobile sticky booking bar reserves room below the footer,
+   so the bar never covers the last lines of the page. */
+@media (max-width: 767px) {
+  body:has([data-sticky-booking]) {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}

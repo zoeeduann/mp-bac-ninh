@@ -107,7 +107,7 @@ export const Locations: CollectionConfig = {
       },
       admin: {
         description: {
-          zh: '仅泰国站的曼谷、清迈、普吉学堂勾选。独立页面（如越南北宁善明小院）请取消勾选，便不会出现在泰国总门户、学堂切换或网络聚合内容中。',
+          zh: '仅泰国站的曼谷、清迈、普吉学堂勾选。独立页面（如越南北宁善明静心小院）请取消勾选，便不会出现在泰国总门户、学堂切换或网络聚合内容中。',
           en: 'Enable only for Thailand-network academies. Standalone pages stay accessible but are excluded from the Thailand portal, switcher, and network feeds.',
         },
         position: 'sidebar',

@@ -128,7 +128,7 @@ export async function generateMetadata(): Promise<Metadata> {
       'thiền trà Bắc Ninh',
       'chánh niệm Bắc Ninh',
       'tu học Bắc Ninh',
-      'Mindful Peace Yard Bac Ninh',
+      'Shanming Mindful Peace Yard',
     ],
     alternates: {
       canonical: `${SITE_BASE}/vi`,
@@ -184,7 +184,7 @@ export default async function VietnameseThienMinhPage() {
       '@type': 'Place',
       '@id': placeId,
       name: 'Thiện Minh Tiểu Viện',
-      alternateName: ['静心小院 · 北宁善明', 'Mindful Peace Yard Bac Ninh'],
+      alternateName: ['静心小院 · 北宁善明', 'Shanming Mindful Peace Yard', 'Mindful Peace Yard Bac Ninh'],
       url: `${SITE_BASE}/vi`,
       description,
       address: {

@@ -8,6 +8,8 @@ import * as addCampaignMetrics from './20260901_120000_add_campaign_metrics'
 // Shared with the Thailand site under the same name: already recorded in the
 // shared payload_migrations table, and idempotent on a fresh database.
 import * as mediaLandscapeCover from './20260906_140000_media_landscape_cover'
+import * as shanmingNames from './20260920_150000_shanming_names'
+import * as mergeDuplicateActivities from './20260920_151000_merge_duplicate_activities'
 
 export const migrations = [
   {
@@ -49,5 +51,15 @@ export const migrations = [
     name: '20260906_140000_media_landscape_cover',
     up: mediaLandscapeCover.up,
     down: mediaLandscapeCover.down,
+  },
+  {
+    name: '20260920_150000_shanming_names',
+    up: shanmingNames.up,
+    down: shanmingNames.down,
+  },
+  {
+    name: '20260920_151000_merge_duplicate_activities',
+    up: mergeDuplicateActivities.up,
+    down: mergeDuplicateActivities.down,
   },
 ]

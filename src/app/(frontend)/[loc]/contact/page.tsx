@@ -20,6 +20,8 @@ import { locationSeoKeywords } from '@/lib/seo'
 import { academyName } from '@/lib/short-name'
 import type { Media } from '@/payload-types'
 import TrackedLink from '@/components/analytics/TrackedLink'
+import { bacNinhSeo } from '@/lib/bac-ninh-seo'
+import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 
 export async function generateMetadata({
   params,
@@ -34,13 +36,14 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const title = pageTitle(
+  const bn = bacNinhSeo(location.slug, locale)
+  const title = bn?.contactTitle ?? pageTitle(
     locale,
     locale === 'zh-CN' ? '联系' : 'Contact',
     displayName,
     inThailandNetwork ? siteName : null,
   )
-  const description = locale === 'zh-CN'
+  const description = bn?.contactDescription ?? locale === 'zh-CN'
     ? `联系${displayName}，了解${location.city}佛学、禅修、正念与静坐活动的微信、邮箱、地址和到访方式。`
     : `Contact ${displayName} in ${location.city} for Buddhism, Zen meditation, mindfulness, and sitting practice by email, WeChat, or in person.`
 
@@ -96,6 +99,15 @@ export default async function ContactPage({
 
   return (
     <div>
+      <JsonLd
+        data={placePageBreadcrumbJsonLd({
+          locale,
+          locSlug: slug,
+          placeName: splitPlaceName(academyName(location.city, location.name)).primary,
+          pageName: t(locale, 'nav.contact'),
+          pagePath: '/contact',
+        })}
+      />
       {faqJsonLd && <JsonLd data={faqJsonLd} />}
       {/* ─── HEADER ───────────────────────────────── */}
       <section className="px-[6vw] py-28">

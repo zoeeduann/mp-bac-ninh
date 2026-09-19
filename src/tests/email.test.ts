@@ -21,9 +21,9 @@ afterEach(() => {
 
 describe.each(['smtp', 'resend'] as const)('email sender branding via %s', (provider) => {
   it.each([
-    { site: 'bac-ninh', fromName: undefined, expected: '越南北宁善明小院' },
-    { site: 'bac-ninh', fromName: '', expected: '越南北宁善明小院' },
-    { site: 'bac-ninh', fromName: 'Mindful Peace Yard Bac Ninh', expected: 'Mindful Peace Yard Bac Ninh' },
+    { site: 'bac-ninh', fromName: undefined, expected: '越南北宁善明静心小院' },
+    { site: 'bac-ninh', fromName: '', expected: '越南北宁善明静心小院' },
+    { site: 'bac-ninh', fromName: 'Shanming Mindful Peace Yard', expected: 'Shanming Mindful Peace Yard' },
     { site: '', fromName: undefined, expected: '静心学堂 · 泰国' },
   ])('uses $expected for the outgoing sender header', async ({ site, fromName, expected }) => {
     vi.stubEnv('NEXT_PUBLIC_SITE_LOCATION_SLUG', site)

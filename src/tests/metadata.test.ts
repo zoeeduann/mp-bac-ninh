@@ -2,18 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { buildMetadata } from '@/lib/metadata'
 
 const base = {
-  title: '善明小院',
+  title: '善明静心小院',
   description: '越南北宁的一处安静修学空间',
   url: 'https://mindfulpeacebacninh.com/activities',
   locale: 'zh-CN' as const,
-  siteName: '越南北宁善明小院',
+  siteName: '越南北宁善明静心小院',
 }
 
 describe('buildMetadata', () => {
   it('uses the independent location identity', () => {
     const metadata = buildMetadata(base)
-    expect(metadata.applicationName).toBe('越南北宁善明小院')
-    expect(metadata.openGraph).toMatchObject({ siteName: '越南北宁善明小院' })
+    expect(metadata.applicationName).toBe('越南北宁善明静心小院')
+    expect(metadata.openGraph).toMatchObject({ siteName: '越南北宁善明静心小院' })
   })
 
   it('falls back to the courtyard photo when a page has no image of its own', () => {

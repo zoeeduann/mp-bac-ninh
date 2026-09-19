@@ -39,7 +39,7 @@ export async function GET(): Promise<Response> {
       return new Response('Location not found', { status: 404 })
     }
 
-    const body = `# ${location.name} / Mindfulpeace Bac Ninh
+    const body = `# ${location.name} / Shanming Mindful Peace Yard
 
 > ${location.tagline || `${location.name}坐落于${location.city}，提供佛学、禅修、正念、静坐、禅茶与身心安顿活动。`}
 > An independent bilingual practice space in ${location.city}, Vietnam.
@@ -61,8 +61,8 @@ ${location.email ? `- 邮箱 / Email: ${location.email}` : ''}
 ${location.phone ? `- 电话 / Phone: ${location.phone}` : ''}
 ${location.wechatId ? `- 微信 / WeChat: ${location.wechatId}` : ''}
 
-这是越南北宁善明小院的独立官网。
-This is the independent official website of Mindfulpeace Bac Ninh in Vietnam.
+这是越南北宁善明静心小院的独立官网。
+This is the independent official website of Shanming Mindful Peace Yard in Vietnam.
 `
 
     return new Response(body, {

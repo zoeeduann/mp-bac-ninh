@@ -10,7 +10,7 @@ export function pageTitle(locale: Locale, ...parts: (string | null | undefined)[
 }
 
 /**
- * Split a CMS place name like "Thien Minh Courtyard · Bac Ninh, Vietnam" into
+ * Split a CMS place name like "Shanming Mindful Peace Yard · Bac Ninh, Vietnam" into
  * the name proper and its locality. Names without " · " stay whole.
  */
 export function splitPlaceName(name: string): { primary: string; secondary: string | null } {

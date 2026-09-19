@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripLocale } from '@/lib/locale-url'
+import { localePath, stripLocale } from '@/lib/locale-url'
+import { MERGED_ACTIVITY_PATHS } from '@/lib/merged-activities'
 import type { Locale } from '@/lib/i18n'
 import { SITE_LOCATION_SLUG } from '@/lib/site-config'
 
@@ -65,6 +66,14 @@ export function middleware(req: NextRequest) {
   }
 
   const { locale, rewritePath, xPathname } = resolveLocaleRewrite(req.nextUrl.pathname)
+
+  // Duplicate activity pages merged into one per series keep working.
+  const merged = SITE_LOCATION_SLUG ? MERGED_ACTIVITY_PATHS[xPathname] : undefined
+  if (merged) {
+    const url = req.nextUrl.clone()
+    url.pathname = localePath(locale, merged)
+    return NextResponse.redirect(url, 308)
+  }
 
   const requestHeaders = new Headers(req.headers)
   requestHeaders.set('x-locale', locale)

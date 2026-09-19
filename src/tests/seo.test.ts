@@ -60,7 +60,7 @@ describe('SEO helpers', () => {
     const keywords = locationSeoKeywords(
       'zh-CN',
       '越南北宁',
-      '善明小院',
+      '善明静心小院',
       [],
       false,
     )

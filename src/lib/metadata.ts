@@ -12,6 +12,8 @@ export interface BuildMetaOptions {
   siteName?: string
   alternateLanguages?: { 'zh-CN'?: string; en?: string; vi?: string }
   keywords?: string[]
+  /** Keep the page out of search results while still following its links. */
+  noindex?: boolean
 }
 
 export const BASE = SITE_BASE
@@ -36,10 +38,10 @@ export function buildMetadata(opts: BuildMetaOptions): Metadata {
     applicationName: siteName,
     keywords: opts.keywords?.length ? opts.keywords : seoKeywords(opts.locale),
     robots: {
-      index: true,
+      index: !opts.noindex,
       follow: true,
       googleBot: {
-        index: true,
+        index: !opts.noindex,
         follow: true,
         'max-image-preview': 'large',
         'max-snippet': -1,

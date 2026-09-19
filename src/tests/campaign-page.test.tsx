@@ -10,7 +10,7 @@ vi.mock('@/lib/campaign-content', async (importOriginal) => {
       location: {
         id: 4,
         slug: 'bac-ninh',
-        name: '越南北宁善明小院',
+        name: '越南北宁善明静心小院',
         address: 'Bac Ninh, Vietnam',
         heroImage: null,
       },

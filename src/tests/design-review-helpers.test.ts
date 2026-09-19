@@ -92,7 +92,7 @@ describe('activity list helpers', () => {
 
 describe('pageTitle', () => {
   it('uses the full-width bar in Chinese and a spaced bar in English', () => {
-    expect(pageTitle('zh-CN', '学堂笔记', '善明小院')).toBe('学堂笔记｜善明小院')
+    expect(pageTitle('zh-CN', '学堂笔记', '善明静心小院')).toBe('学堂笔记｜善明静心小院')
     expect(pageTitle('en', 'Journal', 'Thien Minh Courtyard')).toBe('Journal | Thien Minh Courtyard')
     expect(pageTitle('en', 'Activities', '', null)).toBe('Activities')
     expect(pageTitle('zh-CN', 'a', 'b')).not.toContain('—')
@@ -103,7 +103,7 @@ describe('pageTitle', () => {
       primary: 'Thien Minh Courtyard',
       secondary: 'Bac Ninh, Vietnam',
     })
-    expect(splitPlaceName('越南北宁善明小院')).toEqual({ primary: '越南北宁善明小院', secondary: null })
+    expect(splitPlaceName('越南北宁善明静心小院')).toEqual({ primary: '越南北宁善明静心小院', secondary: null })
     expect(withCountry('Bac Ninh, Vietnam', 'Vietnam')).toBe('Bac Ninh, Vietnam')
     expect(withCountry('Bac Ninh', 'Vietnam')).toBe('Bac Ninh · Vietnam')
   })

@@ -70,7 +70,9 @@ export const Journal: CollectionConfig = {
       hooks: {
         beforeValidate: [
           async ({ value, data }) => {
-            if (value) return value
+            // Hand-typed slugs go through the same normalization, so spaces,
+            // colons and capitals can never reach a public URL.
+            if (typeof value === 'string' && value.trim()) return slugify(value)
             const zhTitle = (data as any)?.title ?? ''
             if (!zhTitle) return ''
             // Same pattern as Activities slug: translate the Chinese title to

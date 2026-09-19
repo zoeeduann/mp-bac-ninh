@@ -8,6 +8,7 @@
 import type { Locale } from './i18n'
 import { BASE } from './metadata'
 import { NETWORK_ALTERNATE_NAMES, networkSeoDescription, seoKeywordText, seoTopics } from './seo'
+import { locationUrl } from './site-config'
 
 type Json = Record<string, unknown>
 
@@ -164,6 +165,20 @@ export interface LocalBusinessInput {
   description?: string | null
   sameAs?: string[]
   isThailandNetwork?: boolean
+  /** Replaces the generated alternate names (which assume a Thai 学堂). */
+  alternateNames?: string[]
+  /** Structured address; takes precedence over the free-text `address`. */
+  postalAddress?: {
+    streetAddress: string
+    addressLocality: string
+    addressRegion: string
+    addressCountry: string
+    postalCode?: string
+  }
+  /** Parent organization for places outside the Thailand network. */
+  parentOrganization?: { name: string; url: string }
+  /** ISO 4217 currency for the free offers (THB in the Thailand network). */
+  priceCurrency?: string
 }
 
 /**
@@ -180,23 +195,31 @@ export function localBusinessJsonLd(input: LocalBusinessInput): Json {
     '@type': ['LocalBusiness', 'EducationalOrganization'],
     '@id': `${input.url}#localbusiness`,
     name: input.displayName,
-    alternateName: [
-      input.displayName,
-      input.locale === 'zh-CN' ? `${input.city}静心学堂` : `${input.city} Mindfulpeace Academy`,
-    ],
+    alternateName:
+      input.alternateNames && input.alternateNames.length > 0
+        ? Array.from(new Set([input.displayName, ...input.alternateNames]))
+        : [
+            input.displayName,
+            input.locale === 'zh-CN' ? `${input.city}静心学堂` : `${input.city} Mindfulpeace Academy`,
+          ],
     url: input.url,
     image: absoluteUrl(input.imageUrl),
+    // Every activity is free to join; stated outright rather than only as a
+    // zero price in the offer catalog.
+    isAccessibleForFree: true,
     description:
       input.description ??
       (isThailandNetwork ? networkSeoDescription(input.locale) : undefined),
     email: input.email ?? undefined,
     telephone: input.phone ?? undefined,
-    address: compact({
-      '@type': 'PostalAddress',
-      streetAddress: input.address ?? undefined,
-      addressLocality: input.city,
-      addressCountry: isThailandNetwork ? 'TH' : undefined,
-    }),
+    address: input.postalAddress
+      ? { '@type': 'PostalAddress', ...input.postalAddress }
+      : compact({
+          '@type': 'PostalAddress',
+          streetAddress: input.address ?? undefined,
+          addressLocality: input.city,
+          addressCountry: isThailandNetwork ? 'TH' : undefined,
+        }),
     geo: geo
       ? { '@type': 'GeoCoordinates', latitude: geo.latitude, longitude: geo.longitude }
       : undefined,
@@ -206,7 +229,9 @@ export function localBusinessJsonLd(input: LocalBusinessInput): Json {
           name: ORG_NAME_EN,
           url: BASE,
         }
-      : undefined,
+      : input.parentOrganization
+        ? { '@type': 'Organization', ...input.parentOrganization }
+        : undefined,
     areaServed: [
       { '@type': 'City', name: input.city },
       ...(isThailandNetwork ? [{ '@type': 'Country', name: 'Thailand' }] : []),
@@ -224,7 +249,11 @@ export function localBusinessJsonLd(input: LocalBusinessInput): Json {
           '@type': 'Offer',
           itemOffered: { '@type': 'Service', name },
           price: '0',
-          ...(isThailandNetwork ? { priceCurrency: 'THB' } : {}),
+          ...(isThailandNetwork
+            ? { priceCurrency: 'THB' }
+            : input.priceCurrency
+              ? { priceCurrency: input.priceCurrency }
+              : {}),
         })),
     },
     sameAs: input.sameAs && input.sameAs.length > 0 ? input.sameAs : undefined,
@@ -371,4 +400,18 @@ export function articleJsonLd(input: {
     about: topicThings(input.locale),
     keywords: input.keywords?.join(', ') ?? seoKeywordText(input.locale),
   })
+}
+
+/** Place home → page breadcrumb for a location's sub-pages. */
+export function placePageBreadcrumbJsonLd(input: {
+  locale: Locale
+  locSlug: string
+  placeName: string
+  pageName: string
+  pagePath: string
+}): Json {
+  return breadcrumbJsonLd([
+    { name: input.placeName, url: locationUrl(input.locale, input.locSlug) },
+    { name: input.pageName, url: locationUrl(input.locale, input.locSlug, input.pagePath) },
+  ])
 }

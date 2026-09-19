@@ -14,7 +14,7 @@ export function activityShareImageUrl(activity: Activity, locale: Locale, base =
 
 /** The academy's CMS name, else the Bac Ninh brand. */
 export function shareBrandName(locationName: string | null | undefined, locale: Locale): string {
-  return locationName?.trim() || (locale === 'en' ? 'Mindful Peace Yard Bac Ninh' : '越南北宁善明小院')
+  return locationName?.trim() || (locale === 'en' ? 'Shanming Mindful Peace Yard' : '越南北宁善明静心小院')
 }
 
 /** Bare public host, e.g. mindfulpeacebacninh.com. */

@@ -40,6 +40,8 @@ import type { Media, Activity } from '@/payload-types'
 import { ViewToggle } from '@/components/activities/ViewToggle'
 import { CalendarDayLink } from '@/components/activities/CalendarDayLink'
 import ShareButton from '@/components/activities/ShareButton'
+import { bacNinhSeo } from '@/lib/bac-ninh-seo'
+import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 
 export async function generateMetadata({
   params,
@@ -53,16 +55,20 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = pageTitle(locale, locale === 'zh-CN' ? '活动' : 'Activities', displayName)
-  const description = locale === 'zh-CN'
+  const bn = bacNinhSeo(location.slug, locale)
+  const title = bn?.activitiesTitle ?? pageTitle(locale, locale === 'zh-CN' ? '活动' : 'Activities', displayName)
+  const description = bn?.activitiesDescription ?? (locale === 'zh-CN'
     ? `${displayName}的全部活动：佛学、禅修、正念、静坐、工作坊、茶会与共修。查看日程并预约。`
-    : `All activities at ${displayName}: Buddhism, Zen meditation, mindfulness, workshops, tea gatherings, and community sits.`
+    : `All activities at ${displayName}: Buddhism, Zen meditation, mindfulness, workshops, tea gatherings, and community sits.`)
+  // An empty list (e.g. English with nothing translated yet) is a thin page.
+  const listed = (await getAllPublishedActivitiesForLocation(location.id, locale)).length
 
   return buildMetadata({
     title,
     description,
     url: locationUrl(locale, p.loc, '/activities'),
     locale,
+    noindex: listed === 0,
     siteName: locationSiteName(location, locale),
     keywords: locationSeoKeywords(locale, location.city, displayName, [
       locale === 'zh-CN' ? '禅修活动' : 'meditation classes',
@@ -392,6 +398,15 @@ export default async function ActivitiesPage({
 
   return (
     <div>
+      <JsonLd
+        data={placePageBreadcrumbJsonLd({
+          locale,
+          locSlug: slug,
+          placeName: splitPlaceName(academyName(location.city, location.name)).primary,
+          pageName: t(locale, 'nav.activities'),
+          pagePath: '/activities',
+        })}
+      />
       {sortedActivities.length > 0 && <JsonLd data={activityListJsonLd} />}
       {/* ─── PAGE HEADER BAND ───────────────────────────────────────── */}
       <div
@@ -407,7 +422,7 @@ export default async function ActivitiesPage({
           className="font-serif font-normal text-ink leading-[1.2] mb-3"
           style={{ fontSize: 'clamp(28px, 4vw, 50px)' }}
         >
-          {t(locale, 'section.few_ways_in')}
+          {bacNinhSeo(location.slug, locale)?.activitiesHeading ?? t(locale, 'section.few_ways_in')}
         </h1>
         <p className="font-serif text-[19px] text-ink-soft">
           {isZh

@@ -177,7 +177,7 @@ export default function CampaignLeadForm({
           disabled={state === 'sending'}
         />
         <span>
-          我同意善明小院使用以上资料，通过 Zalo 联系并回复本次咨询。
+          我同意善明静心小院使用以上资料，通过 Zalo 联系并回复本次咨询。
           <a href="#privacy">资料使用说明</a>
         </span>
       </label>

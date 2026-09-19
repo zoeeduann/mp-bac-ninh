@@ -15,6 +15,9 @@ import { buildMetadata } from '@/lib/metadata'
 import { locationUrl } from '@/lib/site-config'
 import UpcomingSessionsList from '@/components/booking/UpcomingSessionsList'
 import InquiryForm from '@/components/booking/InquiryForm'
+import { bacNinhSeo } from '@/lib/bac-ninh-seo'
+import { JsonLd } from '@/components/JsonLd'
+import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 
 export async function generateMetadata({
   params,
@@ -28,10 +31,11 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const siteName = locationSiteName(location, locale)
-  const title = pageTitle(locale, locale === 'zh-CN' ? '预约' : 'Book a Session', displayName)
-  const description = locale === 'zh-CN'
+  const bn = bacNinhSeo(location.slug, locale)
+  const title = bn?.bookTitle ?? pageTitle(locale, locale === 'zh-CN' ? '预约' : 'Book a Session', displayName)
+  const description = bn?.bookDescription ?? (locale === 'zh-CN'
     ? `预约${displayName}的禅修、工作坊或茶会，或留言咨询。`
-    : `Reserve a meditation session, workshop, or tea gathering at ${displayName}. Free inquiry welcome.`
+    : `Reserve a meditation session, workshop, or tea gathering at ${displayName}. Free inquiry welcome.`)
 
   return buildMetadata({
     title,
@@ -118,6 +122,15 @@ export default async function BookPage({
 
   return (
     <div>
+      <JsonLd
+        data={placePageBreadcrumbJsonLd({
+          locale,
+          locSlug: locSlug,
+          placeName: splitPlaceName(academyName(location.city, location.name)).primary,
+          pageName: t(locale, 'nav.book'),
+          pagePath: '/book',
+        })}
+      />
       {/* ─── PAGE HEADER BAND ──────────────────────────────────────────── */}
       <div
         className="px-[6vw] border-b border-hairline"

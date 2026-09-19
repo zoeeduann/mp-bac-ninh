@@ -19,17 +19,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const copy = campaignCopy[focus]
   const url = locationUrl('zh-CN', loc, `/discover/${focus}`)
   return {
-    title: `${copy.label}｜越南北宁善明小院`,
+    title: `${copy.label}｜越南北宁善明静心小院`,
     description: copy.description,
     alternates: { canonical: url },
     robots: { index: false, follow: true },
     openGraph: {
-      title: `${copy.label}｜北宁善明小院`,
+      title: `${copy.label}｜北宁善明静心小院`,
       description: copy.description,
       url,
       locale: 'zh_CN',
       type: 'website',
-      siteName: '北宁善明小院',
+      siteName: '北宁善明静心小院',
     },
   }
 }
@@ -50,7 +50,7 @@ export default async function CampaignPage({ params }: Props) {
     ],
     [
       '活动和课程收费吗？',
-      '善明小院的所有活动与课程均为公益项目，免费参加。你可以先了解内容与安排，再决定是否参加。',
+      '善明静心小院的所有活动与课程均为公益项目，免费参加。你可以先了解内容与安排，再决定是否参加。',
     ],
     [
       '活动和课程什么时候开始？',
@@ -71,7 +71,7 @@ export default async function CampaignPage({ params }: Props) {
         <a
           href={locationPath('zh-CN', loc)}
           className="campaign-brand"
-          aria-label="北宁善明小院首页"
+          aria-label="北宁善明静心小院首页"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/mindful-peace-yard-logo.svg" alt="静心小院" width="140" height="55" />
@@ -94,7 +94,7 @@ export default async function CampaignPage({ params }: Props) {
           <div className="campaign-hero-copy">
             <p className="campaign-eyebrow">
               <span className="campaign-dot" />
-              越南北宁 · 善明小院
+              越南北宁 · 善明静心小院
             </p>
             <h1>
               {copy.title[0]}
@@ -123,7 +123,7 @@ export default async function CampaignPage({ params }: Props) {
                   src={hero.src}
                   srcSet={`${hero.small} 720w, ${hero.src} 1600w`}
                   sizes="(max-width: 760px) 100vw, 52vw"
-                  alt={hero.alt || '北宁善明小院实景'}
+                  alt={hero.alt || '北宁善明静心小院实景'}
                   fetchPriority="high"
                   width="1600"
                   height="1019"
@@ -132,7 +132,7 @@ export default async function CampaignPage({ params }: Props) {
             )}
             <div className="campaign-photo-caption">
               <span>一处安静、开放的修学空间</span>
-              <small>善明小院 · 实景</small>
+              <small>善明静心小院 · 实景</small>
             </div>
           </div>
         </section>
@@ -167,7 +167,7 @@ export default async function CampaignPage({ params }: Props) {
         <section id="about" className="campaign-about">
           <div className="campaign-about-inner">
             <div>
-              <p className="campaign-eyebrow">02 / 认识善明小院</p>
+              <p className="campaign-eyebrow">02 / 认识善明静心小院</p>
               <h2>
                 相聚在北宁，
                 <br />
@@ -176,7 +176,7 @@ export default async function CampaignPage({ params }: Props) {
             </div>
             <div className="campaign-about-copy">
               <p>
-                善明小院由一群志同道合的伙伴共同建设。在越南北宁，我们分享静心文化，营造一个开放、安静、彼此支持的学习空间。
+                善明静心小院由一群志同道合的伙伴共同建设。在越南北宁，我们分享静心文化，营造一个开放、安静、彼此支持的学习空间。
               </p>
               <p>
                 从禅意生活的体验，到人生智慧的学习，再到有次第的佛学修学，我们希望让正念、清明与慈悲走进日常。
@@ -274,7 +274,7 @@ export default async function CampaignPage({ params }: Props) {
             </ol>
           </div>
           <div className="campaign-form-card">
-            <p className="campaign-eyebrow">北宁善明小院 · 咨询登记</p>
+            <p className="campaign-eyebrow">北宁善明静心小院 · 咨询登记</p>
             <h3>让我们认识你</h3>
             <CampaignLeadForm focus={focus} locationId={location.id} />
           </div>
@@ -299,7 +299,7 @@ export default async function CampaignPage({ params }: Props) {
         <section className="campaign-address">
           <div>
             <p className="campaign-eyebrow">找到这处小院</p>
-            <h2>越南北宁 · 善明小院</h2>
+            <h2>越南北宁 · 善明静心小院</h2>
             <p>{location.address}</p>
           </div>
           <a
@@ -315,7 +315,7 @@ export default async function CampaignPage({ params }: Props) {
           <h2>资料使用说明</h2>
           <p>
             你提交的姓名和 Zalo
-            注册手机号将保存至善明小院的咨询管理系统，供负责咨询的工作人员联系你、回复本次活动或课程咨询。页面来源及广告素材标识（如有）会随咨询一并记录，便于了解咨询来自哪个入口。提交不会自动报名、付款或加入群聊。若不希望继续联系，或希望更正、删除资料，可在小院通过
+            注册手机号将保存至善明静心小院的咨询管理系统，供负责咨询的工作人员联系你、回复本次活动或课程咨询。页面来源及广告素材标识（如有）会随咨询一并记录，便于了解咨询来自哪个入口。提交不会自动报名、付款或加入群聊。若不希望继续联系，或希望更正、删除资料，可在小院通过
             Zalo 联系你时提出，也可通过官网公布的联系渠道提出。
           </p>
           <p>
@@ -333,12 +333,12 @@ export default async function CampaignPage({ params }: Props) {
         </section>
       </main>
       <footer className="campaign-footer">
-        <span>善明小院 · 北宁</span>
+        <span>善明静心小院 · 北宁</span>
         <p>禅意生活 · 智慧人生 · 觉醒之道</p>
         <a href={locationPath('zh-CN', loc)}>返回小院官网 ↗</a>
       </footer>
       <div className="campaign-mobile-action">
-        <span>善明小院 · 北宁</span>
+        <span>善明静心小院 · 北宁</span>
         <a href="#inquiry">{copy.anchorCta} ↓</a>
       </div>
     </div>

@@ -13,8 +13,17 @@ export const GLOSSARY = {
     '静心学堂 · 泰国': 'Mindful Peace Academy Thailand',
     '静心学堂·泰国': 'Mindful Peace Academy Thailand',
     '静心学堂': 'Mindful Peace Academy',
+    '静心小院': 'Mindful Peace Yard',
+    '国际静心协会': 'Mindful Peace International',
+    '济群法师': 'Venerable Master Jiqun',
   },
   academies: {
+    // Bac Ninh (pinyin, as on the association's and the yard's Facebook page).
+    '越南北宁善明静心小院': 'Shanming Mindful Peace Yard, Bac Ninh',
+    '北宁善明静心小院': 'Shanming Mindful Peace Yard, Bac Ninh',
+    '善明静心小院': 'Shanming Mindful Peace Yard',
+    '善明小院': 'Shanming Mindful Peace Yard',
+    '善明': 'Shanming',
     '曼谷如如学堂': 'Bangkok Ruru Academy',
     '清迈心灯学堂': 'Chiang Mai Xindeng Academy',
     '普吉和光小院': 'Phuket Heguang Courtyard',
@@ -30,6 +39,8 @@ export const GLOSSARY = {
     '清迈': 'Chiang Mai',
     '普吉': 'Phuket',
     '泰国': 'Thailand',
+    '北宁': 'Bac Ninh',
+    '越南': 'Vietnam',
   },
 } as const
 

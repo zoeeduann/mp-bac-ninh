@@ -15,7 +15,7 @@ import { GET } from '@/app/api/activities/[id]/share-image/route'
 const cover = { filename: 'cover.webp', url: 'https://cdn.test/cover.webp', updatedAt: 'v1' } as Media
 const source = { id: 1, createdAt: 'v1', updatedAt: 'v1', filename: 'source.webp', url: 'https://cdn.test/source.webp', cardCover: cover,
   cardCoverJob: { token: 't', requestedAt: '2026-09-07', sourceFilename: 'source.webp', status: 'ready' } } as Media
-const location = { id: 3, slug: 'bac-ninh', name: '越南北宁善明小院' } as Location
+const location = { id: 3, slug: 'bac-ninh', name: '越南北宁善明静心小院' } as Location
 const activity = { id: 7, title: '安心禅茶', updatedAt: 'copy1', heroImage: source, location } as Activity
 const request = (id = '7', query = '') => GET(new Request('https://site.test/api/activities/'+id+'/share-image'+query), { params: Promise.resolve({ id }) })
 beforeEach(() => { vi.clearAllMocks(); mocks.find.mockResolvedValue({ docs: [activity] }); mocks.inline.mockResolvedValue('data:image/webp;base64,cover'); mocks.render.mockReturnValue(new Response('png')) })
@@ -56,7 +56,7 @@ describe('activity share artwork', () => {
     const response = await request()
     expect(mocks.inline).toHaveBeenCalledWith(cover.url, 756, 90, 'png')
     expect(mocks.render).toHaveBeenCalledWith(expect.objectContaining({
-      title: '安心禅茶', academy: '越南北宁善明小院', image: 'data:image/webp;base64,cover',
+      title: '安心禅茶', academy: '越南北宁善明静心小院', image: 'data:image/webp;base64,cover',
     }))
     expect(response.headers.get('Cache-Control')).toContain('s-maxage=86400')
   })
@@ -69,8 +69,8 @@ describe('activity share artwork', () => {
 
 describe('share text helpers', () => {
   it('falls back to the Bac Ninh brand when the academy name is missing', () => {
-    expect(shareBrandName(null, 'zh-CN')).toBe('越南北宁善明小院')
-    expect(shareBrandName('', 'en')).toBe('Mindful Peace Yard Bac Ninh')
+    expect(shareBrandName(null, 'zh-CN')).toBe('越南北宁善明静心小院')
+    expect(shareBrandName('', 'en')).toBe('Shanming Mindful Peace Yard')
   })
   it('shows the bare public host', () => {
     expect(shareDomain('https://www.mindfulpeacebacninh.com')).toBe('mindfulpeacebacninh.com')

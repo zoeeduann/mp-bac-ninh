@@ -4,17 +4,18 @@ import { translateForSlug } from '../lib/translate'
 type Translate = (zhTitle: string) => Promise<string | null>
 
 /**
- * Normalise the activity slug before validation. A value that is blank after
- * trimming (e.g. "  ", which produced the broken `/activities/  ` link) is
- * treated as empty and regenerated from the Chinese title.
+ * Normalise the activity slug before validation. Hand-typed slugs go through
+ * slugify, so spaces, colons and capitals never reach a public URL. A value
+ * that is blank after trimming (e.g. "  ", which produced the broken
+ * `/activities/  ` link) is treated as empty and regenerated from the title.
  */
 export async function normalizeActivitySlug(
   value: unknown,
   data: unknown,
   translate: Translate = translateForSlug,
 ): Promise<string> {
-  const trimmed = typeof value === 'string' ? value.trim() : ''
-  if (trimmed) return trimmed
+  const typed = typeof value === 'string' ? slugify(value) : ''
+  if (typed) return typed
   const zhTitle = (data as { title?: unknown } | undefined)?.title
   const title = typeof zhTitle === 'string' ? zhTitle.trim() : ''
   if (!title) return ''

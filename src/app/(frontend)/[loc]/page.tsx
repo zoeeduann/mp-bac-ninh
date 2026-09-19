@@ -32,6 +32,7 @@ import { locationSeoDescription, locationSeoKeywords } from '@/lib/seo'
 import { bacNinhSignature, getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
 import type { Media, Activity, Journal } from '@/payload-types'
 import TrackedLink from '@/components/analytics/TrackedLink'
+import { BAC_NINH_ALTERNATE_NAMES, BAC_NINH_POSTAL_ADDRESS, bacNinhSeo } from '@/lib/bac-ninh-seo'
 
 export async function generateMetadata({
   params,
@@ -51,13 +52,16 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const title = pageTitle(locale, displayName, inThailandNetwork ? siteName : null)
-  const description = locationSeoDescription({
-    locale,
-    displayName,
-    city: location.city,
-    tagline: location.tagline,
-  })
+  const bn = bacNinhSeo(location.slug, locale)
+  const title = bn?.homeTitle ?? pageTitle(locale, displayName, inThailandNetwork ? siteName : null)
+  const description =
+    bn?.homeDescription ??
+    locationSeoDescription({
+      locale,
+      displayName,
+      city: location.city,
+      tagline: location.tagline,
+    })
 
   return buildMetadata({
     title,
@@ -135,7 +139,7 @@ export default async function AcademyHomePage({
     `${location.name} ${location.address || location.city}`,
   )}`
   const bacNinhCopy = getBacNinhBrandCopy(locale)
-  // "Thien Minh Courtyard · Bac Ninh, Vietnam" → H1 "Thien Minh Courtyard",
+  // "Shanming Mindful Peace Yard · Bac Ninh, Vietnam" → H1 "Shanming Mindful Peace Yard",
   // locality in the eyebrow, so the English hero doesn't wrap to four lines.
   const heroName = splitPlaceName(academyDisplayName)
   const heroEyebrow = heroName.secondary || location.city
@@ -150,8 +154,16 @@ export default async function AcademyHomePage({
     email: location.email,
     phone: location.phone,
     imageUrl: heroImgUrl,
-    description: location.tagline,
+    description: bacNinhSeo(location.slug, locale)?.homeDescription ?? location.tagline,
     isThailandNetwork: isThailandNetworkLocation(location),
+    ...(isBacNinh
+      ? {
+          alternateNames: BAC_NINH_ALTERNATE_NAMES,
+          postalAddress: BAC_NINH_POSTAL_ADDRESS,
+          parentOrganization: { name: 'Mindful Peace International', url: 'https://mindfulpeace.org' },
+          priceCurrency: 'VND',
+        }
+      : {}),
     sameAs: ((location as any).social ?? [])
       .map((s: { url?: string | null }) => s.url)
       .filter((u: unknown): u is string => typeof u === 'string' && u.length > 0),

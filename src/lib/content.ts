@@ -1,6 +1,7 @@
 import type { Locale } from './i18n'
 import { isSessionPast } from './calendar'
 import { hasUsableSlug, withUsableSlugs } from './activity-list'
+import { hasUsableLocalizedTitle, localizedDocsForLocale, publicFallbackLocale } from './public-locale'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -56,13 +57,13 @@ export async function getRecentJournalAcrossNetwork(
       ],
     },
     sort: '-date',
-    limit,
+    limit: locale === 'en' ? limit * 3 : limit,
     depth: 2,
     locale,
-    fallbackLocale: 'zh-CN',
+    fallbackLocale: publicFallbackLocale(locale),
     overrideAccess: true,
   })
-  return result.docs
+  return localizedDocsForLocale(result.docs, locale).slice(0, limit)
 }
 
 export async function getRecentJournalForLocation(
@@ -81,13 +82,13 @@ export async function getRecentJournalForLocation(
       ],
     },
     sort: '-date',
-    limit,
+    limit: locale === 'en' ? limit * 3 : limit,
     depth: 2,
     locale,
-    fallbackLocale: 'zh-CN',
+    fallbackLocale: publicFallbackLocale(locale),
     overrideAccess: true,
   })
-  return result.docs
+  return localizedDocsForLocale(result.docs, locale).slice(0, limit)
 }
 
 export async function getFeaturedActivitiesForLocation(
@@ -108,14 +109,14 @@ export async function getFeaturedActivitiesForLocation(
     limit: 50,
     depth: 2,
     locale,
-    fallbackLocale: 'zh-CN',
+    fallbackLocale: publicFallbackLocale(locale),
     overrideAccess: true,
   })
 
   // Sort by NEXT upcoming occurrence — activities without any future
   // occurrence are excluded from the featured list entirely.
   const now = new Date()
-  const annotated = withUsableSlugs(result.docs as any[])
+  const annotated = withUsableSlugs(localizedDocsForLocale(result.docs as any[], locale))
     .map((a: any) => {
       const occs = Array.isArray(a.occurrences) ? a.occurrences : []
       const future = occs
@@ -233,11 +234,12 @@ export async function getAllPublishedActivitiesForLocation(
     limit: 200,
     depth: 2,
     locale,
-    fallbackLocale: 'zh-CN',
+    fallbackLocale: publicFallbackLocale(locale),
     overrideAccess: true,
   })
-  // Blank-slug records cannot be linked to, so no list shows them.
-  return withUsableSlugs(result.docs)
+  // Blank-slug records cannot be linked to, so no list shows them. English
+  // lists only show activities that have an English version.
+  return withUsableSlugs(localizedDocsForLocale(result.docs, locale))
 }
 
 /**
@@ -473,4 +475,34 @@ export async function getCapacityForOccurrence(
   )
 
   return { occupied, remaining: Math.max(0, capacity - occupied) }
+}
+
+/**
+ * Whether an activity or journal entry has an English version. Chinese pages
+ * only declare an English alternate (hreflang, language toggle) when it exists.
+ */
+export async function hasEnglishVersion(
+  collection: 'activities' | 'journal',
+  slug: string,
+  locationId: number,
+): Promise<boolean> {
+  const { getPayloadClient } = await import('./payload')
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection,
+    where: {
+      and: [
+        { slug: { equals: slug } },
+        { location: { equals: locationId } },
+        { status: { equals: 'published' } },
+      ],
+    },
+    select: { title: true },
+    locale: 'en',
+    fallbackLocale: false,
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+  })
+  return hasUsableLocalizedTitle((result.docs[0] as { title?: unknown } | undefined)?.title, 'en')
 }

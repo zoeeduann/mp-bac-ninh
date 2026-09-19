@@ -267,7 +267,7 @@ describe('POST /api/reservations', () => {
       })
       .mockResolvedValueOnce({
         id: 4,
-        name: '北宁善明小院',
+        name: '北宁善明静心小院',
         timeZone: 'Asia/Ho_Chi_Minh',
       })
     mockPayload.find.mockResolvedValueOnce({ docs: [] })
@@ -356,7 +356,7 @@ describe('POST /api/reservations', () => {
     const { enqueueEmail } = await import('../lib/email-jobs')
     mockPayload.findByID.mockResolvedValueOnce({
       id: 4,
-      name: '越南北宁善明小院',
+      name: '越南北宁善明静心小院',
       isThailandNetwork: false,
     })
     mockPayload.create.mockResolvedValueOnce({ id: 'r-campaign' })
@@ -371,9 +371,9 @@ describe('POST /api/reservations', () => {
     expect(enqueueEmail).toHaveBeenCalledTimes(1)
     expect(enqueueEmail).toHaveBeenCalledWith(mockPayload, expect.objectContaining({
       to: 'admin@test.com',
-      fromName: '越南北宁善明小院',
-      subject: '越南北宁善明小院 · 自由咨询: 测试访客',
-      body: expect.stringContaining('地点: 越南北宁善明小院'),
+      fromName: '越南北宁善明静心小院',
+      subject: '越南北宁善明静心小院 · 自由咨询: 测试访客',
+      body: expect.stringContaining('地点: 越南北宁善明静心小院'),
       replyTo: undefined,
     }))
   })
@@ -390,9 +390,9 @@ describe('POST /api/reservations', () => {
     const messages = vi.mocked(enqueueEmail).mock.calls.map((call) => call[1])
     expect(messages).toHaveLength(2)
     for (const message of messages) {
-      expect(message.fromName).toBe('越南北宁善明小院')
-      expect(message.subject).toContain('越南北宁善明小院')
-      expect(message.body).toContain('越南北宁善明小院')
+      expect(message.fromName).toBe('越南北宁善明静心小院')
+      expect(message.subject).toContain('越南北宁善明静心小院')
+      expect(message.body).toContain('越南北宁善明静心小院')
       expect(message.subject + message.body).not.toMatch(/泰国|Thailand/)
     }
   })
@@ -529,7 +529,7 @@ describe('POST /api/reservations', () => {
         }],
       })
       .mockResolvedValueOnce({
-        id: 4, name: '北宁善明小院', email: 'hello@shanmingspace.vn',
+        id: 4, name: '北宁善明静心小院', email: 'hello@shanmingspace.vn',
         timeZone: 'Asia/Ho_Chi_Minh',
       })
     mockPayload.find.mockResolvedValueOnce({ docs: [] })
@@ -544,8 +544,8 @@ describe('POST /api/reservations', () => {
     const calls = vi.mocked(enqueueEmail).mock.calls.map((call) => call[1])
     const receipt = calls.find((call) => call.to === 'guest@example.com')
     expect(receipt).toMatchObject({
-      subject: '北宁善明小院 · 已收到你的预约',
-      fromName: '北宁善明小院',
+      subject: '北宁善明静心小院 · 已收到你的预约',
+      fromName: '北宁善明静心小院',
       replyTo: 'hello@shanmingspace.vn',
     })
     expect(receipt?.body).toContain('活动：周末共修')

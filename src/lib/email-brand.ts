@@ -7,7 +7,7 @@ export function emailBrandName(
   if (name) return name
 
   if (process.env.NEXT_PUBLIC_SITE_LOCATION_SLUG?.trim() === 'bac-ninh') {
-    return language === 'en' ? 'Mindful Peace Yard Bac Ninh' : '越南北宁善明小院'
+    return language === 'en' ? 'Shanming Mindful Peace Yard' : '越南北宁善明静心小院'
   }
 
   return language === 'en' ? 'Mindfulpeace Academy Thailand' : '静心学堂 · 泰国'

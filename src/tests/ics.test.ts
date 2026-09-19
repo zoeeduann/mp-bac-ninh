@@ -39,12 +39,12 @@ describe('buildIcs', () => {
   })
 
   it('folds Unicode lines by UTF-8 octets without splitting characters', () => {
-    const ics = buildIcs({ ...BASE_EVENT, description: '北宁善明小院'.repeat(20) })
+    const ics = buildIcs({ ...BASE_EVENT, description: '北宁善明静心小院'.repeat(20) })
     const encoder = new TextEncoder()
     for (const line of ics.split('\r\n')) {
       expect(encoder.encode(line).length).toBeLessThanOrEqual(75)
     }
-    expect(ics).toContain('DESCRIPTION:北宁善明小院')
+    expect(ics).toContain('DESCRIPTION:北宁善明静心小院')
   })
 
   it('starts with BEGIN:VCALENDAR and ends with END:VCALENDAR CRLF', () => {
@@ -71,12 +71,12 @@ describe('buildIcs', () => {
   it('uses configurable Bac Ninh calendar branding and timezone', () => {
     const ics = buildIcs({
       ...BASE_EVENT,
-      productName: '北宁善明小院',
+      productName: '北宁善明静心小院',
       timeZone: 'Asia/Ho_Chi_Minh',
-      locationName: '北宁善明小院, 越南北宁省',
+      locationName: '北宁善明静心小院, 越南北宁省',
       organizerEmail: 'hello@shanmingspace.vn',
     })
-    expect(ics).toContain('PRODID:-//北宁善明小院//Booking//EN')
+    expect(ics).toContain('PRODID:-//北宁善明静心小院//Booking//EN')
     expect(ics).toContain('X-WR-TIMEZONE:Asia/Ho_Chi_Minh')
     expect(ics).not.toMatch(/Thailand|Bangkok|mindfulpeaceth\.com/i)
   })

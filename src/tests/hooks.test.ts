@@ -514,7 +514,7 @@ describe('Reservations.afterChange — status → confirmed email', () => {
       if (collection === 'locations') {
         return Promise.resolve({
           id: 4,
-          name: '北宁善明小院',
+          name: '北宁善明静心小院',
           email: 'hello@shanmingspace.vn',
           address: '越南北宁省',
           timeZone: 'Asia/Ho_Chi_Minh',
@@ -541,13 +541,13 @@ describe('Reservations.afterChange — status → confirmed email', () => {
     })
 
     const args = vi.mocked(enqueueEmail).mock.calls[0][1]
-    expect(args.subject).toBe('北宁善明小院 · 预约已确认')
+    expect(args.subject).toBe('北宁善明静心小院 · 预约已确认')
     expect(args.body).toContain('2026年8月22日 09:00 (当地时间)')
-    expect(args.fromName).toBe('北宁善明小院')
+    expect(args.fromName).toBe('北宁善明静心小院')
     expect(args.replyTo).toBe('hello@shanmingspace.vn')
-    expect(args.attachments?.[0].filename).toBe('北宁善明小院.ics')
+    expect(args.attachments?.[0].filename).toBe('北宁善明静心小院.ics')
     const ics = args.attachments?.[0].content ?? ''
-    expect(ics).toContain('PRODID:-//北宁善明小院//Booking//EN')
+    expect(ics).toContain('PRODID:-//北宁善明静心小院//Booking//EN')
     expect(ics).toContain('X-WR-TIMEZONE:Asia/Ho_Chi_Minh')
     expect(ics).toContain('UID:booking-88@localhost')
     expect(ics).not.toMatch(/Thailand|Bangkok|mindfulpeaceth\.com/i)

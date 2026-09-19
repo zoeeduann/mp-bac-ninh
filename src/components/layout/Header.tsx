@@ -31,6 +31,8 @@ interface HeaderProps {
   locale: Locale
   allLocations: LocationDoc[]
   siteLocationSlug: string | null
+  /** Chinese detail pages with no English version (see LanguageToggle). */
+  zhOnlyPaths?: string[]
 }
 
 function buildNavItems(
@@ -55,7 +57,12 @@ function buildNavItems(
   ]
 }
 
-export default function Header({ locale, allLocations, siteLocationSlug }: HeaderProps) {
+export default function Header({
+  locale,
+  allLocations,
+  siteLocationSlug,
+  zhOnlyPaths = [],
+}: HeaderProps) {
   // Derive the current academy from the live URL — re-runs on every
   // client-side navigation, fixing the stale-layout caching bug.
   const pathname = usePathname()
@@ -161,7 +168,7 @@ export default function Header({ locale, allLocations, siteLocationSlug }: Heade
 
       {/* Right: lang toggle + book CTA + hamburger */}
       <div className="flex items-center gap-6">
-        <LanguageToggle current={locale} />
+        <LanguageToggle current={locale} zhOnlyPaths={zhOnlyPaths} />
         {isBacNinh && (
           <Link
             href="/vi"

@@ -3,7 +3,7 @@ import type { Locale } from './i18n'
 const copy = {
   'zh-CN': {
     story: [
-      '善明小院由一群志同道合的伙伴共同建设。我们致力于传承与分享静心文化，让更多人在日常生活中感受到正念、清明与慈悲的力量。',
+      '善明静心小院由一群志同道合的伙伴共同建设。我们致力于传承与分享静心文化，让更多人在日常生活中感受到正念、清明与慈悲的力量。',
       '在越南北宁，我们以“禅意生活、智慧人生、觉醒之道”为修学脉络，营造一个开放、安静、彼此支持的学习空间。这里既关照现实生活，也回应内心更深的追问。',
     ],
     signature: '禅意生活、智慧人生、觉醒之道。',
@@ -40,7 +40,7 @@ const copy = {
   },
   en: {
     story: [
-      'Mindful Peace Yard Bac Ninh is built by a community brought together by a shared aspiration. We are committed to carrying forward Mindful Peace culture so that more people can experience mindfulness, clarity, and universal compassion in everyday life.',
+      'Shanming Mindful Peace Yard is built by a community brought together by a shared aspiration. We are committed to carrying forward Mindful Peace culture so that more people can experience mindfulness, clarity, and universal compassion in everyday life.',
       'In Bac Ninh, our learning unfolds through three connected paths: Chan-inspired living, wisdom in life, and the path to awakening. Together they create an open, quiet, and supportive space for practical living and deeper inquiry.',
     ],
     signature: 'Chan-inspired living, wisdom in life, and the path to awakening.',

@@ -137,7 +137,7 @@ describe('localBusinessJsonLd', () => {
 
   it('omits Thailand identity from a standalone academy', () => {
     const out = localBusinessJsonLd({
-      displayName: '善明小院',
+      displayName: '善明静心小院',
       city: '越南北宁',
       url: 'https://mindfulpeaceth.com/bac-ninh',
       locale: 'zh-CN',
@@ -241,18 +241,18 @@ describe('content JSON-LD helpers', () => {
 
   it('lets an independent academy own its Article metadata', () => {
     const out = articleJsonLd({
-      headline: '善明小院记录',
+      headline: '善明静心小院记录',
       url: 'https://mindfulpeaceth.com/bac-ninh/journal/notes',
       locale: 'zh-CN',
-      authorName: '善明小院',
+      authorName: '善明静心小院',
       authorUrl: 'https://mindfulpeaceth.com/bac-ninh',
-      publisherName: '越南北宁善明小院',
+      publisherName: '越南北宁善明静心小院',
       publisherUrl: 'https://mindfulpeaceth.com/bac-ninh',
       keywords: ['越南北宁', '禅修'],
     })
     const publisher = asRecord(out.publisher)
 
-    expect(publisher.name).toBe('越南北宁善明小院')
+    expect(publisher.name).toBe('越南北宁善明静心小院')
     expect(out.keywords).toBe('越南北宁, 禅修')
     expect(String(out.keywords)).not.toContain('泰国')
   })

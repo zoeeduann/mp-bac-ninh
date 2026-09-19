@@ -17,6 +17,9 @@ import { buildMetadata } from '@/lib/metadata'
 import { locationPath, locationUrl } from '@/lib/site-config'
 import { locationSeoKeywords } from '@/lib/seo'
 import type { Media, Journal } from '@/payload-types'
+import { bacNinhSeo } from '@/lib/bac-ninh-seo'
+import { JsonLd } from '@/components/JsonLd'
+import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 
 export async function generateMetadata({
   params,
@@ -30,16 +33,20 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = pageTitle(locale, locale === 'zh-CN' ? '学堂笔记' : 'Journal', displayName)
-  const description = locale === 'zh-CN'
+  const bn = bacNinhSeo(location.slug, locale)
+  const title = bn?.journalTitle ?? pageTitle(locale, locale === 'zh-CN' ? '学堂笔记' : 'Journal', displayName)
+  const description = bn?.journalDescription ?? (locale === 'zh-CN'
     ? `${displayName}的学堂笔记与现场记录：佛学、禅修、正念、禅茶、读书、共修与日常修学。`
-    : `Journal entries from ${displayName}: Buddhism, Zen meditation, mindfulness, tea practice, reading, and daily contemplative life.`
+    : `Journal entries from ${displayName}: Buddhism, Zen meditation, mindfulness, tea practice, reading, and daily contemplative life.`)
+  // No entries yet (in this language): a thin page, kept out of the index.
+  const listed = (await getRecentJournalForLocation(location.id, locale, 1)).length
 
   return buildMetadata({
     title,
     description,
     url: locationUrl(locale, p.loc, '/journal'),
     locale,
+    noindex: listed === 0,
     siteName: locationSiteName(location, locale),
     keywords: locationSeoKeywords(locale, location.city, displayName, [
       locale === 'zh-CN' ? '学堂笔记' : 'Buddhist journal',
@@ -96,6 +103,15 @@ export default async function JournalPage({
 
   return (
     <div>
+      <JsonLd
+        data={placePageBreadcrumbJsonLd({
+          locale,
+          locSlug: slug,
+          placeName: splitPlaceName(academyName(location.city, location.name)).primary,
+          pageName: t(locale, 'nav.journal'),
+          pagePath: '/journal',
+        })}
+      />
       {/* ─── PAGE HEADER BAND ───────────────────────────────────────── */}
       <div
         className="px-[6vw] border-b border-hairline"

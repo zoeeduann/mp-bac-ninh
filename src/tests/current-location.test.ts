@@ -59,12 +59,12 @@ describe('location network scope', () => {
   it('keeps Bac Ninh Shanming Courtyard independent from the Thailand portal', () => {
     const location = {
       slug: 'bac-ninh',
-      name: '越南北宁善明小院',
+      name: '越南北宁善明静心小院',
       isThailandNetwork: false,
     }
 
     expect(isThailandNetworkLocation(location)).toBe(false)
-    expect(locationSiteName(location, 'zh-CN')).toBe('越南北宁善明小院')
+    expect(locationSiteName(location, 'zh-CN')).toBe('越南北宁善明静心小院')
   })
 
   it('keeps Thailand academies under the Thailand network identity', () => {

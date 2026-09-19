@@ -32,3 +32,28 @@ export function stripLocale(pathname: string): string {
 export function swapLocalePath(pathname: string, nextLocale: Locale): string {
   return localePath(nextLocale, stripLocale(pathname))
 }
+
+/**
+ * Target of the header language toggle. A Chinese detail page with no English
+ * translation links to the English list it belongs to (its parent path)
+ * instead of an /en URL that has no English content.
+ */
+export function languageToggleHref(
+  pathname: string,
+  nextLocale: Locale,
+  zhOnlyPaths: readonly string[],
+): string {
+  const stripped = stripLocale(pathname)
+  if (nextLocale === 'en' && zhOnlyPaths.length > 0) {
+    let decoded = stripped
+    try {
+      decoded = decodeURIComponent(stripped)
+    } catch {
+      // keep the raw path when it is not valid percent-encoding
+    }
+    if (zhOnlyPaths.includes(decoded)) {
+      return localePath('en', decoded.replace(/\/[^/]+$/, '') || '/')
+    }
+  }
+  return swapLocalePath(pathname, nextLocale)
+}

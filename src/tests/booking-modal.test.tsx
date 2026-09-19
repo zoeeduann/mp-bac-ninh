@@ -21,7 +21,7 @@ const baseProps = {
   requiresChineseProficiency: true,
   locationId: 4,
   locationSlug: 'bac-ninh',
-  locationName: '北宁善明小院',
+  locationName: '北宁善明静心小院',
   locale: 'zh-CN' as const,
   source: 'activity_detail' as const,
 }

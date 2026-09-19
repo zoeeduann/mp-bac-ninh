@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import InquiryForm from '../components/booking/InquiryForm'
 
-const bacNinh = { id: 4, slug: 'bac-ninh', name: '越南北宁善明小院', city: '越南北宁' }
+const bacNinh = { id: 4, slug: 'bac-ninh', name: '越南北宁善明静心小院', city: '越南北宁' }
 
 describe('InquiryForm contact hint', () => {
   it('never fabricates a WeChat ID when the location has none', () => {

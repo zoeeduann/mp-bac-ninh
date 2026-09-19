@@ -25,7 +25,7 @@ const locations = [
   },
   {
     slug: 'bac-ninh',
-    name: '北宁善明小院',
+    name: '北宁善明静心小院',
     city: '越南北宁',
     tagline: '禅意生活、智慧人生、觉醒之道。',
     email: 'bacninh@example.com',
@@ -47,7 +47,7 @@ describe('standalone Bac Ninh Footer', () => {
   it('uses clean standalone paths and never renders the Thailand network', () => {
     render(<Footer locale="zh-CN" allLocations={locations} siteLocationSlug="bac-ninh" />)
 
-    expect(screen.getByText('北宁善明小院')).toBeInTheDocument()
+    expect(screen.getByText('北宁善明静心小院')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '首页' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: '活动' })).toHaveAttribute('href', '/activities')
     expect(screen.queryByText('曼谷静心学堂')).not.toBeInTheDocument()
@@ -98,7 +98,7 @@ describe('standalone Bac Ninh Footer', () => {
   })
 
   it('collapses the contact column to one inquiry link when nothing is published', () => {
-    const bare = [{ slug: 'bac-ninh', name: '越南北宁善明小院', city: '越南北宁', social: [] }]
+    const bare = [{ slug: 'bac-ninh', name: '越南北宁善明静心小院', city: '越南北宁', social: [] }]
     render(<Footer locale="zh-CN" allLocations={bare} siteLocationSlug="bac-ninh" />)
     expect(screen.getByRole('link', { name: /在线留言咨询/ })).toHaveAttribute('href', '/book#inquiry')
     expect(screen.queryByText('越南北宁', { selector: 'p.font-serif' })).not.toBeInTheDocument()

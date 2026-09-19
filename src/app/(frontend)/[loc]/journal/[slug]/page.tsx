@@ -1,7 +1,7 @@
 import { hasUsableSlug } from '@/lib/activity-list'
 import { pageTitle } from '@/lib/page-title'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -12,6 +12,8 @@ import {
 } from '@/lib/current-location'
 import { getLocale, t } from '@/lib/i18n'
 import { getPayloadClient } from '@/lib/payload'
+import { hasEnglishVersion } from '@/lib/content'
+import { hasUsableLocalizedTitle, publicFallbackLocale } from '@/lib/public-locale'
 import { academyName } from '@/lib/short-name'
 import { toZonedTime, format as fmtTz } from 'date-fns-tz'
 import { buildMetadata } from '@/lib/metadata'
@@ -22,6 +24,7 @@ import { locationSeoKeywords } from '@/lib/seo'
 import { mediaDimensions } from '@/lib/media-dimensions'
 import type { Journal, Media, Activity, Location } from '@/payload-types'
 import { RichText } from '@/components/RichText'
+import { BAC_NINH_SLUG, bacNinhDetailTitle } from '@/lib/bac-ninh-seo'
 
 export async function generateMetadata({
   params,
@@ -44,13 +47,15 @@ export async function generateMetadata({
       ],
     },
     locale: locale as any,
-    fallbackLocale: 'zh-CN' as any,
+    fallbackLocale: publicFallbackLocale(locale) as any,
     depth: 1,
     overrideAccess: true,
     limit: 1,
   })
   const entry = result.docs[0] as Journal | undefined
-  if (!entry) return {}
+  if (!entry || !hasUsableLocalizedTitle(entry.title, locale)) return {}
+  const englishExists =
+    locale === 'en' || (await hasEnglishVersion('journal', p.slug, location.id))
 
   const coverImgUrl =
     entry.coverImage && typeof entry.coverImage !== 'number'
@@ -59,12 +64,10 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = pageTitle(
-    locale,
-    entry.title,
-    locale === 'zh-CN' ? '学堂笔记' : 'Journal',
-    displayName,
-  )
+  const title =
+    location.slug === BAC_NINH_SLUG
+      ? bacNinhDetailTitle(locale, 'journal', entry.title)
+      : pageTitle(locale, entry.title, locale === 'zh-CN' ? '学堂笔记' : 'Journal', displayName)
   const description = locale === 'zh-CN'
     ? `${displayName}的现场记录：${entry.title}`
     : `A journal entry from ${displayName}: ${entry.title}`
@@ -83,7 +86,7 @@ export async function generateMetadata({
     ], inThailandNetwork),
     alternateLanguages: {
       'zh-CN': locationUrl('zh-CN', p.loc, `/journal/${p.slug}`),
-      en: locationUrl('en', p.loc, `/journal/${p.slug}`),
+      ...(englishExists ? { en: locationUrl('en', p.loc, `/journal/${p.slug}`) } : {}),
     },
   })
 }
@@ -134,7 +137,7 @@ export default async function JournalDetailPage({
       ],
     },
     locale: locale as any,
-    fallbackLocale: 'zh-CN' as any,
+    fallbackLocale: publicFallbackLocale(locale) as any,
     depth: 2,
     overrideAccess: true,
     limit: 1,
@@ -142,6 +145,10 @@ export default async function JournalDetailPage({
 
   const entry = result.docs[0] as Journal | undefined
   if (!entry) notFound()
+  // Untranslated entry: send English visitors to the English journal list.
+  if (!hasUsableLocalizedTitle(entry.title, locale)) {
+    redirect(locationPath(locale, locSlug, '/journal'))
+  }
 
   // Cross-location guard
   const entryLocSlug =
@@ -151,9 +158,22 @@ export default async function JournalDetailPage({
   if (entryLocSlug && entryLocSlug !== locSlug) notFound()
 
   // ─ Related activity ─────────────────────────────────────────────────
-  const relatedActivity =
+  // Only link to an activity page that resolves: published, same place, and
+  // titled in this language.
+  const relatedCandidate =
     entry.relatedActivity && typeof entry.relatedActivity === 'object'
       ? (entry.relatedActivity as Activity)
+      : null
+  const relatedLocSlug =
+    relatedCandidate && typeof relatedCandidate.location === 'object'
+      ? (relatedCandidate.location as Location).slug
+      : null
+  const relatedActivity =
+    relatedCandidate &&
+    relatedCandidate.status === 'published' &&
+    (!relatedLocSlug || relatedLocSlug === locSlug) &&
+    hasUsableLocalizedTitle(relatedCandidate.title, locale)
+      ? relatedCandidate
       : null
 
   // ─ Meta ─────────────────────────────────────────────────────────────

@@ -16,6 +16,9 @@ import { locationSeoDescription, locationSeoKeywords } from '@/lib/seo'
 import { academyName } from '@/lib/short-name'
 import { getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
 import type { Media, Location } from '@/payload-types'
+import { bacNinhSeo } from '@/lib/bac-ninh-seo'
+import { JsonLd } from '@/components/JsonLd'
+import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 
 export async function generateMetadata({
   params,
@@ -35,13 +38,14 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const title = pageTitle(
+  const bn = bacNinhSeo(location.slug, locale)
+  const title = bn?.aboutTitle ?? pageTitle(
     locale,
     locale === 'zh-CN' ? '关于' : 'About',
     displayName,
     inThailandNetwork ? siteName : null,
   )
-  const description = locationSeoDescription({
+  const description = bn?.aboutDescription ?? locationSeoDescription({
     locale,
     displayName,
     city: location.city,
@@ -96,6 +100,15 @@ export default async function AboutPage({
 
   return (
     <div>
+      <JsonLd
+        data={placePageBreadcrumbJsonLd({
+          locale,
+          locSlug: slug,
+          placeName: splitPlaceName(academyName(location.city, location.name)).primary,
+          pageName: t(locale, 'nav.about'),
+          pagePath: '/about',
+        })}
+      />
       {/* ─── HERO IMAGE ───────────────────────────── */}
       {heroImgUrl && (
         <div className="relative h-[55vh] min-h-[380px] overflow-hidden">

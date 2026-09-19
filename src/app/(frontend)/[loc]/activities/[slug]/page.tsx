@@ -3,7 +3,7 @@ import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { activityExcerpt } from '@/lib/activity-text'
 import { hasUsableSlug } from '@/lib/activity-list'
 import { remainingSeatsText } from '@/lib/seats'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import {
@@ -13,7 +13,8 @@ import {
 } from '@/lib/current-location'
 import { getLocale, t } from '@/lib/i18n'
 import { getPayloadClient } from '@/lib/payload'
-import { getCapacityForOccurrence } from '@/lib/content'
+import { getCapacityForOccurrence, hasEnglishVersion } from '@/lib/content'
+import { hasUsableLocalizedTitle, localizedDocsForLocale, publicFallbackLocale } from '@/lib/public-locale'
 import { academyName } from '@/lib/short-name'
 import { formatDateCompact } from '@/lib/time'
 import { isSessionPast } from '@/lib/calendar'
@@ -33,6 +34,7 @@ import BookSessionButton from '@/components/booking/BookSessionButton'
 import ShareButton from '@/components/activities/ShareButton'
 import ImageCarousel from '@/components/activities/ImageCarousel'
 import Image from 'next/image'
+import { BAC_NINH_SLUG, bacNinhDetailTitle } from '@/lib/bac-ninh-seo'
 
 export async function generateMetadata({
   params,
@@ -55,21 +57,27 @@ export async function generateMetadata({
       ],
     },
     locale: locale as any,
-    fallbackLocale: 'zh-CN' as any,
+    fallbackLocale: publicFallbackLocale(locale) as any,
     // depth 2 populates heroImage.cardCover, the only artwork shared publicly.
     depth: 2,
     overrideAccess: true,
     limit: 1,
   })
   const activity = result.docs[0] as Activity | undefined
-  if (!activity) return {}
+  if (!activity || !hasUsableLocalizedTitle(activity.title, locale)) return {}
+  const englishExists =
+    locale === 'en' || (await hasEnglishVersion('activities', p.slug, location.id))
 
   const heroImgUrl = activityShareImageUrl(activity, locale, SITE_BASE)
 
   const displayName = academyName(location.city, location.name)
   const category =
     typeof activity.category === 'object' ? (activity.category as Category) : null
-  const title = activity.seoTitle?.trim() || pageTitle(locale, activity.title, displayName)
+  const title =
+    activity.seoTitle?.trim() ||
+    (location.slug === BAC_NINH_SLUG
+      ? bacNinhDetailTitle(locale, 'activity', activity.title)
+      : pageTitle(locale, activity.title, displayName))
   const description = activitySeoDescription({
     locale,
     title: activity.title,
@@ -96,7 +104,7 @@ export async function generateMetadata({
     }),
     alternateLanguages: {
       'zh-CN': locationUrl('zh-CN', p.loc, `/activities/${p.slug}`),
-      en: locationUrl('en', p.loc, `/activities/${p.slug}`),
+      ...(englishExists ? { en: locationUrl('en', p.loc, `/activities/${p.slug}`) } : {}),
     },
   })
 }
@@ -183,7 +191,7 @@ export default async function ActivityDetailPage({
       ],
     },
     locale: locale as any,
-    fallbackLocale: 'zh-CN' as any,
+    fallbackLocale: publicFallbackLocale(locale) as any,
     depth: 2,
     overrideAccess: true,
     limit: 1,
@@ -191,6 +199,11 @@ export default async function ActivityDetailPage({
 
   const activity = result.docs[0] as Activity | undefined
   if (!activity) notFound()
+  // The activity exists but has not been translated: send English visitors
+  // (and stale links) to the English list instead of Chinese text on an /en URL.
+  if (!hasUsableLocalizedTitle(activity.title, locale)) {
+    redirect(locationPath(locale, locSlug, '/activities'))
+  }
 
   // Cross-location guard
   const actLocSlug =
@@ -219,13 +232,13 @@ export default async function ActivityDetailPage({
       ],
     },
     locale: locale as any,
-    fallbackLocale: 'zh-CN' as any,
+    fallbackLocale: publicFallbackLocale(locale) as any,
     depth: 2,
     limit: 20,
     overrideAccess: true,
   })
   const now = new Date()
-  const sortedRelated = relatedResult.docs
+  const sortedRelated = localizedDocsForLocale(relatedResult.docs, locale)
     .filter(hasUsableSlug)
     .map((a: any) => {
       const occs = (a.occurrences ?? []).filter(

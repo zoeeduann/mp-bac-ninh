@@ -5,6 +5,7 @@ import '../../styles/tokens.css'
 import { getLocale } from '@/lib/i18n'
 import { getAllLocations, isThailandNetworkLocation } from '@/lib/current-location'
 import Header from '@/components/layout/Header'
+import { getZhOnlyDetailPaths } from '@/lib/untranslated-paths'
 import Footer from '@/components/layout/Footer'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -52,8 +53,8 @@ const notoSerif = Noto_Serif({
 
 export const metadata = {
   metadataBase: new URL(SITE_BASE),
-  description: '越南北宁善明小院的禅修、禅茶与正念活动。Meditation, tea and mindfulness in Bac Ninh, Vietnam.',
-  title: '越南北宁善明小院｜Bac Ninh, Vietnam',
+  description: '越南北宁善明静心小院的禅修、禅茶与正念活动。Meditation, tea and mindfulness in Bac Ninh, Vietnam.',
+  title: '越南北宁善明静心小院｜Bac Ninh, Vietnam',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -63,7 +64,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   // Header/Footer derive `currentLocation` client-side from usePathname()
   // (so client navigation refreshes their state). Layout only needs to
   // fetch the full list of academies once.
-  const allLocations = await getAllLocations(locale)
+  const [allLocations, zhOnlyPaths] = await Promise.all([
+    getAllLocations(locale),
+    // Only Chinese pages link to an English counterpart that may not exist.
+    locale === 'zh-CN' ? getZhOnlyDetailPaths() : Promise.resolve([]),
+  ])
 
   type SocialInput = { label?: unknown; url?: unknown }
 
@@ -133,6 +138,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           locale={locale}
           allLocations={normalizedAll}
           siteLocationSlug={SITE_LOCATION_SLUG}
+          zhOnlyPaths={zhOnlyPaths}
         />
         <main>{children}</main>
         <Footer

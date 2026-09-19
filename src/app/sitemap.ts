@@ -1,6 +1,7 @@
 import { hasUsableSlug } from '@/lib/activity-list'
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload'
+import { hasUsableLocalizedTitle } from '@/lib/public-locale'
 import { localizedUrl } from '@/lib/locale-url'
 import { TOPIC_LAST_MODIFIED, TOPIC_PAGES, topicPath } from '@/lib/topic-pages'
 import { isThailandNetworkLocation } from '@/lib/current-location'
@@ -18,21 +19,35 @@ type Entry = MetadataRoute.Sitemap[number]
  * URLs appear as independent sitemap entries so Google sees a return tag for
  * each language.
  */
+type SitemapLocale = 'zh-CN' | 'en'
+
+/** One entry per listed locale, all sharing the same hreflang map (+ x-default → zh). */
+function localizedEntries(
+  path: string,
+  rest: Omit<Entry, 'url' | 'alternates'>,
+  locales: SitemapLocale[],
+  includeVietnamese = false,
+): Entry[] {
+  const languages: Record<string, string> = {}
+  if (locales.includes('zh-CN')) {
+    languages['zh-CN'] = localizedUrl('zh-CN', path, SITE_BASE)
+    languages['x-default'] = languages['zh-CN']
+  }
+  if (locales.includes('en')) languages.en = localizedUrl('en', path, SITE_BASE)
+  if (includeVietnamese) languages.vi = `${SITE_BASE}/vi`
+  return locales.map((locale) => ({
+    url: localizedUrl(locale, path, SITE_BASE),
+    alternates: { languages },
+    ...rest,
+  }))
+}
+
 function bothLocales(
   path: string,
   rest: Omit<Entry, 'url' | 'alternates'>,
   includeVietnamese = false,
 ): Entry[] {
-  const languages: Record<string, string> = {
-    'zh-CN': localizedUrl('zh-CN', path, SITE_BASE),
-    en: localizedUrl('en', path, SITE_BASE),
-    'x-default': localizedUrl('zh-CN', path, SITE_BASE),
-  }
-  if (includeVietnamese) languages.vi = `${SITE_BASE}/vi`
-  return [
-    { url: languages['zh-CN'], alternates: { languages }, ...rest },
-    { url: languages.en, alternates: { languages }, ...rest },
-  ]
+  return localizedEntries(path, rest, ['zh-CN', 'en'], includeVietnamese)
 }
 
 function validDate(value: unknown, fallback: Date): Date {
@@ -48,7 +63,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayloadClient()
   const fallbackDate = new Date()
 
-  const [locResult, actResult, jourResult] = await Promise.all([
+  const englishQuery = {
+    where: { status: { equals: 'published' } },
+    limit: 1000,
+    depth: 1,
+    locale: 'en',
+    fallbackLocale: false,
+    overrideAccess: true,
+  } as const
+  const [locResult, actResult, jourResult, actEnResult, jourEnResult] = await Promise.all([
     payload.find({
       collection: 'locations',
       limit: 10,
@@ -68,7 +91,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       depth: 1,
       overrideAccess: true,
     }),
+    payload.find({ collection: 'activities', ...englishQuery }),
+    payload.find({ collection: 'journal', ...englishQuery }),
   ])
+
+  // English URLs are only listed for entries that have an English version.
+  const englishKeys = (docs: any[]) =>
+    new Set(
+      docs
+        .filter((doc) => hasUsableLocalizedTitle(doc.title, 'en'))
+        .map((doc) => `${typeof doc.location === 'object' ? doc.location?.slug : ''}:${doc.slug}`),
+    )
+  const englishActivityKeys = englishKeys(actEnResult.docs as any[])
+  const englishJournalKeys = englishKeys(jourEnResult.docs as any[])
+  const detailLocales = (keys: Set<string>, locSlug: string, slug: string): SitemapLocale[] =>
+    keys.has(`${locSlug}:${slug}`) ? ['zh-CN', 'en'] : ['zh-CN']
+  // A list with no entries in a language is a thin page (noindex); leave it out.
+  const listLocales = (zhDocs: any[], enDocs: any[], locSlug: string): SitemapLocale[] => {
+    const has = (docs: any[], locale: SitemapLocale) =>
+      docs.some(
+        (doc) =>
+          typeof doc.location === 'object' &&
+          doc.location?.slug === locSlug &&
+          hasUsableSlug(doc) &&
+          hasUsableLocalizedTitle(doc.title, locale),
+      )
+    return (['zh-CN', 'en'] as SitemapLocale[]).filter((locale) =>
+      has(locale === 'zh-CN' ? zhDocs : enDocs, locale),
+    )
+  }
 
   const locationDates = new Map<string, Date>()
   const activityDates = new Map<string, Date>()
@@ -179,16 +230,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             alternates: { languages: homeLanguages },
           }]
         : []),
-      ...bothLocales(locationPublicPath(slug, '/activities'), {
-        lastModified: activityModified,
-        changeFrequency: 'daily',
-        priority: 0.9,
-      }),
-      ...bothLocales(locationPublicPath(slug, '/journal'), {
-        lastModified: journalModified,
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      }),
+      ...localizedEntries(
+        locationPublicPath(slug, '/activities'),
+        { lastModified: activityModified, changeFrequency: 'daily', priority: 0.9 },
+        listLocales(actResult.docs as any[], actEnResult.docs as any[], slug),
+      ),
+      ...localizedEntries(
+        locationPublicPath(slug, '/journal'),
+        { lastModified: journalModified, changeFrequency: 'weekly', priority: 0.7 },
+        listLocales(jourResult.docs as any[], jourEnResult.docs as any[], slug),
+      ),
       ...bothLocales(locationPublicPath(slug, '/about'), {
         lastModified: locationModified,
         changeFrequency: 'monthly',
@@ -213,11 +264,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (SITE_LOCATION_SLUG && locSlug !== SITE_LOCATION_SLUG) continue
     if (!hasUsableSlug(act)) continue
     entries.push(
-      ...bothLocales(locationPublicPath(locSlug, `/activities/${act.slug}`), {
-        lastModified: validDate(act.updatedAt, fallbackDate),
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      }),
+      ...localizedEntries(
+        locationPublicPath(locSlug, `/activities/${act.slug}`),
+        {
+          lastModified: validDate(act.updatedAt, fallbackDate),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        },
+        detailLocales(englishActivityKeys, locSlug, act.slug),
+      ),
     )
   }
 
@@ -225,12 +280,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const locSlug = typeof j.location === 'object' ? j.location.slug : null
     if (!locSlug) continue
     if (SITE_LOCATION_SLUG && locSlug !== SITE_LOCATION_SLUG) continue
+    if (!hasUsableSlug(j)) continue
     entries.push(
-      ...bothLocales(locationPublicPath(locSlug, `/journal/${j.slug}`), {
-        lastModified: validDate(j.updatedAt, fallbackDate),
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      }),
+      ...localizedEntries(
+        locationPublicPath(locSlug, `/journal/${j.slug}`),
+        {
+          lastModified: validDate(j.updatedAt, fallbackDate),
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        },
+        detailLocales(englishJournalKeys, locSlug, j.slug),
+      ),
     )
   }
 

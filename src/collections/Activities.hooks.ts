@@ -4,6 +4,7 @@
  * Payload config object.
  */
 
+import { after } from 'next/server'
 import { translateText, translateRichText } from '../lib/translate'
 import { notifyIndexNowForActivity } from '../lib/indexnow-content'
 
@@ -116,11 +117,11 @@ export async function activitiesBeforeChange({
  * and would also no-op on the next pass because every EN field is now
  * filled (idempotency takes over).
  */
-/** Hard budget for the entire translation flow. Well under Vercel's 60s
- * function ceiling but generous for a few Claude API calls plus the
- * corrective payload.update. If we blow this, save proceeds with EN empty
- * (current fallback: site renders ZH for EN visitors, which is fine). */
-const AUTO_TRANSLATE_BUDGET_MS = 12_000
+/** Hard budget for the entire translation flow. It runs after the response,
+ * so it no longer delays the editor's Save; it only has to stay under the
+ * function's 60s ceiling. If it runs out, the activity stays Chinese-only
+ * (the English site then leaves it out) until its next save. */
+const AUTO_TRANSLATE_BUDGET_MS = 45_000
 
 export async function activitiesAutoTranslate({
   doc,
@@ -145,22 +146,44 @@ export async function activitiesAutoTranslate({
   const id = doc?.id
   if (!id) return doc
 
-  // Wrap the flow in a race with a hard timeout so the editor's Save never
-  // hangs on a slow Claude call or a stuck nested payload.update.
-  try {
-    await Promise.race([
-      runAutoTranslate(doc, req, id),
-      new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error(`budget ${AUTO_TRANSLATE_BUDGET_MS}ms exceeded`)),
-          AUTO_TRANSLATE_BUDGET_MS,
+  // Translate after the save has committed. afterChange runs inside the
+  // save's transaction, so for an activity published on its first save the
+  // lookups below (made outside that transaction) used to find nothing and
+  // the activity never got an English version. Running after the response
+  // also means the editor's Save never waits on Claude.
+  const payload = req.payload
+  const run = async () => {
+    try {
+      await Promise.race([
+        runAutoTranslate(doc, { payload }, id),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`budget ${AUTO_TRANSLATE_BUDGET_MS}ms exceeded`)),
+            AUTO_TRANSLATE_BUDGET_MS,
+          ),
         ),
-      ),
-    ])
-  } catch (e) {
-    console.error(`[auto-translate] aborted for activity ${id}:`, e)
+      ])
+    } catch (e) {
+      console.error(`[auto-translate] aborted for activity ${id}:`, e)
+    }
   }
+  if (!scheduleAfterResponse(run)) await run()
   return doc
+}
+
+/**
+ * Run `task` once the current request's response is sent and its database
+ * transaction committed (Next.js `after`, kept alive by the platform).
+ * Returns false outside a request (seed scripts, tests); the caller then
+ * runs the task inline.
+ */
+export function scheduleAfterResponse(task: () => Promise<void>): boolean {
+  try {
+    after(task)
+    return true
+  } catch {
+    return false
+  }
 }
 
 async function runAutoTranslate(doc: any, req: any, id: any): Promise<void> {
@@ -199,42 +222,49 @@ async function runAutoTranslate(doc: any, req: any, id: any): Promise<void> {
 
   const enUpdate: Record<string, unknown> = {}
 
-  if (!enDoc?.title && zhDoc?.title) {
-    try {
-      const t = await translateText(zhDoc.title)
-      console.log(
-        `[auto-translate] title translateText result id=${id} resultLen=${(t ?? '').length}`,
-      )
-      if (t) enUpdate.title = t
-    } catch (e) {
-      console.error(`[auto-translate] title failed for activity ${id}:`, e)
-    }
-  }
-  if (!enDoc?.shortDesc && zhDoc?.shortDesc) {
-    try {
-      // shortDesc has maxLength: 240 on the Activities schema; an unbounded
-      // translation routinely runs longer than the source Chinese (less dense
-      // information per character in English) and would fail Payload
-      // validation. Bound the request and rely on translate.ts to also
-      // truncate defensively.
-      const t = await translateText(zhDoc.shortDesc, { maxChars: 240 })
-      console.log(
-        `[auto-translate] shortDesc translateText result id=${id} resultLen=${(t ?? '').length}`,
-      )
-      if (t) enUpdate.shortDesc = t
-    } catch (e) {
-      console.error(`[auto-translate] shortDesc failed for activity ${id}:`, e)
-    }
-  }
-  if (!enDoc?.description && zhDoc?.description) {
-    try {
-      const t = await translateRichText(zhDoc.description)
-      console.log(`[auto-translate] description translateRichText result id=${id} ok=${Boolean(t)}`)
-      if (t) enUpdate.description = t
-    } catch (e) {
-      console.error(`[auto-translate] description failed for activity ${id}:`, e)
-    }
-  }
+  // The three fields are translated in parallel so a long description does
+  // not push the whole flow past AUTO_TRANSLATE_BUDGET_MS.
+  await Promise.all([
+    (async () => {
+      if (enDoc?.title || !zhDoc?.title) return
+      try {
+        const t = await translateText(zhDoc.title)
+        console.log(
+          `[auto-translate] title translateText result id=${id} resultLen=${(t ?? '').length}`,
+        )
+        if (t) enUpdate.title = t
+      } catch (e) {
+        console.error(`[auto-translate] title failed for activity ${id}:`, e)
+      }
+    })(),
+    (async () => {
+      if (enDoc?.shortDesc || !zhDoc?.shortDesc) return
+      try {
+        // shortDesc has maxLength: 240 on the Activities schema; an unbounded
+        // translation routinely runs longer than the source Chinese (less
+        // dense information per character in English) and would fail Payload
+        // validation. Bound the request and rely on translate.ts to also
+        // truncate defensively.
+        const t = await translateText(zhDoc.shortDesc, { maxChars: 240 })
+        console.log(
+          `[auto-translate] shortDesc translateText result id=${id} resultLen=${(t ?? '').length}`,
+        )
+        if (t) enUpdate.shortDesc = t
+      } catch (e) {
+        console.error(`[auto-translate] shortDesc failed for activity ${id}:`, e)
+      }
+    })(),
+    (async () => {
+      if (enDoc?.description || !zhDoc?.description) return
+      try {
+        const t = await translateRichText(zhDoc.description)
+        console.log(`[auto-translate] description translateRichText result id=${id} ok=${Boolean(t)}`)
+        if (t) enUpdate.description = t
+      } catch (e) {
+        console.error(`[auto-translate] description failed for activity ${id}:`, e)
+      }
+    })(),
+  ])
 
   console.log(
     `[auto-translate] enUpdate keys id=${id} keys=${JSON.stringify(Object.keys(enUpdate))}`,

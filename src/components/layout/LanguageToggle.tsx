@@ -1,7 +1,6 @@
 'use client'
 
 import { Suspense } from 'react'
-import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
 import { languageToggleHref, swapLocalePath } from '@/lib/locale-url'
@@ -19,15 +18,19 @@ function ToggleLink({ current, zhOnlyPaths }: { current: Locale; zhOnlyPaths: st
   // back to a list page.
   const href = qs && target === swapLocalePath(pathname, next) ? `${target}?${qs}` : target
 
+  // A plain <a>, not next/link: /x and /en/x rewrite to the same internal
+  // route and differ only in the x-locale header, so a client-side navigation
+  // is answered as "nothing changed" and the page stays in the old language.
+  // Switching language needs a full page load.
   return (
-    <Link
+    <a
       href={href}
       hrefLang={next === 'zh-CN' ? 'zh-CN' : 'en'}
       aria-label={current === 'zh-CN' ? 'Switch to English' : '切换到中文'}
       className={TOGGLE_CLASS}
     >
       {current === 'zh-CN' ? 'EN' : '中'}
-    </Link>
+    </a>
   )
 }
 

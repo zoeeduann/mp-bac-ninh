@@ -28,7 +28,7 @@ function CarouselSlideImage({
         aria-hidden="true"
         fill
         sizes={sizes}
-        className="pointer-events-none object-cover scale-110 blur-2xl opacity-20 saturate-[0.7]"
+        className="pointer-events-none object-cover scale-110 blur-2xl opacity-40 saturate-[0.7]"
       />
       <div className="pointer-events-none absolute inset-0 bg-ink/[0.08]" />
       <Image

@@ -12,6 +12,7 @@ export const campaignCopy = {
     description:
       '从一杯茶、一次正念练习开始。在善明小院，通过公益免费的正念活动，认识静心文化，让觉察慢慢走进日常。',
     cta: '了解正念活动安排',
+    anchorCta: '留下 Zalo，了解安排',
     intro: '不必急着改变什么，先来认识一种生活方式。',
     sectionTitle: '从日常的一件小事开始',
     paths: [
@@ -30,6 +31,7 @@ export const campaignCopy = {
     description:
       '从认识佛教文化，到理解生活中的问题。善明小院的佛学课程均为公益免费，通过学习、交流与实践，探索智慧与慈悲。',
     cta: '了解佛学课程安排',
+    anchorCta: '留下 Zalo，了解安排',
     intro: '带着好奇与问题，开始一段有方向的学习。',
     sectionTitle: '从阅读与交流，走向系统学习',
     paths: [

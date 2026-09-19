@@ -1,10 +1,11 @@
 'use client'
-import { useState, useTransition } from 'react'
+import React, { useState, useTransition } from 'react'
 import Turnstile from './Turnstile'
 import CopyableWechat from '@/components/CopyableWechat'
 import TrackedLink from '@/components/analytics/TrackedLink'
 import { trackInquiryLead } from '@/lib/analytics'
 import { TURNSTILE_ENABLED } from '@/lib/site-config'
+import { whatsappHref } from '@/lib/contact'
 
 interface LocationOption {
   id: number
@@ -27,6 +28,9 @@ const TURNSTILE_SITE_KEY = TURNSTILE_ENABLED
 
 export default function InquiryForm({ locations, defaultLocationId, locale }: InquiryFormProps) {
   const isZh = locale === 'zh-CN'
+  const wechatLocations = locations.filter((l) => l.wechatId?.trim())
+  const whatsappLocations = locations.filter((l) => l.whatsapp?.trim())
+  const showCityInHint = locations.length > 1
 
   const [selectedLocationId, setSelectedLocationId] = useState(defaultLocationId)
   const [name, setName] = useState('')
@@ -135,75 +139,78 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         aria-hidden="true"
       />
 
-      {/* Academy radio */}
-      <div className="flex flex-col gap-[0.5rem]">
-        <label className="font-sans text-[11px] font-semibold tracking-[0.18em] uppercase text-ink-soft">
-          {isZh ? '学堂' : 'Academy'}
-        </label>
-        <div className="flex flex-wrap gap-[1.2rem] mt-[0.4rem]">
-          {locations.map((loc) => (
-            <label
-              key={loc.id}
-              className="flex items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-ink"
-            >
-              <input
-                type="radio"
-                name="academy"
-                value={loc.id}
-                checked={selectedLocationId === loc.id}
-                onChange={() => setSelectedLocationId(loc.id)}
-                className="w-4 h-4 accent-sky cursor-pointer flex-shrink-0"
-              />
-              <span>{loc.name}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* WeChat / WhatsApp hint box */}
-      <div className="bg-sky/[0.07] rounded p-[0.9rem_1.1rem] text-[12.5px] leading-[1.7] text-ink -mt-4 flex flex-col gap-1">
-        <div>
-          {isZh ? '想直接微信沟通?搜索学堂微信号:' : 'Prefer WeChat? Search the academy:'}
-          {' '}
-          {locations.map((loc, i) => (
-            <span key={loc.id}>
-              {i > 0 && ' · '}
-              {loc.city}{' '}
-              <CopyableWechat
-                id={loc.wechatId ?? `mp_${loc.slug}`}
-                locale={locale}
-                className="font-mono tracking-[0.02em] text-sky font-semibold"
-              />
-            </span>
-          ))}
-        </div>
-        {locations.some((l) => l.whatsapp) && (
-          <div>
-            {isZh ? '或加 WhatsApp:' : 'Or WhatsApp us:'}
-            {' '}
-            {locations.filter((l) => l.whatsapp).map((loc, i) => (
-              <span key={loc.id}>
-                {i > 0 && ' · '}
-                {loc.city}{' '}
-                <TrackedLink
-                  href={
-                    loc.whatsapp!.startsWith('http')
-                      ? loc.whatsapp!
-                      : `https://wa.me/${loc.whatsapp!.replace(/[^\d]/g, '')}`
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  analyticsEvent="contact_click"
-                  analyticsParameters={{ contact_method: 'whatsapp' }}
-                  className="font-mono tracking-[0.02em] text-sky font-semibold no-underline hover:underline"
-                >
-                  {loc.whatsapp}
-                </TrackedLink>
-              </span>
+      {/* Academy radio: only when there is an actual choice to make */}
+      {locations.length > 1 && (
+        <div className="flex flex-col gap-[0.5rem]">
+          <label className="font-sans text-[11px] font-semibold tracking-[0.18em] uppercase text-ink-soft">
+            {isZh ? '学堂' : 'Academy'}
+          </label>
+          <div className="flex flex-wrap gap-[1.2rem] mt-[0.4rem]">
+            {locations.map((loc) => (
+              <label
+                key={loc.id}
+                className="flex min-h-11 items-center gap-2 cursor-pointer font-sans text-[13px] font-medium text-ink md:min-h-0"
+              >
+                <input
+                  type="radio"
+                  name="academy"
+                  value={loc.id}
+                  checked={selectedLocationId === loc.id}
+                  onChange={() => setSelectedLocationId(loc.id)}
+                  className="w-4 h-4 accent-blue-deep cursor-pointer flex-shrink-0"
+                />
+                <span>{loc.name}</span>
+              </label>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Direct-contact hint: only real WeChat IDs / WhatsApp numbers, never
+          a made-up placeholder ID. Hidden entirely when none exist. */}
+      {(wechatLocations.length > 0 || whatsappLocations.length > 0) && (
+        <div className="bg-sky/[0.07] rounded p-[0.9rem_1.1rem] font-sans text-[13px] leading-[1.7] text-ink flex flex-col gap-1">
+          {wechatLocations.length > 0 && (
+            <div>
+              {isZh ? '想直接微信沟通？搜索微信号：' : 'Prefer WeChat? Search for:'}
+              {' '}
+              {wechatLocations.map((loc, i) => (
+                <span key={loc.id}>
+                  {i > 0 && ' · '}
+                  {showCityInHint && <>{loc.city}{' '}</>}
+                  <CopyableWechat
+                    id={(loc.wechatId as string).trim()}
+                    locale={locale}
+                    className="font-semibold tracking-[0.02em] text-blue-deep hover:text-ink"
+                  />
+                </span>
+              ))}
+            </div>
+          )}
+          {whatsappLocations.length > 0 && (
+            <div>
+              {isZh ? '或加 WhatsApp：' : 'Or WhatsApp us:'}
+              {' '}
+              {whatsappLocations.map((loc, i) => (
+                <span key={loc.id}>
+                  {i > 0 && ' · '}
+                  {showCityInHint && <>{loc.city}{' '}</>}
+                  <TrackedLink
+                    href={whatsappHref((loc.whatsapp as string).trim())}
+                    target="_blank"
+                    rel="noreferrer"
+                    analyticsEvent="contact_click"
+                    analyticsParameters={{ contact_method: 'whatsapp' }}
+                    className="font-semibold tracking-[0.02em] text-blue-deep no-underline hover:text-ink"
+                  >
+                    {loc.whatsapp}
+                  </TrackedLink>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Name */}
       <div className="flex flex-col gap-[0.5rem]">
@@ -233,7 +240,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         >
           {isZh ? '邮箱' : 'Email'}
           <span className="text-[10px] font-normal tracking-normal normal-case ml-[0.6rem] opacity-70">
-            {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo — at least one required'}
+            {isZh ? '邮箱、微信或 Zalo 至少填一个' : 'Email, WeChat, or Zalo (at least one)'}
           </span>
         </label>
         <input
@@ -375,7 +382,7 @@ export default function InquiryForm({ locations, defaultLocationId, locale }: In
         <button
           type="submit"
           disabled={submitting}
-          className="font-sans text-[13px] font-semibold tracking-[0.12em] uppercase text-ink bg-sky border border-sky rounded-full py-4 px-[2.8rem] cursor-pointer transition-colors hover:bg-blue-deep hover:border-blue-deep hover:text-paper disabled:opacity-60 disabled:cursor-default max-sm:self-stretch max-sm:text-center"
+          className="font-sans text-[13px] font-semibold tracking-[0.12em] uppercase text-paper bg-blue-deep border border-blue-deep rounded-full py-4 px-[2.8rem] cursor-pointer transition-colors hover:bg-ink hover:border-ink disabled:opacity-60 disabled:cursor-default max-sm:self-stretch max-sm:text-center"
         >
           {submitting
             ? (isZh ? '提交中...' : 'Submitting...')

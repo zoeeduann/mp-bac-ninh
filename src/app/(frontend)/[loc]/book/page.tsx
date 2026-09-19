@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 
 import {
@@ -27,9 +28,7 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const siteName = locationSiteName(location, locale)
-  const title = locale === 'zh-CN'
-    ? `预约 — ${displayName}`
-    : `Book a Session — ${displayName}`
+  const title = pageTitle(locale, locale === 'zh-CN' ? '预约' : 'Book a Session', displayName)
   const description = locale === 'zh-CN'
     ? `预约${displayName}的禅修、工作坊或茶会，或留言咨询。`
     : `Reserve a meditation session, workshop, or tea gathering at ${displayName}. Free inquiry welcome.`
@@ -134,9 +133,7 @@ export default async function BookPage({
           {t(locale, 'section.book_title')}
         </h1>
         <p className="font-serif text-ink-soft" style={{ fontSize: 'clamp(18px, 2vw, 24px)' }}>
-          {isZh
-            ? `在 ${academyDisplayName}`
-            : `at ${academyDisplayName}`}
+          {isZh ? `在${academyDisplayName}` : `at ${splitPlaceName(academyDisplayName).primary}`}
         </p>
       </div>
 
@@ -149,6 +146,7 @@ export default async function BookPage({
           <UpcomingSessionsList
             sessions={sessionRows}
             locale={locale}
+            showLocation={bookingLocations.length > 1}
             autoOpen={{
               activitySlug: activityParam,
               occurrenceId: occParam,
@@ -161,15 +159,25 @@ export default async function BookPage({
       {/* ─── SECTION BREAK BAND ────────────────────────────────────────── */}
       {/* VI A-13 "渐变蓝营造禅意氛围" — pale→mid→sky horizontal gradient.
           border-t intentionally dropped: previous section already has border-b. */}
-      <div className="bg-gradient-to-r from-sky-pale via-sky-mid/40 to-sky-pale border-b border-hairline px-[6vw] py-[5rem] text-center">
-        <p className="font-sans text-[11px] font-semibold tracking-[0.22em] uppercase text-blue-deep">
+      <div className="bg-gradient-to-r from-sky-pale via-sky-mid/40 to-sky-pale border-b border-hairline px-[6vw] py-14 md:py-16">
+        <h2
+          className="font-serif font-normal text-ink leading-[1.3] mb-2"
+          style={{ fontSize: 'clamp(22px, 2.6vw, 30px)' }}
+        >
           {t(locale, 'section.no_fit')}
-        </p>
+        </h2>
+        <a
+          href="#inquiry"
+          className="inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.04em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink"
+        >
+          {isZh ? '给我们留言，告诉你方便的时间 ↓' : 'Leave us a note with times that suit you ↓'}
+        </a>
       </div>
 
       {/* ─── FREE INQUIRY SECTION ──────────────────────────────────────── */}
-      <section id="inquiry" className="px-[6vw]" style={{ paddingTop: '5.5rem', paddingBottom: '9rem' }}>
-        <div className="max-w-[600px] mx-auto">
+      <section id="inquiry" className="px-[6vw] scroll-mt-20" style={{ paddingTop: '5.5rem', paddingBottom: '9rem' }}>
+        {/* Left-aligned with the session list above. */}
+        <div className="max-w-[600px]">
           {/* Header */}
           <div className="mb-[4rem]">
             <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-[1.2rem]">

@@ -33,9 +33,9 @@ export function ViewToggle({ activeView, isZh }: ViewToggleProps) {
         onClick={() => setView('list')}
         className={[
           'font-sans text-[11px] font-semibold tracking-[0.14em] uppercase',
-          'bg-none border-none cursor-pointer px-0 py-[0.3rem] relative transition-colors duration-150',
+          'inline-flex min-h-11 items-center md:min-h-0 bg-none border-none cursor-pointer px-0 py-[0.3rem] relative transition-colors duration-150',
           activeView === 'list'
-            ? 'text-ink after:absolute after:bottom-[-2px] after:left-0 after:right-0 after:h-[1.5px] after:bg-sky after:rounded-sm'
+            ? 'text-ink after:absolute after:bottom-[8px] md:after:bottom-[-2px] after:left-0 after:right-0 after:h-[1.5px] after:bg-blue-deep after:rounded-sm'
             : 'text-ink-soft hover:text-ink',
         ].join(' ')}
       >
@@ -49,9 +49,9 @@ export function ViewToggle({ activeView, isZh }: ViewToggleProps) {
         onClick={() => setView('calendar')}
         className={[
           'font-sans text-[11px] font-semibold tracking-[0.14em] uppercase',
-          'bg-none border-none cursor-pointer px-0 py-[0.3rem] relative transition-colors duration-150',
+          'inline-flex min-h-11 items-center md:min-h-0 bg-none border-none cursor-pointer px-0 py-[0.3rem] relative transition-colors duration-150',
           activeView === 'calendar'
-            ? 'text-ink after:absolute after:bottom-[-2px] after:left-0 after:right-0 after:h-[1.5px] after:bg-sky after:rounded-sm'
+            ? 'text-ink after:absolute after:bottom-[8px] md:after:bottom-[-2px] after:left-0 after:right-0 after:h-[1.5px] after:bg-blue-deep after:rounded-sm'
             : 'text-ink-soft hover:text-ink',
         ].join(' ')}
       >

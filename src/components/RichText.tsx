@@ -49,7 +49,7 @@ export function renderNode(node: LexicalNode, key: number | string): React.React
   }
   if (node.type === 'link') {
     return (
-      <a key={key} href={node.fields?.url || '#'} className="text-sky underline">
+      <a key={key} href={node.fields?.url || '#'} className="text-blue-deep underline hover:text-ink">
         {node.children?.map((c, i) => renderNode(c, i))}
       </a>
     )

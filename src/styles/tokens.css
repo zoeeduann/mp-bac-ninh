@@ -9,6 +9,23 @@
     --shadow-hero: 0 1px 18px rgba(0, 0, 0, 0.45);
   }
 
+  /* Font stacks. Chinese pages use the CJK faces; English pages put a Latin
+     face first so quotes, commas and dashes render as Latin glyphs rather
+     than full-width CJK punctuation. The CJK face stays as the fallback for
+     any Chinese text on English pages. */
+  html {
+    --font-ui-sans: var(--font-sans);
+    --font-ui-serif: var(--font-serif);
+  }
+  html:lang(en) {
+    --font-ui-sans: var(--font-latin-sans), var(--font-sans);
+    --font-ui-serif: var(--font-latin-serif), var(--font-serif);
+  }
+  html:lang(en) [lang|='zh'] {
+    --font-ui-sans: var(--font-sans);
+    --font-ui-serif: var(--font-serif);
+  }
+
   html {
     font-family: theme('fontFamily.sans');
     color: theme('colors.ink');
@@ -25,6 +42,7 @@
   h3 {
     font-family: theme('fontFamily.serif');
     color: theme('colors.ink');
+    text-wrap: balance;
   }
 
   /* Keyboard-only focus ring — brand sky (#82C1EB).

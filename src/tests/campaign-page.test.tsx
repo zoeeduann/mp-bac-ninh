@@ -39,6 +39,11 @@ describe('campaign routes', () => {
       expect(html).toContain('资料使用说明')
       expect(html).not.toContain('campaign-example-status')
       expect(html).not.toContain('googletagmanager')
+      // The hero button only scrolls to the form, so it must not share the
+      // submit button's label.
+      expect(html).toContain('留下 Zalo，了解安排')
+      const submitLabel = focus === 'mindfulness' ? '了解正念活动安排' : '了解佛学课程安排'
+      expect(html.match(new RegExp(submitLabel, 'g'))).toHaveLength(1)
     },
   )
   it('sets distinct canonical metadata without advertising a non-existent English translation', async () => {

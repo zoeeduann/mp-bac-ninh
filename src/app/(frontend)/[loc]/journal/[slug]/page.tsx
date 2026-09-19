@@ -1,3 +1,5 @@
+import { hasUsableSlug } from '@/lib/activity-list'
+import { pageTitle } from '@/lib/page-title'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -57,9 +59,12 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = locale === 'zh-CN'
-    ? `${entry.title} — ${displayName} 现场`
-    : `${entry.title} — ${displayName} Journal`
+  const title = pageTitle(
+    locale,
+    entry.title,
+    locale === 'zh-CN' ? '学堂笔记' : 'Journal',
+    displayName,
+  )
   const description = locale === 'zh-CN'
     ? `${displayName}的现场记录：${entry.title}`
     : `A journal entry from ${displayName}: ${entry.title}`
@@ -226,12 +231,12 @@ export default async function JournalDetailPage({
         )}
 
         {/* Related activity link */}
-        {relatedActivity && (
+        {relatedActivity && hasUsableSlug(relatedActivity) && (
           <p className="font-sans text-[13px] text-ink-soft">
             {t(locale, 'meta.related_activity')}{' '}
             <Link
               href={locationPath(locale, locSlug, `/activities/${relatedActivity.slug}`)}
-              className="text-sky no-underline hover:text-ink transition-colors font-semibold"
+              className="inline-flex min-h-11 items-center text-blue-deep no-underline hover:text-ink transition-colors font-semibold md:min-h-0"
             >
               {relatedActivity.title} →
             </Link>
@@ -306,7 +311,7 @@ export default async function JournalDetailPage({
       <div className="px-[6vw] pb-24 pt-4 border-t border-hairline">
         <Link
           href={locationPath(locale, locSlug, '/journal')}
-          className="font-sans text-[13px] font-semibold tracking-[0.06em] text-sky no-underline transition-colors duration-150 hover:text-ink"
+          className="inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.06em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
         >
           {t(locale, 'cta.more_journal')}
         </Link>

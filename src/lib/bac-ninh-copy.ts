@@ -80,3 +80,29 @@ const copy = {
 export function getBacNinhBrandCopy(locale: Locale) {
   return copy[locale]
 }
+
+const CJK = /[㐀-鿿]/
+
+function dedupeSentences(text: string): string {
+  const parts = text.match(/[^。！？.!?]+[。！？.!?]?/gu) ?? [text]
+  const seen = new Set<string>()
+  const kept: string[] = []
+  for (const part of parts) {
+    const key = part.replace(/[\s。！？.!?]/gu, '')
+    if (!key || seen.has(key)) continue
+    seen.add(key)
+    kept.push(part.trim())
+  }
+  return kept.join(CJK.test(text) ? '' : ' ').trim()
+}
+
+/**
+ * The closing line under the Bac Ninh story. Uses the CMS `signatureLine`
+ * only when it is in the page language (the CMS falls back to Chinese for
+ * English pages), otherwise the built-in copy. Repeated sentences collapse.
+ */
+export function bacNinhSignature(locale: Locale, cmsSignatureLine?: string | null): string {
+  const cms = typeof cmsSignatureLine === 'string' ? cmsSignatureLine.trim() : ''
+  const usable = cms && (locale === 'zh-CN' || !CJK.test(cms)) ? cms : ''
+  return dedupeSentences(usable || copy[locale].signature)
+}

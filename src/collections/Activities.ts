@@ -1,7 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdminOrScopedStaff, byStaffLocation, forceStaffLocation } from '../access'
-import { slugify } from '../lib/slugify'
-import { translateForSlug } from '../lib/translate'
+import { normalizeActivitySlug, validateActivitySlug } from './activity-slug'
 import {
   activitiesBeforeValidate,
   activitiesBeforeChange,
@@ -51,29 +50,10 @@ export const Activities: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
+      // Trimmed and regenerated when blank; a whitespace-only slug is rejected.
+      validate: (value: unknown) => validateActivitySlug(value),
       hooks: {
-        beforeValidate: [
-          async ({ value, data }) => {
-            if (value) return value
-            const zhTitle = (data as any)?.title ?? ''
-            if (!zhTitle) return ''
-            // Translate the Chinese title to English via Claude (using the
-            // brand glossary so academy names stay pinyin), then slugify.
-            // Bound to 8s so a slow API call can't hold up the save; fall back
-            // to slugifying the Chinese title directly if Claude is
-            // unavailable or times out.
-            let enTitle: string | null = null
-            try {
-              enTitle = await Promise.race([
-                translateForSlug(zhTitle),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
-              ])
-            } catch {
-              // swallow — fall through to plain slugify(zhTitle)
-            }
-            return slugify(enTitle || zhTitle)
-          },
-        ],
+        beforeValidate: [({ value, data }) => normalizeActivitySlug(value, data)],
       },
       admin: {
         description: {

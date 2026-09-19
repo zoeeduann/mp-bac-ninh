@@ -19,12 +19,15 @@ const config: Config = {
       },
       fontFamily: {
         // VI A-15: 宋雅 (Source Han Serif = Noto Serif SC) for formal headings.
-        serif: ['var(--font-serif)', '"Noto Serif SC"', '"Source Han Serif SC"', 'serif'],
+        // --font-ui-* is --font-serif/--font-sans, with a Latin face placed
+        // first on English pages (see tokens.css) so Latin punctuation never
+        // renders with full-width CJK glyphs.
+        serif: ['var(--font-ui-serif)', '"Noto Serif SC"', '"Source Han Serif SC"', 'serif'],
         // VI A-15: 端庄 (HarmonyOS Sans SC) for body/formal sans. Prefer the
         // brand-spec face if locally installed, fall back to Noto Sans SC
         // (loaded via next/font), then OS Chinese sans, then system-ui.
         sans: [
-          'var(--font-sans)',
+          'var(--font-ui-sans)',
           '"HarmonyOS Sans SC"',
           '"Noto Sans SC"',
           '"PingFang SC"',

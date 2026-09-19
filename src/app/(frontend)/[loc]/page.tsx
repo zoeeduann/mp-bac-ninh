@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { pageTitle, splitPlaceName } from '@/lib/page-title'
+import { activityExcerpt } from '@/lib/activity-text'
 import { notFound } from 'next/navigation'
 import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
@@ -27,7 +29,7 @@ import {
 import { JsonLd } from '@/components/JsonLd'
 import { localBusinessJsonLd } from '@/lib/jsonld'
 import { locationSeoDescription, locationSeoKeywords } from '@/lib/seo'
-import { getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
+import { bacNinhSignature, getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
 import type { Media, Activity, Journal } from '@/payload-types'
 import TrackedLink from '@/components/analytics/TrackedLink'
 
@@ -49,7 +51,7 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const title = inThailandNetwork ? `${displayName} — ${siteName}` : displayName
+  const title = pageTitle(locale, displayName, inThailandNetwork ? siteName : null)
   const description = locationSeoDescription({
     locale,
     displayName,
@@ -133,6 +135,10 @@ export default async function AcademyHomePage({
     `${location.name} ${location.address || location.city}`,
   )}`
   const bacNinhCopy = getBacNinhBrandCopy(locale)
+  // "Thien Minh Courtyard · Bac Ninh, Vietnam" → H1 "Thien Minh Courtyard",
+  // locality in the eyebrow, so the English hero doesn't wrap to four lines.
+  const heroName = splitPlaceName(academyDisplayName)
+  const heroEyebrow = heroName.secondary || location.city
 
   const businessJsonLd = localBusinessJsonLd({
     displayName: academyDisplayName,
@@ -179,17 +185,17 @@ export default async function AcademyHomePage({
         />
         {/* text content */}
         <div
-          className="absolute left-[8%] bottom-[12%] max-w-[580px]"
+          className="absolute left-[8%] right-[6vw] bottom-[12%] max-w-[580px]"
           style={{ textShadow: 'var(--shadow-hero)' }}
         >
           <p className={`font-sans text-[11px] font-semibold ${isZh ? 'tracking-[0.32em]' : 'tracking-[0.22em] uppercase'} text-paper/75 mb-5`}>
-            {location.city}
+            {heroEyebrow}
           </p>
           <h1
             className="font-serif text-paper leading-[1.1] tracking-[0.04em] mb-3"
             style={{ fontSize: 'clamp(36px, 6vw, 72px)' }}
           >
-            {academyDisplayName}
+            {heroName.primary}
           </h1>
           {location.tagline && (
             <p
@@ -212,13 +218,13 @@ export default async function AcademyHomePage({
           <div className="flex flex-wrap gap-4">
             <Link
               href={locationPath(locale, slug, '/book')}
-              className="font-sans text-[12px] font-semibold tracking-[0.1em] uppercase text-ink bg-sky rounded-full px-7 py-3 no-underline transition-colors duration-150 hover:bg-blue-deep hover:text-paper"
+              className="inline-flex min-h-11 items-center font-sans text-[12px] font-semibold tracking-[0.1em] uppercase text-paper bg-blue-deep rounded-full px-7 py-3 no-underline transition-colors duration-150 hover:bg-ink"
             >
               {t(locale, 'book.cta')}
             </Link>
             <Link
               href={locationPath(locale, slug, '/about')}
-              className="font-sans text-[12px] font-semibold tracking-[0.1em] uppercase text-paper bg-transparent border-[1.5px] border-paper/60 rounded-full px-7 py-3 no-underline transition-colors duration-150 hover:border-paper"
+              className="inline-flex min-h-11 items-center font-sans text-[12px] font-semibold tracking-[0.1em] uppercase text-paper bg-transparent border-[1.5px] border-paper/60 rounded-full px-7 py-3 no-underline transition-colors duration-150 hover:border-paper"
             >
               {t(locale, 'book.secondary')}
             </Link>
@@ -245,6 +251,7 @@ export default async function AcademyHomePage({
               const imgUrl = activityImageUrl(activity.heroImage)
               const imgAlt = mediaAlt(activity.heroImage, activity.title)
               const upcoming = nextOccurrence(activity)
+              const excerpt = activityExcerpt(activity.shortDesc, activity.title)
 
               return (
                 <Link
@@ -263,7 +270,7 @@ export default async function AcademyHomePage({
                   ) : (
                     <div className="w-full aspect-[3/2] bg-ink/15" />
                   )}
-                  <div className="flex flex-1 flex-col pt-5 pb-6 border-t border-hairline">
+                  <div className="flex flex-1 flex-col pt-5 pb-6 pr-6 border-t border-hairline">
                     {upcoming && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
                         {formatDateCompact(new Date(upcoming), locale)}
@@ -272,12 +279,12 @@ export default async function AcademyHomePage({
                     <h3 className="font-serif text-[20px] font-medium text-ink mb-2">
                       {activity.title}
                     </h3>
-                    {activity.shortDesc && (
-                      <p className="font-sans text-[13px] text-ink-soft mb-4 leading-[1.6] whitespace-pre-line line-clamp-3">
-                        {activity.shortDesc}
+                    {excerpt && (
+                      <p className="font-sans text-[13px] text-ink-soft mb-4 leading-[1.6] line-clamp-2">
+                        {excerpt}
                       </p>
                     )}
-                    <span className="mt-auto font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
+                    <span className="mt-auto font-sans text-[12px] font-semibold text-blue-deep tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
                       {t(locale, 'cta.view_details')}
                     </span>
                   </div>
@@ -286,22 +293,22 @@ export default async function AcademyHomePage({
             })}
           </div>
         ) : (
-          <div className="min-h-[28vh] flex items-center justify-center mb-14">
-            <div className="text-center max-w-[320px]">
-              <p className="font-serif text-[20px] text-ink-soft/60 mb-3">
-                {isZh ? '近期暂无活动。' : 'No upcoming sessions.'}
-              </p>
-              <p className="font-sans text-[13px] text-ink-soft">
-                {t(locale, 'meta.no_upcoming')}
-              </p>
-            </div>
-          </div>
+          // One short line with a useful next step instead of a tall empty box.
+          <p className="font-sans text-[14px] text-ink-soft mb-6">
+            {isZh ? '近期暂无活动安排，' : 'No sessions are scheduled right now. '}
+            <Link
+              href={locationPath(locale, slug, '/book#inquiry')}
+              className="inline-flex min-h-11 items-center font-semibold text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
+            >
+              {isZh ? '留言告诉我们你想参加什么 →' : 'Tell us what you would like to join →'}
+            </Link>
+          </p>
         )}
 
-        <div className="text-center">
+        <div className={activities.length > 0 ? 'text-center' : ''}>
           <Link
             href={locationPath(locale, slug, '/activities')}
-            className="font-sans text-[13px] font-semibold tracking-[0.06em] text-sky no-underline transition-colors duration-150 hover:text-ink"
+            className="inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.06em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
           >
             {t(locale, 'cta.view_all_activities')}
           </Link>
@@ -330,41 +337,32 @@ export default async function AcademyHomePage({
             <p className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] mb-6">
               {isZh
                 ? `${location.name}坐落于${location.city}，是一处与日常修学相伴的安静空间。我们不教授什么，只是一起静坐、喝茶、读书、走路。来访的人会发现，这里没有规则，只有一种不疾不徐的节奏。`
-                : `${location.name} is a quiet space for daily practice in ${location.city}. We don't teach anything — we simply sit together, drink tea, read, and walk. Visitors find that there are no rules here, only a gentle, unhurried rhythm.`}
+                : `${location.name} is a quiet space for daily practice in ${location.city}. We don't teach anything; we simply sit together, drink tea, read, and walk. Visitors find that there are no rules here, only a gentle, unhurried rhythm.`}
             </p>
           )}
 
-          {/* Tagline below the story. Each location can override via the
-              `signatureLine` field (e.g. Bangkok swaps 行走→抄经 because
-              there's no walking path); empty falls back to the network
-              default. The "{name}—{city}的修学空间。" stem stays consistent
-              across academies. */}
-          {isZh && (
-            <p className="font-serif text-[18px] text-ink-soft leading-[1.7]">
-              {`${location.name}——${location.city}的修学空间。${
-                (location as any).signatureLine ||
-                (isBacNinh ? bacNinhCopy.signature : '静坐、喝茶、读书、行走。')
-              }`}
-            </p>
-          )}
-          {!isZh && (
-            <p className="font-serif text-[18px] text-ink-soft leading-[1.7]">
-              {(location as any).signatureLine ||
-                (isBacNinh
-                  ? bacNinhCopy.signature
-                  : `A quiet space for practice in ${location.city}. We sit, drink tea, read, and walk together.`)}
-            </p>
-          )}
+          {/* Closing line under the story. Bac Ninh uses its own copy in the
+              page language (never the zh CMS fallback on /en) and repeated
+              sentences collapse. Other academies keep the network stem. */}
+          <p className="font-serif text-[18px] text-ink-soft leading-[1.7]">
+            {isBacNinh
+              ? bacNinhSignature(locale, (location as any).signatureLine)
+              : isZh
+                ? `${location.name}，${location.city}的修学空间。${(location as any).signatureLine || '静坐、喝茶、读书、行走。'}`
+                : (location as any).signatureLine ||
+                  `A quiet space for practice in ${location.city}. We sit, drink tea, read, and walk together.`}
+          </p>
         </div>
       </section>
 
       {/* ─── SECTION 3: JOURNAL PREVIEW ──────────── */}
-      <section className="px-[6vw] py-36">
-        <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-8">
-          {t(locale, 'eyebrow.journal')}
-        </p>
+      {/* Hidden entirely until there is something to read. */}
+      {journalEntries.length > 0 && (
+        <section className="px-[6vw] py-36">
+          <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-8">
+            {t(locale, 'eyebrow.journal')}
+          </p>
 
-        {journalEntries.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] mb-12">
             {journalEntries.map((entryDoc, idx) => {
               const entry = entryDoc as Journal & { coverImage: Media | number }
@@ -398,14 +396,14 @@ export default async function AcademyHomePage({
                   ) : (
                     <div className={`w-full ${aspectClass} bg-ink/15`} />
                   )}
-                  <div className="pt-4 pb-5 border-t border-hairline">
+                  <div className="pt-4 pb-5 pr-6 border-t border-hairline">
                     {dateStr && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-1">
                         {dateStr}
                       </p>
                     )}
                     <p className="font-serif text-[14px] text-ink mb-2">{entry.title}</p>
-                    <span className="font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
+                    <span className="font-sans text-[12px] font-semibold text-blue-deep tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
                       {t(locale, 'cta.read_more')}
                     </span>
                   </div>
@@ -413,28 +411,17 @@ export default async function AcademyHomePage({
               )
             })}
           </div>
-        ) : (
-          <div className="min-h-[28vh] flex items-center justify-center mb-12">
-            <div className="text-center max-w-[320px]">
-              <p className="font-serif text-[20px] text-ink-soft/60 mb-3">
-                {isZh ? '记录正在路上。' : 'Coming soon.'}
-              </p>
-              <p className="font-sans text-[13px] text-ink-soft">
-                {t(locale, 'meta.no_journal')}
-              </p>
-            </div>
-          </div>
-        )}
 
-        <div className="text-center">
-          <Link
-            href={locationPath(locale, slug, '/journal')}
-            className="font-sans text-[13px] font-semibold tracking-[0.06em] text-sky no-underline transition-colors duration-150 hover:text-ink"
-          >
-            {t(locale, 'cta.all_entries')}
-          </Link>
-        </div>
-      </section>
+          <div className="text-center">
+            <Link
+              href={locationPath(locale, slug, '/journal')}
+              className="inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.06em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
+            >
+              {t(locale, 'cta.all_entries')}
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* ─── SECTION 4: FIND US / MAP ────────────── */}
       {(location.address || location.mapEmbedUrl) && (
@@ -473,7 +460,7 @@ export default async function AcademyHomePage({
             rel="noreferrer"
             analyticsEvent="map_open"
             analyticsParameters={{ location_slug: slug }}
-            className="mt-6 inline-flex font-sans text-[13px] font-semibold tracking-[0.04em] text-sky no-underline transition-colors hover:text-ink"
+            className="mt-6 inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.04em] text-blue-deep no-underline transition-colors hover:text-ink md:min-h-0"
           >
             {isZh ? '在 Google 地图中打开 ↗' : 'Open in Google Maps ↗'}
           </TrackedLink>

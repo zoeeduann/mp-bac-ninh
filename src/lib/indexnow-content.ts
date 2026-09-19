@@ -88,10 +88,11 @@ export async function indexNowUrlsForActivity(
   req?: PayloadRequestLike,
   base = BASE,
 ): Promise<string[]> {
-  const slug = typeof doc?.slug === 'string'
-    ? doc.slug
-    : typeof previousDoc?.slug === 'string'
-      ? previousDoc.slug
+  // A whitespace-only slug cannot form a URL; treat it as missing.
+  const slug = typeof doc?.slug === 'string' && doc.slug.trim()
+    ? doc.slug.trim()
+    : typeof previousDoc?.slug === 'string' && previousDoc.slug.trim()
+      ? previousDoc.slug.trim()
       : null
   const location = doc?.location ?? previousDoc?.location
   const locationSlug = await resolveLocationSlug(location, req)

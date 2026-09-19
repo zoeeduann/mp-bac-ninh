@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -34,10 +35,12 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const pageTitle = locale === 'zh-CN'
-    ? `关于 ${displayName}`
-    : `About ${displayName}`
-  const title = inThailandNetwork ? `${pageTitle} — ${siteName}` : pageTitle
+  const title = pageTitle(
+    locale,
+    locale === 'zh-CN' ? '关于' : 'About',
+    displayName,
+    inThailandNetwork ? siteName : null,
+  )
   const description = locationSeoDescription({
     locale,
     displayName,
@@ -118,7 +121,7 @@ export default async function AboutPage({
               className="font-serif text-paper leading-[1.1]"
               style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
             >
-              {location.name}
+              {splitPlaceName(location.name).primary}
             </h1>
           </div>
         </div>
@@ -135,7 +138,7 @@ export default async function AboutPage({
               className="font-serif font-normal text-ink leading-[1.1]"
               style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
             >
-              {location.name}
+              {splitPlaceName(location.name).primary}
             </h1>
           </div>
         )}
@@ -159,7 +162,7 @@ export default async function AboutPage({
           <p className="font-serif text-[clamp(17px,2vw,21px)] text-ink leading-[1.85] max-w-prose mb-16">
             {isZh
               ? `${location.name}坐落于${location.city}，是一处与日常修学相伴的安静空间。我们不教授什么，只是一起静坐、喝茶、读书、走路。来访的人会发现，这里没有规则，只有一种不疾不徐的节奏。`
-              : `${location.name} is a quiet space for daily practice in ${location.city}. We don't teach anything — we simply sit together, drink tea, read, and walk. There are no rules here, only a gentle, unhurried rhythm.`}
+              : `${location.name} is a quiet space for daily practice in ${location.city}. We don't teach anything; we simply sit together, drink tea, read, and walk. There are no rules here, only a gentle, unhurried rhythm.`}
           </p>
         )}
       </section>
@@ -305,7 +308,7 @@ export default async function AboutPage({
           href="https://mindfulpeace.org"
           target="_blank"
           rel="noreferrer"
-          className="font-sans text-[12px] font-semibold tracking-[0.08em] text-sky no-underline transition-colors duration-150 hover:text-ink"
+          className="inline-flex min-h-11 items-center font-sans text-[12px] font-semibold tracking-[0.08em] text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
         >
           {t(locale, 'cta.about_international')}
         </a>

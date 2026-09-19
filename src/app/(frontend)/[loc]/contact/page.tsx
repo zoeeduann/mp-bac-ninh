@@ -1,4 +1,8 @@
 import type { Metadata } from 'next'
+import { pageTitle, splitPlaceName } from '@/lib/page-title'
+import { contactChannels } from '@/lib/contact'
+import ContactList from '@/components/layout/ContactList'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { getLocale, t } from '@/lib/i18n'
@@ -9,13 +13,12 @@ import {
 } from '@/lib/current-location'
 import { RichText } from '@/components/RichText'
 import { buildMetadata } from '@/lib/metadata'
-import { locationUrl } from '@/lib/site-config'
+import { locationPath, locationUrl } from '@/lib/site-config'
 import { JsonLd } from '@/components/JsonLd'
 import { faqPageJsonLd } from '@/lib/jsonld'
 import { locationSeoKeywords } from '@/lib/seo'
 import { academyName } from '@/lib/short-name'
 import type { Media } from '@/payload-types'
-import CopyableWechat from '@/components/CopyableWechat'
 import TrackedLink from '@/components/analytics/TrackedLink'
 
 export async function generateMetadata({
@@ -31,10 +34,12 @@ export async function generateMetadata({
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
   const siteName = locationSiteName(location, locale)
-  const pageTitle = locale === 'zh-CN'
-    ? `联系 ${displayName}`
-    : `Contact ${displayName}`
-  const title = inThailandNetwork ? `${pageTitle} — ${siteName}` : pageTitle
+  const title = pageTitle(
+    locale,
+    locale === 'zh-CN' ? '联系' : 'Contact',
+    displayName,
+    inThailandNetwork ? siteName : null,
+  )
   const description = locale === 'zh-CN'
     ? `联系${displayName}，了解${location.city}佛学、禅修、正念与静坐活动的微信、邮箱、地址和到访方式。`
     : `Contact ${displayName} in ${location.city} for Buddhism, Zen meditation, mindfulness, and sitting practice by email, WeChat, or in person.`
@@ -86,6 +91,8 @@ export default async function ContactPage({
   )}`
 
   const faqJsonLd = faqPageJsonLd(location.faq)
+  const place = splitPlaceName(location.name)
+  const channels = contactChannels(location, locale)
 
   return (
     <div>
@@ -99,7 +106,7 @@ export default async function ContactPage({
           className="font-serif font-normal text-ink leading-[1.1] mb-6"
           style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
         >
-          {location.name}
+          {place.primary}
         </h1>
         {location.tagline && (
           <p className="font-serif text-[18px] text-ink-soft leading-[1.6]">
@@ -114,114 +121,29 @@ export default async function ContactPage({
           {t(locale, 'eyebrow.channels')}
         </p>
 
-        <div className="flex flex-col gap-10 max-w-prose">
-          {/* Email */}
-          {location.email && (
-            <div className="flex flex-col gap-1">
-              <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
-                {t(locale, 'form.email')}
-              </p>
-              <TrackedLink
-                href={`mailto:${location.email}`}
-                analyticsEvent="contact_click"
-                analyticsParameters={{ contact_method: 'email' }}
-                className="font-sans text-[15px] text-ink no-underline transition-colors duration-150 hover:text-sky"
-              >
-                {location.email}
-              </TrackedLink>
-            </div>
-          )}
-
-          {/* Phone */}
-          {location.phone && (
-            <div className="flex flex-col gap-1">
-              <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
-                {t(locale, 'form.phone')}
-              </p>
-              <TrackedLink
-                href={`tel:${location.phone}`}
-                analyticsEvent="contact_click"
-                analyticsParameters={{ contact_method: 'phone' }}
-                className="font-sans text-[15px] text-ink no-underline transition-colors duration-150 hover:text-sky"
-              >
-                {location.phone}
-              </TrackedLink>
-            </div>
-          )}
-
-          {/* WeChat */}
-          {location.wechatId && (
-            <div className="flex flex-col gap-3">
-              <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
-                {t(locale, 'form.wechat')}
-              </p>
-              <CopyableWechat
-                id={location.wechatId}
-                locale={locale}
-                className="self-start font-sans text-[15px] text-ink tracking-[0.02em]"
+        {channels.length > 0 ? (
+          <div className="flex flex-col gap-8 max-w-prose">
+            <ContactList channels={channels} locale={locale} variant="page" />
+            {location.wechatId?.trim() && wechatQrUrl && (
+              <Image
+                src={wechatQrUrl}
+                alt={wechatQrAlt}
+                width={300}
+                height={300}
               />
-              {wechatQrUrl && (
-                <Image
-                  src={wechatQrUrl}
-                  alt={wechatQrAlt}
-                  width={300}
-                  height={300}
-                  className="mt-2"
-                />
-              )}
-            </div>
-          )}
-
-          {/* WhatsApp */}
-          {location.whatsapp && (
-            <div className="flex flex-col gap-1">
-              <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
-                WhatsApp
-              </p>
-              <TrackedLink
-                href={
-                  location.whatsapp.startsWith('http')
-                    ? location.whatsapp
-                    : `https://wa.me/${location.whatsapp.replace(/[^\d]/g, '')}`
-                }
-                target="_blank"
-                rel="noreferrer"
-                analyticsEvent="contact_click"
-                analyticsParameters={{ contact_method: 'whatsapp' }}
-                className="font-sans text-[15px] text-ink no-underline transition-colors duration-150 hover:text-sky"
-              >
-                {location.whatsapp}
-              </TrackedLink>
-            </div>
-          )}
-
-          {/* Social links */}
-          {location.social && location.social.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <p className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-ink-soft">
-                {isZh ? '社交媒体' : 'Social media'}
-              </p>
-              {location.social.map((s) => (
-                <TrackedLink
-                  key={s.id ?? s.url}
-                  href={s.url ?? '#'}
-                  target="_blank"
-                  rel="noreferrer"
-                  analyticsEvent="contact_click"
-                  analyticsParameters={{
-                    contact_method:
-                      `${s.label ?? ''} ${s.url ?? ''}`.toLowerCase().includes('zalo')
-                        ? 'zalo'
-                        : 'social',
-                  }}
-                  className="font-sans text-[14px] text-sky no-underline transition-colors duration-150 hover:text-ink"
-                >
-                  {s.label ?? s.url}
-                </TrackedLink>
-              ))}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <p className="font-sans text-[15px] text-ink-soft">
+            {isZh ? '目前可以通过在线留言联系我们，' : 'For now, the best way to reach us is a message: '}
+            <Link
+              href={locationPath(locale, slug, '/book#inquiry')}
+              className="inline-flex min-h-11 items-center font-semibold text-blue-deep no-underline transition-colors hover:text-ink md:min-h-0"
+            >
+              {isZh ? '去留言 →' : 'Leave a note →'}
+            </Link>
+          </p>
+        )}
       </section>
 
       {/* ─── SECTION 2: FIND US ───────────────────── */}
@@ -261,7 +183,7 @@ export default async function ContactPage({
             rel="noreferrer"
             analyticsEvent="map_open"
             analyticsParameters={{ location_slug: slug }}
-            className="mt-6 inline-flex font-sans text-[13px] font-semibold tracking-[0.04em] text-sky no-underline transition-colors hover:text-ink"
+            className="mt-6 inline-flex min-h-11 items-center font-sans text-[13px] font-semibold tracking-[0.04em] text-blue-deep no-underline transition-colors hover:text-ink md:min-h-0"
           >
             {isZh ? '在 Google 地图中打开 ↗' : 'Open in Google Maps ↗'}
           </TrackedLink>

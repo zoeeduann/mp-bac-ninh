@@ -132,7 +132,7 @@ export default function PosterControls({
       type="button"
       onClick={capture}
       disabled={state === 'preparing'}
-      className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink bg-sky rounded-full px-5 py-[0.55rem] cursor-pointer border-none transition-colors duration-150 hover:bg-blue-deep hover:text-paper disabled:opacity-60 disabled:cursor-default"
+      className="inline-flex min-h-11 items-center font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink bg-paper border border-ink/25 rounded-full px-5 py-[0.55rem] cursor-pointer transition-colors duration-150 hover:border-blue-deep hover:text-blue-deep disabled:opacity-60 disabled:cursor-default md:min-h-0"
     >
       {label}
     </button>

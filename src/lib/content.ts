@@ -1,5 +1,6 @@
 import type { Locale } from './i18n'
 import { isSessionPast } from './calendar'
+import { hasUsableSlug, withUsableSlugs } from './activity-list'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -114,7 +115,7 @@ export async function getFeaturedActivitiesForLocation(
   // Sort by NEXT upcoming occurrence — activities without any future
   // occurrence are excluded from the featured list entirely.
   const now = new Date()
-  const annotated = result.docs
+  const annotated = withUsableSlugs(result.docs as any[])
     .map((a: any) => {
       const occs = Array.isArray(a.occurrences) ? a.occurrences : []
       const future = occs
@@ -181,6 +182,7 @@ export function findNextSession(activities: any[]): NextSession | null {
   const candidates: { startAt: number; activityTitle: string; activitySlug: string }[] = []
 
   for (const act of activities) {
+    if (!hasUsableSlug(act)) continue
     const occs = act.occurrences ?? []
     for (const occ of occs) {
       if (!occ.startAt) continue
@@ -234,7 +236,8 @@ export async function getAllPublishedActivitiesForLocation(
     fallbackLocale: 'zh-CN',
     overrideAccess: true,
   })
-  return result.docs
+  // Blank-slug records cannot be linked to, so no list shows them.
+  return withUsableSlugs(result.docs)
 }
 
 /**
@@ -266,7 +269,7 @@ export async function getCategoriesWithCountsForLocation(
 
   // 2. Count activities per category id
   const countByCat = new Map<number, number>()
-  for (const a of acts.docs) {
+  for (const a of withUsableSlugs(acts.docs)) {
     const catId =
       typeof (a as any).category === 'object'
         ? (a as any).category?.id
@@ -371,7 +374,7 @@ export async function getUpcomingSessionsForLocation(
     seriesOccurrences: Array<{ id: string; startAt: string; endAt: string }>
   }> = []
 
-  for (const activity of result.docs) {
+  for (const activity of withUsableSlugs(result.docs)) {
     const occs = ((activity as any).occurrences ?? [])
       .filter((occ: any) =>
         occ.startAt &&

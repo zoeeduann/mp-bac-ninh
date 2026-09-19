@@ -142,7 +142,7 @@ export default function ShareButton({
         type="button"
         onClick={nativeShare}
         aria-label={t(locale, 'share.poster_aria')}
-        className={`inline-flex items-center justify-center w-9 h-9 rounded-full bg-paper/90 text-ink backdrop-blur-sm shadow-sm transition-colors duration-150 hover:bg-sky hover:text-ink cursor-pointer ${className}`}
+        className={`inline-flex items-center justify-center w-11 h-11 md:w-9 md:h-9 rounded-full bg-paper/90 text-ink backdrop-blur-sm shadow-sm transition-colors duration-150 hover:bg-sky hover:text-ink cursor-pointer ${className}`}
       >
         {copied ? (
           <span className="text-[9px] font-semibold leading-none px-1 text-center">
@@ -169,7 +169,7 @@ export default function ShareButton({
         }}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`inline-flex items-center gap-2 font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink bg-transparent border border-ink/25 rounded-full px-4 py-[0.45rem] cursor-pointer transition-colors duration-150 hover:border-sky hover:text-sky whitespace-nowrap ${className}`}
+        className={`inline-flex min-h-11 md:min-h-0 items-center gap-2 font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink bg-transparent border border-ink/25 rounded-full px-4 py-[0.45rem] cursor-pointer transition-colors duration-150 hover:border-blue-deep hover:text-blue-deep whitespace-nowrap ${className}`}
       >
         <ShareIcon />
         {copied ? t(locale, 'share.copied') : t(locale, 'share.cta')}
@@ -184,7 +184,7 @@ export default function ShareButton({
             type="button"
             role="menuitem"
             onClick={nativeShare}
-            className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-[13px] text-ink hover:bg-sky/20 transition-colors duration-150"
+            className="w-full flex min-h-11 items-center gap-2 px-4 py-2.5 text-left text-[13px] text-ink hover:bg-sky/20 transition-colors duration-150"
           >
             <span aria-hidden="true">📱</span>
             <span>{isZh ? '微信卡片分享' : 'Share to apps'}</span>
@@ -194,7 +194,7 @@ export default function ShareButton({
             type="button"
             role="menuitem"
             onClick={copyPlainText}
-            className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-[13px] text-ink hover:bg-sky/20 transition-colors duration-150"
+            className="w-full flex min-h-11 items-center gap-2 px-4 py-2.5 text-left text-[13px] text-ink hover:bg-sky/20 transition-colors duration-150"
           >
             <span aria-hidden="true">📋</span>
             <span>{isZh ? '复制链接(纯文本)' : 'Copy as plain text'}</span>

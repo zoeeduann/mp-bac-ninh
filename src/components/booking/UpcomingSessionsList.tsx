@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { locationPath } from '@/lib/site-config'
+import { remainingSeatsText } from '@/lib/seats'
 import BookingModal from './BookingModal'
 import { toZonedTime, format as fmtTz } from 'date-fns-tz'
 
@@ -42,6 +43,8 @@ interface UpcomingSessionsListProps {
   sessions: SessionRow[]
   locale: 'zh-CN' | 'en'
   autoOpen: AutoOpenContext
+  /** Show the academy chip on each row (only useful with several academies). */
+  showLocation?: boolean
 }
 
 function formatDayZh(date: Date): string {
@@ -73,7 +76,12 @@ interface ModalState {
   source: 'activity_detail' | 'book_list' | 'shared_link'
 }
 
-export default function UpcomingSessionsList({ sessions, locale, autoOpen }: UpcomingSessionsListProps) {
+export default function UpcomingSessionsList({
+  sessions,
+  locale,
+  autoOpen,
+  showLocation = true,
+}: UpcomingSessionsListProps) {
   const isZh = locale === 'zh-CN'
 
   const [modal, setModal] = useState<ModalState>({
@@ -108,7 +116,7 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
   const unavailableNotice = requestedUnavailable ? (
     <div className="mb-8 max-w-[860px] rounded border border-sky/40 bg-sky/10 px-4 py-3 font-sans text-[13px] text-ink leading-[1.6]">
       {isZh
-        ? '你想报名的场次已结束或暂时无法预约。可以看看下面其他场次,或在本页下方留言咨询。'
+        ? '你想报名的场次已结束或暂时无法预约。可以看看下面其他场次，或在本页下方留言咨询。'
         : 'The session you wanted is no longer available. Browse the other upcoming sessions below, or leave us a note further down this page.'}
     </div>
   ) : null
@@ -139,8 +147,6 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
         {sessions.map((session, i) => {
           const isSeries = session.registrationMode === 'series'
           const isFull = session.remaining === 0
-          const effectiveCap = session.capacityOverride ?? session.activityCapacity
-          const occupied = effectiveCap - session.remaining
           const startDate = new Date(session.startAt)
 
           return (
@@ -156,7 +162,7 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
               <div>
                 <Link
                   href={locationPath(locale, session.locationSlug, `/activities/${session.activitySlug}`)}
-                  className="font-serif text-[17px] font-medium text-ink block mb-[0.25rem] no-underline transition-colors duration-150 hover:text-sky"
+                  className="font-serif text-[17px] font-medium text-ink block mb-[0.25rem] no-underline transition-colors duration-150 hover:text-blue-deep"
                 >
                   {session.activityTitle}
                 </Link>
@@ -206,22 +212,18 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
 
               {/* Location + capacity */}
               <div>
-                <span className="inline-block font-sans text-[10px] font-semibold tracking-[0.12em] uppercase text-sky border border-sky/35 rounded-full px-[0.6rem] py-[0.18rem] mb-[0.4rem]">
-                  {session.locationName}
-                </span>
-                <span className="font-sans text-[12px] text-ink-soft block">
-                  {occupied}/{effectiveCap}{' · '}
-                  {isFull ? (
-                    <span className="text-ink-soft">{isZh ? '已满' : 'Full'}</span>
-                  ) : session.remaining <= 3 ? (
-                    <span className="text-clay font-semibold">
-                      {isZh ? `${session.remaining} 个名额` : `${session.remaining} spots left`}
-                    </span>
-                  ) : (
-                    <span>
-                      {isZh ? `${session.remaining} 个名额` : `${session.remaining} spots left`}
-                    </span>
-                  )}
+                {showLocation && (
+                  <span className="inline-block font-sans text-[10px] font-semibold tracking-[0.12em] uppercase text-ink-soft border border-ink/15 rounded-full px-[0.6rem] py-[0.18rem] mb-[0.4rem]">
+                    {session.locationName}
+                  </span>
+                )}
+                <span
+                  className={[
+                    'font-sans text-[12px] block',
+                    !isFull && session.remaining <= 3 ? 'text-clay font-semibold' : 'text-ink-soft',
+                  ].join(' ')}
+                >
+                  {remainingSeatsText(locale, session.remaining)}
                 </span>
               </div>
 
@@ -235,7 +237,7 @@ export default function UpcomingSessionsList({ sessions, locale, autoOpen }: Upc
                   <button
                     type="button"
                     onClick={() => openModal(session)}
-                    className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-ink bg-sky border-none rounded-full px-[1.3rem] py-[0.55rem] cursor-pointer transition-colors hover:bg-blue-deep hover:text-paper whitespace-nowrap"
+                    className="inline-flex min-h-11 items-center justify-center font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-paper bg-blue-deep border-none rounded-full px-[1.3rem] py-[0.55rem] cursor-pointer transition-colors hover:bg-ink whitespace-nowrap max-md:w-full md:min-h-0"
                   >
                     {isZh ? '立即报名' : 'Book'}
                   </button>

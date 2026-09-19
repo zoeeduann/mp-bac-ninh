@@ -10,6 +10,9 @@ import BacNinhLogo from '@/components/layout/BacNinhLogo'
 import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
 import type { Activity, Location, Media } from '@/payload-types'
+import ContactList from '@/components/layout/ContactList'
+import { contactChannels } from '@/lib/contact'
+import { activityExcerpt } from '@/lib/activity-text'
 
 const title = 'Thiện Minh Tiểu Viện · Bắc Ninh'
 const description =
@@ -57,14 +60,34 @@ function nextOccurrence(activity: Activity): string | null {
   return next?.startAt ?? null
 }
 
-function formatVietnameseDate(value: string): string {
-  return new Intl.DateTimeFormat('vi-VN', {
+/** "Thứ Bảy, 19 tháng 9 · 13:30" */
+function formatVietnameseDateTime(value: string): string {
+  const date = new Date(value)
+  const day = new Intl.DateTimeFormat('vi-VN', {
+    weekday: 'long',
     day: 'numeric',
     month: 'long',
-    year: 'numeric',
     timeZone: 'Asia/Ho_Chi_Minh',
-  }).format(new Date(value))
+  }).format(date)
+  const time = new Intl.DateTimeFormat('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Ho_Chi_Minh',
+  }).format(date)
+  return `${day.charAt(0).toUpperCase()}${day.slice(1)} · ${time}`
 }
+
+// Booking and activity pages exist in Chinese and English; Vietnamese
+// visitors are sent to the English versions.
+const BOOK_HREF = '/en/book#inquiry'
+const activityHref = (slug: string) => `/en/activities/${slug}`
+
+const NAV = [
+  { href: '#hoat-dong', label: 'Hoạt động' },
+  { href: '#gioi-thieu', label: 'Giới thiệu' },
+  { href: '#dia-chi', label: 'Địa chỉ' },
+]
 
 function cleanMapUrl(value: string | null | undefined): string | null {
   if (!value) return null
@@ -153,6 +176,7 @@ export default async function VietnameseThienMinhPage() {
   const activities = (await getFeaturedActivitiesForLocation(location.id, 'en', 3)) as Activity[]
   const heroUrl = mediaUrl(location.heroImage as number | Media | null | undefined)
   const mapUrl = cleanMapUrl(location.mapEmbedUrl)
+  const channels = contactChannels(location, 'vi')
   const placeId = `${SITE_BASE}/vi#place`
   const jsonLd = [
     {
@@ -214,19 +238,54 @@ export default async function VietnameseThienMinhPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-ink/10 bg-paper px-[5vw]">
+      <header className="sticky top-0 z-50 flex h-16 items-center justify-between gap-3 border-b border-ink/10 bg-paper px-[4vw]">
         <Link href="/vi" className="leading-none no-underline" aria-label="Thiện Minh Tiểu Viện">
           <BacNinhLogo />
         </Link>
-        <nav aria-label="Điều hướng chính" className="hidden items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.12em] md:flex">
-          <Link href="#hoat-dong" className="hover:text-blue-deep">Hoạt động</Link>
-          <Link href="#gioi-thieu" className="hover:text-blue-deep">Giới thiệu</Link>
-          <Link href="#dia-chi" className="hover:text-blue-deep">Địa chỉ</Link>
+        <nav aria-label="Điều hướng chính" className="hidden md:flex">
+          <ul className="flex list-none items-center gap-10">
+            {NAV.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink no-underline transition-colors duration-150 hover:text-blue-deep"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
-        <div className="flex items-center gap-4 text-[11px] font-semibold tracking-[0.1em] text-ink-soft">
-          <Link href="/" hrefLang="zh-CN" aria-label="切换到中文" className="hover:text-ink">中</Link>
-          <Link href="/en" hrefLang="en" aria-label="Switch to English" className="hover:text-ink">EN</Link>
-          <span aria-current="page" className="text-blue-deep">VI</span>
+        <div className="flex items-center gap-1 sm:gap-3">
+          <Link
+            href="/"
+            hrefLang="zh-CN"
+            aria-label="切换到中文"
+            className="hidden min-h-11 min-w-11 items-center justify-center font-sans text-[11px] font-semibold tracking-[0.1em] text-ink-soft transition-colors hover:text-ink sm:inline-flex"
+          >
+            中
+          </Link>
+          <Link
+            href="/en"
+            hrefLang="en"
+            aria-label="Switch to English"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center font-sans text-[11px] font-semibold tracking-[0.1em] text-ink-soft transition-colors hover:text-ink"
+          >
+            EN
+          </Link>
+          <span
+            aria-current="page"
+            className="hidden min-h-11 min-w-11 items-center justify-center font-sans text-[11px] font-semibold tracking-[0.1em] text-blue-deep sm:inline-flex"
+          >
+            VI
+          </span>
+          <Link
+            href={BOOK_HREF}
+            hrefLang="en"
+            className="ml-1 inline-flex min-h-11 items-center whitespace-nowrap rounded-full bg-blue-deep px-5 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-paper no-underline transition-colors duration-150 hover:bg-ink md:min-h-0 md:py-[0.45rem]"
+          >
+            Đặt lịch
+          </Link>
         </div>
       </header>
 
@@ -253,10 +312,10 @@ export default async function VietnameseThienMinhPage() {
               Một không gian yên tĩnh để tu học tại Bắc Ninh
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="#hoat-dong" className="rounded-full bg-sky px-7 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink no-underline hover:bg-paper">
+              <Link href="#hoat-dong" className="inline-flex min-h-11 items-center rounded-full bg-blue-deep px-7 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-paper no-underline transition-colors duration-150 hover:bg-ink">
                 Hoạt động sắp tới
               </Link>
-              <Link href="#gioi-thieu" className="rounded-full border border-paper/60 px-7 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-paper no-underline hover:border-paper">
+              <Link href="#gioi-thieu" className="inline-flex min-h-11 items-center rounded-full border border-paper/60 px-7 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-paper no-underline hover:border-paper">
                 Tìm hiểu tiểu viện
               </Link>
             </div>
@@ -274,12 +333,20 @@ export default async function VietnameseThienMinhPage() {
                   // Generated landscape covers only; source posters are never public.
                   const imageUrl = activityImageUrl(activity.heroImage as number | Media | null | undefined)
                   const upcoming = nextOccurrence(activity)
+                  const cardTitle = translated?.title || activity.title
+                  const excerpt =
+                    translated?.description || activityExcerpt(activity.shortDesc, activity.title)
                   return (
-                    <article key={activity.id}>
+                    <Link
+                      key={activity.id}
+                      href={activityHref(activity.slug)}
+                      hrefLang="en"
+                      className="group flex h-full min-w-0 flex-col text-inherit no-underline"
+                    >
                       {imageUrl ? (
                         <ActivityImage
                           src={imageUrl}
-                          alt={mediaAlt(activity.heroImage as number | Media | null | undefined, translated?.title || activity.title)}
+                          alt={mediaAlt(activity.heroImage as number | Media | null | undefined, cardTitle)}
                           width={900}
                           height={600}
                           sizes="(min-width: 768px) 33vw, 100vw"
@@ -287,17 +354,35 @@ export default async function VietnameseThienMinhPage() {
                       ) : (
                         <div className="aspect-[3/2] w-full bg-sky-pale" />
                       )}
-                      <div className="border-t border-hairline pb-6 pt-5">
-                        {upcoming && <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-soft">{formatVietnameseDate(upcoming)}</p>}
-                        <h3 className="mb-3 font-serif text-[21px] font-medium leading-[1.4]">{translated?.title || activity.title}</h3>
-                        <p className="text-[13px] leading-[1.7] text-ink-soft">{translated?.description || activity.shortDesc}</p>
+                      <div className="flex flex-1 flex-col border-t border-hairline pb-6 pr-6 pt-5">
+                        {upcoming && (
+                          <p className="mb-2 text-[12px] font-semibold tracking-[0.06em] text-ink-soft">
+                            {formatVietnameseDateTime(upcoming)}
+                          </p>
+                        )}
+                        <h3 className="mb-3 font-serif text-[21px] font-medium leading-[1.4]">{cardTitle}</h3>
+                        {excerpt && (
+                          <p className="mb-4 line-clamp-2 text-[13px] leading-[1.7] text-ink-soft">{excerpt}</p>
+                        )}
+                        <span className="mt-auto text-[12px] font-semibold tracking-[0.04em] text-blue-deep transition-colors duration-150 group-hover:text-ink">
+                          Xem chi tiết →
+                        </span>
                       </div>
-                    </article>
+                    </Link>
                   )
                 })}
               </div>
             ) : (
-              <p className="py-16 text-center font-serif text-[20px] text-ink-soft">Hiện chưa có lịch hoạt động mới.</p>
+              <p className="text-[15px] text-ink-soft">
+                Hiện chưa có lịch hoạt động mới.{' '}
+                <Link
+                  href={BOOK_HREF}
+                  hrefLang="en"
+                  className="inline-flex min-h-11 items-center font-semibold text-blue-deep no-underline transition-colors hover:text-ink md:min-h-0"
+                >
+                  Gửi lời nhắn cho chúng tôi →
+                </Link>
+              </p>
             )}
           </div>
         </section>
@@ -309,7 +394,7 @@ export default async function VietnameseThienMinhPage() {
               Thiện Minh Tiểu Viện tọa lạc tại Bắc Ninh, là một không gian yên tĩnh đồng hành cùng việc tu học trong đời sống hằng ngày. Chúng tôi không cố truyền dạy điều gì; chỉ cùng nhau ngồi thiền, uống trà, đọc sách và đi bộ. Người ghé thăm sẽ cảm nhận nơi đây không có sự thúc ép, chỉ có một nhịp sống nhẹ nhàng và khoan thai.
             </p>
             <p className="font-serif text-[18px] leading-[1.75] text-ink-soft">
-              Thiện Minh Tiểu Viện — không gian tu học tại Bắc Ninh. Cùng ngồi thiền, uống trà, đọc sách và bước đi trong tỉnh thức.
+              Thiện Minh Tiểu Viện, không gian tu học tại Bắc Ninh. Cùng ngồi thiền, uống trà, đọc sách và bước đi trong tỉnh thức.
             </p>
           </div>
         </section>
@@ -341,10 +426,73 @@ export default async function VietnameseThienMinhPage() {
         )}
       </main>
 
-      <footer className="border-t border-hairline bg-gradient-to-b from-paper to-sky-pale px-[6vw] py-10">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 text-[12px] text-ink-soft sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 Thiện Minh Tiểu Viện · Bắc Ninh</p>
-          <a href="https://mindfulpeace.org" target="_blank" rel="noreferrer" className="hover:text-ink">mindfulpeace.org</a>
+      <footer className="border-t border-hairline bg-gradient-to-b from-paper to-sky-pale px-[6vw] pb-9 pt-16 text-ink md:pt-24">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="grid grid-cols-1 gap-y-14 border-b border-ink/10 pb-14 md:grid-cols-12 md:gap-x-10 md:pb-20">
+            <div className="md:col-span-6 md:pr-[12%]">
+              <p className="font-serif text-[clamp(1.55rem,2.5vw,2.4rem)] font-normal leading-tight tracking-[-0.025em]">
+                Thiện Minh Tiểu Viện
+              </p>
+              <p className="mt-4 max-w-[30rem] font-serif text-[15px] font-normal leading-[1.9] text-ink/65">
+                Một không gian yên tĩnh để tu học tại Bắc Ninh
+              </p>
+              <p className="mt-8 font-sans text-[11px] font-medium uppercase tracking-[0.22em] text-ink/40">
+                Bắc Ninh · Việt Nam
+              </p>
+            </div>
+
+            <nav aria-label="Điều hướng" className="md:col-span-2">
+              <h2 className="mb-6 font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-ink/40">
+                Điều hướng
+              </h2>
+              <ul className="flex list-none flex-col md:gap-3.5">
+                {[...NAV, { href: BOOK_HREF, label: 'Đặt lịch' }].map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className="inline-flex min-h-11 items-center text-[13px] leading-relaxed text-ink/70 no-underline transition-colors duration-200 hover:text-ink md:min-h-0"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="md:col-span-4">
+              <h2 className="mb-6 font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-ink/40">
+                Liên hệ
+              </h2>
+              <div className="border-l border-sky/50 pl-5">
+                {channels.length > 0 ? (
+                  <ContactList channels={channels} locale="en" />
+                ) : (
+                  <Link
+                    href={BOOK_HREF}
+                    hrefLang="en"
+                    className="inline-flex min-h-11 items-center text-[13px] font-semibold text-blue-deep no-underline transition-colors hover:text-ink md:min-h-0"
+                  >
+                    Gửi lời nhắn →
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6 pt-7 sm:flex-row sm:items-end sm:justify-between">
+            <a
+              href="https://mindfulpeace.org"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-11 items-center text-[11px] text-ink/45 transition-colors hover:text-ink md:min-h-0"
+            >
+              mindfulpeace.org
+            </a>
+            <div className="text-left sm:text-right">
+              <p className="text-[10px] tracking-[0.08em] text-ink/35">© 2026 Thiện Minh Tiểu Viện</p>
+              <p className="mt-1 text-[10px] tracking-[0.08em] text-ink/30">Bắc Ninh, Việt Nam</p>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

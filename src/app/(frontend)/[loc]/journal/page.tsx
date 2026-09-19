@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -29,9 +30,7 @@ export async function generateMetadata({
 
   const displayName = academyName(location.city, location.name)
   const inThailandNetwork = isThailandNetworkLocation(location)
-  const title = locale === 'zh-CN'
-    ? `现场 — ${displayName}`
-    : `Journal — ${displayName}`
+  const title = pageTitle(locale, locale === 'zh-CN' ? '学堂笔记' : 'Journal', displayName)
   const description = locale === 'zh-CN'
     ? `${displayName}的学堂笔记与现场记录：佛学、禅修、正念、禅茶、读书、共修与日常修学。`
     : `Journal entries from ${displayName}: Buddhism, Zen meditation, mindfulness, tea practice, reading, and daily contemplative life.`
@@ -103,19 +102,19 @@ export default async function JournalPage({
         style={{ paddingTop: '8rem', paddingBottom: '4.5rem' }}
       >
         <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-5">
-          {isZh
-            ? `${location.name} · ${t(locale, 'eyebrow.journal')}`
-            : `${academyDisplayName} · ${t(locale, 'eyebrow.journal')}`}
+          {isZh ? location.name : splitPlaceName(academyDisplayName).primary}
         </p>
+        {/* Same name as the nav item and tab title; the poetic line stays as
+            the subtitle. */}
         <h1
           className="font-serif font-normal text-ink leading-[1.2] mb-3"
           style={{ fontSize: 'clamp(28px, 4vw, 50px)' }}
         >
-          {isZh ? '时光的纸条' : 'Notes from the days'}
+          {t(locale, 'nav.journal')}
         </h1>
         <p className="font-serif text-[19px] text-ink-soft">
           {isZh
-            ? '每一次聚集,都是值得记录的时刻。'
+            ? '每一次聚集，都是值得记录的时刻。'
             : 'Every gathering is worth remembering.'}
         </p>
       </div>
@@ -164,7 +163,7 @@ export default async function JournalPage({
                       />
                     )}
                   </div>
-                  <div className="pt-4 pb-6 border-t border-hairline">
+                  <div className="pt-4 pb-6 pr-6 border-t border-hairline">
                     {dateLabel && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-1">
                         {dateLabel}
@@ -173,7 +172,7 @@ export default async function JournalPage({
                     <h2 className="font-serif text-[17px] font-normal text-ink mb-2 leading-[1.35]">
                       {entry.title}
                     </h2>
-                    <span className="font-sans text-[12px] font-semibold text-sky tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
+                    <span className="font-sans text-[12px] font-semibold text-blue-deep tracking-[0.04em] transition-colors duration-150 group-hover:text-ink">
                       {t(locale, 'cta.read_more')}
                     </span>
                   </div>
@@ -182,18 +181,16 @@ export default async function JournalPage({
             })}
           </div>
         ) : (
-          <div className="min-h-[40vh] flex items-center justify-center">
-            <div className="text-center max-w-[320px]">
-              <p className="font-serif text-[20px] text-ink-soft/60 mb-3">
-                {isZh ? '记录正在路上。' : 'Coming soon.'}
-              </p>
-              <p className="font-sans text-[13px] text-ink-soft">
-                {isZh
-                  ? '现场记录将在近期发布，敬请期待。'
-                  : 'Journal entries will be published soon.'}
-              </p>
-            </div>
-          </div>
+          // One concise empty state with a way on.
+          <p className="font-sans text-[15px] text-ink-soft">
+            {isZh ? '学堂笔记还在整理中，' : 'No journal entries yet. '}
+            <Link
+              href={locationPath(locale, slug, '/activities')}
+              className="inline-flex min-h-11 items-center font-semibold text-blue-deep no-underline transition-colors duration-150 hover:text-ink md:min-h-0"
+            >
+              {isZh ? '先看看近期活动 →' : 'See upcoming activities →'}
+            </Link>
+          </p>
         )}
       </div>
     </div>

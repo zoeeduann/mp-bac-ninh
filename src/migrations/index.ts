@@ -10,6 +10,7 @@ import * as addCampaignMetrics from './20260901_120000_add_campaign_metrics'
 import * as mediaLandscapeCover from './20260906_140000_media_landscape_cover'
 import * as shanmingNames from './20260920_150000_shanming_names'
 import * as mergeDuplicateActivities from './20260920_151000_merge_duplicate_activities'
+import * as bacNinhFaq from './20260920_160000_bac_ninh_faq'
 
 export const migrations = [
   {
@@ -61,5 +62,10 @@ export const migrations = [
     name: '20260920_151000_merge_duplicate_activities',
     up: mergeDuplicateActivities.up,
     down: mergeDuplicateActivities.down,
+  },
+  {
+    name: '20260920_160000_bac_ninh_faq',
+    up: bacNinhFaq.up,
+    down: bacNinhFaq.down,
   },
 ]

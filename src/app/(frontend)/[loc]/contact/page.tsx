@@ -22,6 +22,7 @@ import type { Media } from '@/payload-types'
 import TrackedLink from '@/components/analytics/TrackedLink'
 import { bacNinhSeo } from '@/lib/bac-ninh-seo'
 import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
+import { placeBusinessJsonLd } from '@/lib/place-jsonld'
 
 export async function generateMetadata({
   params,
@@ -99,6 +100,7 @@ export default async function ContactPage({
 
   return (
     <div>
+      <JsonLd data={placeBusinessJsonLd({ location, locale })} />
       <JsonLd
         data={placePageBreadcrumbJsonLd({
           locale,

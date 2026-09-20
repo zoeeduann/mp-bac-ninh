@@ -1,12 +1,9 @@
 import { getPayloadClient } from '@/lib/payload'
+import { singleLocationBrief } from '@/lib/llms-brief'
 import { localizedUrl } from '@/lib/locale-url'
 import { networkSeoDescription, seoKeywordText, seoTopics } from '@/lib/seo'
 import { TOPIC_PAGES, topicPath, topicText } from '@/lib/topic-pages'
-import {
-  locationUrl,
-  SITE_BASE,
-  SITE_LOCATION_SLUG,
-} from '@/lib/site-config'
+import { SITE_BASE, SITE_LOCATION_SLUG } from '@/lib/site-config'
 
 /**
  * /llms.txt — a plain-text brief for LLM answer engines (the emerging
@@ -18,6 +15,7 @@ import {
  * Generated from the live Locations collection so it never drifts.
  */
 export const revalidate = 86400 // 1 day
+
 
 export async function GET(): Promise<Response> {
   const payload = await getPayloadClient()
@@ -39,31 +37,7 @@ export async function GET(): Promise<Response> {
       return new Response('Location not found', { status: 404 })
     }
 
-    const body = `# ${location.name} / Shanming Mindful Peace Yard
-
-> ${location.tagline || `${location.name}坐落于${location.city}，提供佛学、禅修、正念、静坐、禅茶与身心安顿活动。`}
-> An independent bilingual practice space in ${location.city}, Vietnam.
-
-## 主要页面 / Key pages
-- 中文主页: ${locationUrl('zh-CN', location.slug)}
-- English home: ${locationUrl('en', location.slug)}
-- 活动 / Activities: ${locationUrl('zh-CN', location.slug, '/activities')}
-- 学堂现场 / Journal: ${locationUrl('zh-CN', location.slug, '/journal')}
-- 关于 / About: ${locationUrl('zh-CN', location.slug, '/about')}
-- 预约 / Booking: ${locationUrl('zh-CN', location.slug, '/book')}
-- 联系 / Contact: ${locationUrl('zh-CN', location.slug, '/contact')}
-- 网站地图 / Sitemap: ${SITE_BASE}/sitemap.xml
-
-## 基本信息 / Details
-- 城市 / City: ${location.city}
-${location.address ? `- 地址 / Address: ${String(location.address).replace(/\s+/g, ' ').trim()}` : ''}
-${location.email ? `- 邮箱 / Email: ${location.email}` : ''}
-${location.phone ? `- 电话 / Phone: ${location.phone}` : ''}
-${location.wechatId ? `- 微信 / WeChat: ${location.wechatId}` : ''}
-
-这是越南北宁善明静心小院的独立官网。
-This is the independent official website of Shanming Mindful Peace Yard in Vietnam.
-`
+    const body = await singleLocationBrief(payload, location)
 
     return new Response(body, {
       headers: {

@@ -33,6 +33,7 @@ import { bacNinhSignature, getBacNinhBrandCopy } from '@/lib/bac-ninh-copy'
 import type { Media, Activity, Journal } from '@/payload-types'
 import TrackedLink from '@/components/analytics/TrackedLink'
 import { BAC_NINH_ALTERNATE_NAMES, BAC_NINH_POSTAL_ADDRESS, bacNinhSeo } from '@/lib/bac-ninh-seo'
+import { placeBusinessJsonLd } from '@/lib/place-jsonld'
 
 export async function generateMetadata({
   params,
@@ -144,30 +145,7 @@ export default async function AcademyHomePage({
   const heroName = splitPlaceName(academyDisplayName)
   const heroEyebrow = heroName.secondary || location.city
 
-  const businessJsonLd = localBusinessJsonLd({
-    displayName: academyDisplayName,
-    city: location.city,
-    url: locationUrl(locale, slug),
-    locale,
-    address: (location as any).address,
-    mapEmbedUrl: (location as any).mapEmbedUrl,
-    email: location.email,
-    phone: location.phone,
-    imageUrl: heroImgUrl,
-    description: bacNinhSeo(location.slug, locale)?.homeDescription ?? location.tagline,
-    isThailandNetwork: isThailandNetworkLocation(location),
-    ...(isBacNinh
-      ? {
-          alternateNames: BAC_NINH_ALTERNATE_NAMES,
-          postalAddress: BAC_NINH_POSTAL_ADDRESS,
-          parentOrganization: { name: 'Mindful Peace International', url: 'https://mindfulpeace.org' },
-          priceCurrency: 'VND',
-        }
-      : {}),
-    sameAs: ((location as any).social ?? [])
-      .map((s: { url?: string | null }) => s.url)
-      .filter((u: unknown): u is string => typeof u === 'string' && u.length > 0),
-  })
+  const businessJsonLd = placeBusinessJsonLd({ location, locale, imageUrl: heroImgUrl })
 
   return (
     <div>

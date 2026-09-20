@@ -179,6 +179,10 @@ export interface LocalBusinessInput {
   parentOrganization?: { name: string; url: string }
   /** ISO 4217 currency for the free offers (THB in the Thailand network). */
   priceCurrency?: string
+  /** Languages visitors can be served in (contactPoint.availableLanguage). */
+  availableLanguage?: string[]
+  /** "Open in Google Maps" link (hasMap). */
+  mapUrl?: string | null
 }
 
 /**
@@ -212,6 +216,24 @@ export function localBusinessJsonLd(input: LocalBusinessInput): Json {
       (isThailandNetwork ? networkSeoDescription(input.locale) : undefined),
     email: input.email ?? undefined,
     telephone: input.phone ?? undefined,
+    // Which languages a visitor can be answered in — the question answer
+    // engines get asked ("can I join if I only speak English?").
+    contactPoint:
+      input.email || input.phone || input.availableLanguage
+        ? compact({
+            '@type': 'ContactPoint',
+            contactType:
+              input.locale === 'zh-CN' ? '预约与到访咨询' : 'reservations and visitor information',
+            email: input.email ?? undefined,
+            telephone: input.phone ?? undefined,
+            availableLanguage:
+              input.availableLanguage && input.availableLanguage.length > 0
+                ? input.availableLanguage
+                : undefined,
+          })
+        : undefined,
+    hasMap: input.mapUrl ?? undefined,
+    priceRange: input.locale === 'zh-CN' ? '免费' : 'Free',
     address: input.postalAddress
       ? { '@type': 'PostalAddress', ...input.postalAddress }
       : compact({

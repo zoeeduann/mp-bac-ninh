@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 
 import { getLocationBySlug, locationSiteName } from '@/lib/current-location'
 import { getLocale, t } from '@/lib/i18n'
+import { getRouteParams } from '@/lib/route-params'
 import { getPayloadClient } from '@/lib/payload'
 import { getCapacityForOccurrence } from '@/lib/content'
 import { academyName } from '@/lib/short-name'
@@ -85,7 +86,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ loc: string; slug: string }>
 }): Promise<Metadata> {
-  const p = await params
+  const p = await getRouteParams(params)
   const locale = await getLocale()
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
@@ -120,7 +121,7 @@ export default async function ActivityPosterPage({
 }: {
   params: Promise<{ loc: string; slug: string }>
 }) {
-  const p = await params
+  const p = await getRouteParams(params)
   const locSlug = p.loc
 
   const locale = await getLocale()

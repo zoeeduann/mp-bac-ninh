@@ -51,3 +51,49 @@ describe('BookingModal series course fields', () => {
     fetchSpy.mockRestore()
   })
 })
+
+describe('BookingModal guests field', () => {
+  const singleProps = {
+    ...baseProps,
+    seriesSessionLabels: undefined,
+    requiresFullAttendance: false,
+    requiresChineseProficiency: false,
+  }
+
+  it('can be cleared and retyped, as on a phone keyboard', () => {
+    render(<BookingModal {...singleProps} />)
+    const input = screen.getByLabelText('人数') as HTMLInputElement
+    fireEvent.change(input, { target: { value: '' } })
+    expect(input.value).toBe('')
+    fireEvent.change(input, { target: { value: '3' } })
+    expect(input.value).toBe('3')
+  })
+
+  it('steps with the + / − buttons within 1..10', () => {
+    render(<BookingModal {...singleProps} />)
+    const input = screen.getByLabelText('人数') as HTMLInputElement
+    const minus = screen.getByRole('button', { name: '减少人数' })
+    const plus = screen.getByRole('button', { name: '增加人数' })
+    expect(minus).toBeDisabled()
+    fireEvent.click(plus)
+    fireEvent.click(plus)
+    expect(input.value).toBe('3')
+    for (let i = 0; i < 12; i++) fireEvent.click(plus)
+    expect(input.value).toBe('10')
+    expect(plus).toBeDisabled()
+  })
+
+  it('submits the typed guest count', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    )
+    render(<BookingModal {...singleProps} />)
+    fireEvent.change(screen.getByLabelText('Zalo'), { target: { value: '0900000000' } })
+    const input = screen.getByLabelText('人数') as HTMLInputElement
+    fireEvent.change(input, { target: { value: '4' } })
+    fireEvent.submit(input.closest('form')!)
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalled())
+    expect(JSON.parse(fetchSpy.mock.calls[0][1]!.body as string).guests).toBe(4)
+    fetchSpy.mockRestore()
+  })
+})

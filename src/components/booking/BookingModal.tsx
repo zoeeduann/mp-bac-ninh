@@ -34,6 +34,14 @@ type SubmitState =
   | { kind: 'full' }
   | { kind: 'error'; message: string }
 
+const MAX_GUESTS = 10
+
+function clampGuests(raw: string): number {
+  const n = parseInt(raw, 10)
+  if (!Number.isFinite(n) || n < 1) return 1
+  return Math.min(n, MAX_GUESTS)
+}
+
 const TURNSTILE_SITE_KEY = TURNSTILE_ENABLED
   ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
   : ''
@@ -64,7 +72,9 @@ export default function BookingModal({
   const [wechatId, setWechatId] = useState('')
   const [zaloId, setZaloId] = useState('')
   const [phone, setPhone] = useState('')
-  const [guests, setGuests] = useState(1)
+  // Kept as the raw text so a phone user can clear the field and retype;
+  // clamped to 1..MAX_GUESTS on blur and on submit.
+  const [guestsInput, setGuestsInput] = useState('1')
   const [fullSeriesConfirmed, setFullSeriesConfirmed] = useState(false)
   const [chineseProficiency, setChineseProficiency] = useState('')
   const [notes, setNotes] = useState('')
@@ -128,7 +138,7 @@ export default function BookingModal({
       setWechatId('')
       setZaloId('')
       setPhone('')
-      setGuests(1)
+      setGuestsInput('1')
       setFullSeriesConfirmed(false)
       setChineseProficiency('')
       setNotes('')
@@ -161,6 +171,8 @@ export default function BookingModal({
     }
     setChineseProficiencyError(false)
 
+    const guests = clampGuests(guestsInput)
+    setGuestsInput(String(guests))
     setSubmitState({ kind: 'submitting' })
 
     try {
@@ -455,15 +467,36 @@ export default function BookingModal({
               >
                 {isZh ? '人数' : 'Guests'}
               </label>
-              <input
-                id="bm-guests"
-                type="number"
-                min={1}
-                max={10}
-                value={guests}
-                onChange={(e) => setGuests(parseInt(e.target.value) || 1)}
-                className="font-sans text-[15px] text-ink bg-transparent border-b border-b-ink/[0.22] outline-none py-2 max-w-[6rem] transition-colors focus:border-b-sky rounded-none appearance-none"
-              />
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  aria-label={isZh ? '减少人数' : 'Fewer guests'}
+                  disabled={clampGuests(guestsInput) <= 1}
+                  onClick={() => setGuestsInput(String(clampGuests(guestsInput) - 1))}
+                  className="w-9 h-9 rounded-full border border-ink/[0.22] text-ink text-[18px] leading-none cursor-pointer transition-colors hover:border-sky disabled:opacity-35 disabled:cursor-default"
+                >
+                  −
+                </button>
+                <input
+                  id="bm-guests"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={guestsInput}
+                  onChange={(e) => setGuestsInput(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                  onBlur={() => setGuestsInput(String(clampGuests(guestsInput)))}
+                  className="font-sans text-[15px] text-ink text-center bg-transparent border-b border-b-ink/[0.22] outline-none py-2 w-[3rem] transition-colors focus:border-b-sky rounded-none appearance-none"
+                />
+                <button
+                  type="button"
+                  aria-label={isZh ? '增加人数' : 'More guests'}
+                  disabled={clampGuests(guestsInput) >= MAX_GUESTS}
+                  onClick={() => setGuestsInput(String(clampGuests(guestsInput) + 1))}
+                  className="w-9 h-9 rounded-full border border-ink/[0.22] text-ink text-[18px] leading-none cursor-pointer transition-colors hover:border-sky disabled:opacity-35 disabled:cursor-default"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             {/* Chinese listening and speaking level */}

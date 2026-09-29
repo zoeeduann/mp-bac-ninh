@@ -11,6 +11,7 @@ import {
   locationSiteName,
 } from '@/lib/current-location'
 import { getLocale, t } from '@/lib/i18n'
+import { getRouteParams } from '@/lib/route-params'
 import { getPayloadClient } from '@/lib/payload'
 import { hasEnglishVersion } from '@/lib/content'
 import { hasUsableLocalizedTitle, publicFallbackLocale } from '@/lib/public-locale'
@@ -31,7 +32,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ loc: string; slug: string }>
 }): Promise<Metadata> {
-  const p = await params
+  const p = await getRouteParams(params)
   const locale = await getLocale()
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
@@ -115,7 +116,7 @@ export default async function JournalDetailPage({
 }: {
   params: Promise<{ loc: string; slug: string }>
 }) {
-  const p = await params
+  const p = await getRouteParams(params)
 
   const locSlug = p.loc
 

@@ -44,9 +44,9 @@ export async function generateMetadata({
     displayName,
     inThailandNetwork ? siteName : null,
   )
-  const description = bn?.contactDescription ?? locale === 'zh-CN'
+  const description = bn?.contactDescription ?? (locale === 'zh-CN'
     ? `联系${displayName}，了解${location.city}佛学、禅修、正念与静坐活动的微信、邮箱、地址和到访方式。`
-    : `Contact ${displayName} in ${location.city} for Buddhism, Zen meditation, mindfulness, and sitting practice by email, WeChat, or in person.`
+    : `Contact ${displayName} in ${location.city} for Buddhism, Zen meditation, mindfulness, and sitting practice by email, WeChat, or in person.`)
 
   return buildMetadata({
     title,

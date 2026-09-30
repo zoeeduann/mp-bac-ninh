@@ -179,12 +179,34 @@ export function activitySeoDescription(input: {
   const { locale, title, displayName, city, shortDesc, seoDescription } = input
   if (clean(seoDescription)) return truncateDescription(clean(seoDescription), locale)
 
+  // Some place names already end with the city ("… Yard · Bac Ninh, Vietnam").
+  const place = displayName.includes(city) ? displayName : `${displayName} in ${city}`
   const suffix =
     locale === 'zh-CN'
       ? `在${city}${displayName}参加「${title}」，体验佛学、禅修、正念与静坐修学，可查看场次并预约。`
-      : `Join "${title}" at ${displayName} in ${city}: Buddhism, Zen meditation, mindfulness, and contemplative practice. View sessions and book a visit.`
+      : `Join "${title}" at ${place}: Buddhism, Zen meditation, mindfulness, and contemplative practice. View sessions and book a visit.`
 
-  return truncateDescription([clean(shortDesc), suffix].filter(Boolean).join(' '), locale)
+  return truncateDescription(
+    fillDescription([clean(shortDesc), suffix].filter(Boolean).join(' '), locale, displayName),
+    locale,
+  )
+}
+
+/**
+ * Shortest description worth serving: below this a search engine reports the
+ * page as "meta description too short" and tends to write its own snippet.
+ */
+export const MIN_DESCRIPTION_LENGTH: Record<Locale, number> = { 'zh-CN': 80, en: 120 }
+
+/**
+ * Appends a closing sentence about the place when `text` alone is too short
+ * to be a useful snippet; longer text is returned unchanged.
+ */
+export function fillDescription(text: string, locale: Locale, displayName: string): string {
+  if (text.length >= MIN_DESCRIPTION_LENGTH[locale]) return text
+  return locale === 'zh-CN'
+    ? `${text}${displayName}隶属国际静心协会，活动纯公益、免费参加，名额有限，请提前预约。`
+    : `${text} ${displayName} is part of Mindful Peace International; all sessions are free, please book ahead.`
 }
 
 export function seoTopics(locale: Locale): string[] {

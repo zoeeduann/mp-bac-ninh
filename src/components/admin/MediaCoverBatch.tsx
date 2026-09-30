@@ -2,10 +2,11 @@
 
 import { useRef, useState } from 'react'
 import type { Activity, Media } from '@/payload-types'
-import { mediaCoverJob } from '@/lib/media-cover-state'
+import { isGeneratedCover, mediaCoverJob } from '@/lib/media-cover-state'
 
 type Item = { id: number; title: string; location: string; media: Media }
-const ready = (m: Media) => !!m.cardCover && mediaCoverJob(m.cardCoverJob)?.sourceFilename === m.filename
+const ready = (m: Media) => isGeneratedCover(m.filename)
+  || (!!m.cardCover && mediaCoverJob(m.cardCoverJob)?.sourceFilename === m.filename)
 
 export default function MediaCoverBatch() {
   const [items, setItems] = useState<Item[]>([])

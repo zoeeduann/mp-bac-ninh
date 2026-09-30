@@ -54,6 +54,18 @@ describe('activityImageUrl', () => {
     expect(activityImageUrl({ ...withCover, cardCover: { url: '/landscape.webp' } as Media }, 'hero')).toBe('/landscape.webp')
   })
 
+  it('shows a generated cover that an editor picked directly from the media library', () => {
+    const picked = {
+      url: '/cover.webp', filename: 'cover-302-c37c0662-f0cc-49b3-99ee-62875f9ee179.webp', width: 1536, height: 1024,
+      sizes: { card: { url: '/cover-card.webp' }, hero: { url: '/cover-hero.webp' } },
+    } as Media
+    expect(activityImageUrl(picked)).toBe('/cover-card.webp')
+    expect(activityImageUrl(picked, 'hero')).toBe('/cover.webp')
+    // A replaced file loses the generated name and is a source poster again.
+    expect(activityImageUrl({ ...picked, filename: 'cover-302.webp' })).toBeNull()
+    expect(activityImageUrl({ ...picked, filename: 'poster-cover-302-c37c0662-f0cc-49b3-99ee-62875f9ee179.webp' })).toBeNull()
+  })
+
   it('keeps a previously generated cover available when regeneration fails', () => {
     expect(activityImageUrl({ ...withCover, cardCoverJob: { ...withCover.cardCoverJob, status: 'failed' } }, 'hero')).toBe('/landscape.webp')
   })

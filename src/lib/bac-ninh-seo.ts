@@ -30,23 +30,23 @@ const COPY: Record<Locale, BacNinhPageSeo> = {
   'zh-CN': {
     homeTitle: '北宁善明静心小院｜越南北宁的公益禅修与佛法修学',
     homeDescription:
-      '北宁的一处安静修学空间。善明静心小院是国际静心协会在越南北宁的静心小院，提供正念禅修、安心禅茶、读书会、太极正念球与中医按导，纯公益、免费参加，欢迎预约。',
+      '北宁的一处安静修学空间。善明静心小院是国际静心协会在越南北宁的静心小院，采用济群法师创建的静心学堂课程体系，提供正念禅修、安心禅茶、读书会、太极正念球与中医按导，纯公益、免费参加，欢迎预约。',
     activitiesTitle: '北宁禅修与禅茶活动日程·免费预约｜善明静心小院',
     activitiesDescription:
-      '查看越南北宁善明静心小院近期的正念禅修、安心禅茶、读书会、太极正念球与中医按导活动。纯公益，免费参加，在线预约场次。',
+      '查看越南北宁善明静心小院近期的正念禅修、安心禅茶、读书会、太极正念球与中医按导活动，每场都列出时间与名额。善明静心小院隶属国际静心协会，纯公益，免费参加，可在线预约场次。',
     activitiesHeading: '北宁禅修与正念活动',
     journalTitle: '北宁禅修与正念活动记录｜善明静心小院',
     journalDescription:
-      '越南北宁善明静心小院的学堂笔记：安心禅茶、读书会、正念禅修与日常修学的现场记录。',
+      '越南北宁善明静心小院的学堂笔记：安心禅茶、读书会、正念禅修与日常修学的现场记录，可以在到访前先感受活动氛围。善明静心小院隶属国际静心协会，所有活动纯公益，免费参加。',
     aboutTitle: '关于越南北宁善明静心小院',
     aboutDescription:
-      '了解越南北宁善明静心小院：小院缘起、修学空间与到访方式。善明静心小院隶属国际静心协会，采用济群法师创建的静心学堂课程体系。',
+      '了解越南北宁善明静心小院：小院缘起、修学空间与到访方式。善明静心小院隶属国际静心协会，采用济群法师创建的静心学堂课程体系，以正念禅修、安心禅茶与读书会为主要修学形式。纯公益，免费参加。',
     contactTitle: '联系越南北宁善明静心小院',
     contactDescription:
-      '联系越南北宁善明静心小院：Facebook 与到访地址。活动纯公益、免费参加，到访前请先预约。',
+      '联系越南北宁善明静心小院：查看 Facebook、到访地址、地图与常见问题。善明静心小院隶属国际静心协会，采用预约制，活动纯公益、免费参加，不销售任何产品，到访前请先预约。',
     bookTitle: '预约北宁禅修与禅茶活动｜善明静心小院',
     bookDescription:
-      '预约越南北宁善明静心小院的正念禅修、安心禅茶、读书会等活动，或留言咨询。纯公益，免费参加。',
+      '预约越南北宁善明静心小院的正念禅修、安心禅茶、读书会等活动：在线选择场次即可预约，也可留言咨询。善明静心小院隶属国际静心协会，所有活动纯公益，免费参加，名额有限请提前预约。',
   },
   en: {
     homeTitle: 'Shanming Mindful Peace Yard | Meditation in Bac Ninh, Vietnam',
@@ -67,7 +67,7 @@ const COPY: Record<Locale, BacNinhPageSeo> = {
       'Contact Shanming Mindful Peace Yard in Bac Ninh via Facebook, and find the address. All sessions are free; please book before you visit.',
     bookTitle: 'Book a Session in Bac Ninh | Shanming Mindful Peace Yard',
     bookDescription:
-      'Book a free meditation, Dhyana Tea or reading session at Shanming Mindful Peace Yard in Bac Ninh, or leave an inquiry.',
+      'Book a free meditation, Dhyana Tea or reading session at Shanming Mindful Peace Yard in Bac Ninh, or leave an inquiry. Sessions are mostly in Chinese; seats are limited.',
   },
 }
 

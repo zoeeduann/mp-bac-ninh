@@ -5,6 +5,7 @@ import { MERGED_ACTIVITY_PATHS } from '@/lib/merged-activities'
 import { BAC_NINH_ALTERNATE_NAMES, BAC_NINH_POSTAL_ADDRESS, bacNinhDetailTitle, bacNinhSeo } from '@/lib/bac-ninh-seo'
 import { localBusinessJsonLd, placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 import { buildMetadata } from '@/lib/metadata'
+import { MIN_DESCRIPTION_LENGTH, activitySeoDescription } from '@/lib/seo'
 import { hasUsableLocalizedTitle, localizedDocsForLocale } from '@/lib/public-locale'
 
 describe('English pages never show Chinese fallbacks', () => {
@@ -77,6 +78,41 @@ describe('Bac Ninh search copy', () => {
     expect(bacNinhDetailTitle('en', 'activity', 'Mindfulness in Eating')).toBe(
       'Mindfulness in Eating – Bac Ninh | Shanming Mindful Peace Yard',
     )
+  })
+})
+
+describe('Bac Ninh description length', () => {
+  it('keeps every hand-written description long enough for a search snippet', () => {
+    for (const locale of ['zh-CN', 'en'] as const) {
+      const copy = bacNinhSeo('bac-ninh', locale)!
+      for (const [key, value] of Object.entries(copy)) {
+        if (!key.endsWith('Description')) continue
+        expect(value.length, value).toBeGreaterThanOrEqual(MIN_DESCRIPTION_LENGTH[locale])
+      }
+    }
+  })
+
+  it('fills out an activity description that would otherwise be too short', () => {
+    const description = activitySeoDescription({
+      locale: 'zh-CN',
+      title: '一日禅',
+      displayName: '善明静心小院',
+      city: '越南北宁',
+      shortDesc: '一日禅',
+    })
+    expect(description.length).toBeGreaterThanOrEqual(80)
+    expect(description.length).toBeLessThanOrEqual(150)
+    expect(description).toContain('善明静心小院隶属国际静心协会')
+  })
+
+  it('does not repeat the city when the place name already carries it', () => {
+    const description = activitySeoDescription({
+      locale: 'en',
+      title: 'Mindfulness in Eating',
+      displayName: 'Shanming Mindful Peace Yard · Bac Ninh, Vietnam',
+      city: 'Bac Ninh, Vietnam',
+    })
+    expect(description).toContain('at Shanming Mindful Peace Yard · Bac Ninh, Vietnam: Buddhism')
   })
 })
 

@@ -16,7 +16,7 @@ import { activityExcerpt } from '@/lib/activity-text'
 
 const title = 'Thiện Minh Tiểu Viện · Bắc Ninh'
 const description =
-  'Một không gian yên tĩnh để thiền, uống trà, đọc sách và tu học tại Bắc Ninh, Việt Nam.'
+  'Thiện Minh Tiểu Viện là một không gian yên tĩnh để thiền, uống trà, đọc sách và tu học tại Bắc Ninh, Việt Nam. Các hoạt động đều miễn phí, vì cộng đồng; vui lòng đặt lịch trước khi đến.'
 
 const activityTranslations: Record<string, { title: string; description: string }> = {
   'peaceful-zen-tea-wisdom-circle': {

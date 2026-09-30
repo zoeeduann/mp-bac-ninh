@@ -21,7 +21,7 @@ import { buildMetadata } from '@/lib/metadata'
 import { locationPath, locationUrl } from '@/lib/site-config'
 import { JsonLd } from '@/components/JsonLd'
 import { articleJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
-import { locationSeoKeywords } from '@/lib/seo'
+import { fillDescription, locationSeoKeywords } from '@/lib/seo'
 import { mediaDimensions } from '@/lib/media-dimensions'
 import type { Journal, Media, Activity, Location } from '@/payload-types'
 import { RichText } from '@/components/RichText'
@@ -69,9 +69,13 @@ export async function generateMetadata({
     location.slug === BAC_NINH_SLUG
       ? bacNinhDetailTitle(locale, 'journal', entry.title)
       : pageTitle(locale, entry.title, locale === 'zh-CN' ? '学堂笔记' : 'Journal', displayName)
-  const description = locale === 'zh-CN'
-    ? `${displayName}的现场记录：${entry.title}`
-    : `A journal entry from ${displayName}: ${entry.title}`
+  const description = fillDescription(
+    locale === 'zh-CN'
+      ? `${displayName}的现场记录「${entry.title}」，记录安心禅茶、读书会、正念禅修与日常修学中的真实相遇。`
+      : `A journal entry from ${displayName}: “${entry.title}”. A first-hand account of meditation, Dhyana Tea, reading circles and everyday practice.`,
+    locale,
+    displayName,
+  )
 
   return buildMetadata({
     title,

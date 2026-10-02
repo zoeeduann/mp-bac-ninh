@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { sql } from '@payloadcms/db-postgres'
-import { coverJobIsBusy, mediaCoverJob } from '@/lib/media-cover-state'
+import { coverJobIsBusy, isGeneratedCover, mediaCoverJob } from '@/lib/media-cover-state'
 import { newCoverJob, processMediaCover } from '@/lib/media-cover-jobs'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
       const media = await payload.findByID({ collection: 'media', id, depth: 0, user, overrideAccess: false })
       const oldJob = mediaCoverJob(media.cardCoverJob)
       if (media.cardCover && oldJob?.sourceFilename === media.filename) return { id, status: 'skipped' }
+      if (isGeneratedCover(media.filename)) return { id, status: 'skipped' }
       if (coverJobIsBusy(oldJob)) return { id, status: 'busy', error: '正在生成，请稍后刷新。' }
       if (!media.filename || !media.mimeType?.startsWith('image/')) return { id, status: 'failed', error: '缺少有效原图。' }
       const job = newCoverJob(media.filename)

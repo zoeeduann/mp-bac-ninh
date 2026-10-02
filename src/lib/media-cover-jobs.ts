@@ -6,7 +6,7 @@ import { sql } from '@payloadcms/db-postgres'
 import type { Media } from '@/payload-types'
 import { generateLandscapeCover } from './generate-landscape-cover'
 import { fetchRetryingNetworkErrors, networkErrorDetail } from './network-retry'
-import { mediaCoverJob, type MediaCoverJob } from './media-cover-state'
+import { coverFilename, mediaCoverJob, type MediaCoverJob } from './media-cover-state'
 
 export function newCoverJob(filename: string): MediaCoverJob {
   return {
@@ -78,7 +78,7 @@ export async function processMediaCover(payload: Payload, id: number): Promise<v
       collection: 'media', locale: 'zh-CN', overrideAccess: true,
       context: { skipCoverGeneration: true, skipAutoAlt: true },
       data: { alt: media.alt || '活动横版封面' },
-      file: { data: output, name: `cover-${id}-${job.token}.webp`, mimetype: 'image/webp', size: output.length },
+      file: { data: output, name: coverFilename(id, job.token), mimetype: 'image/webp', size: output.length },
     })
     await payload.db.drizzle.execute(sql`
       UPDATE "media" SET "card_cover_id" = ${cover.id},

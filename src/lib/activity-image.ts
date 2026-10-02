@@ -1,5 +1,5 @@
 import type { Media } from '@/payload-types'
-import { mediaCoverJob } from './media-cover-state'
+import { isGeneratedCover, mediaCoverJob } from './media-cover-state'
 
 // Bound both dimensions so tall posters do not generate oversized downloads.
 // Preserve source artwork in the CMS for future recompositions.
@@ -15,10 +15,12 @@ export function activityImageUrl(
   if (!media || typeof media === 'number') return null
   const job = mediaCoverJob(media.cardCoverJob)
   const cover = media.cardCover
-  if (cover && typeof cover === 'object'
-    && job?.sourceFilename === media.filename) {
-    return size === 'hero' ? cover.url || cover.sizes?.hero?.url || null
-      : cover.sizes?.card?.url || cover.url || null
+  const artwork = cover && typeof cover === 'object' && job?.sourceFilename === media.filename ? cover
+    // Picked straight from the media library: already the finished landscape.
+    : isGeneratedCover(media.filename) ? media : null
+  if (artwork) {
+    return size === 'hero' ? artwork.url || artwork.sizes?.hero?.url || null
+      : artwork.sizes?.card?.url || artwork.url || null
   }
   // Source posters are generation inputs, never public image fallbacks.
   return null

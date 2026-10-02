@@ -42,6 +42,12 @@ it('preserves an approved cover, including a manually corrected replacement', as
   expect(payload.db.drizzle.execute).not.toHaveBeenCalled()
   expect(processMediaCover).not.toHaveBeenCalled()
 })
+it('does not bill to regenerate a generated cover that is itself an activity image', async () => {
+  payload.findByID.mockResolvedValue({ filename: 'cover-302-c37c0662-f0cc-49b3-99ee-62875f9ee179.webp', mimeType: 'image/webp' })
+  expect((await (await POST(request())).json()).results[0].status).toBe('skipped')
+  expect(payload.db.drizzle.execute).not.toHaveBeenCalled()
+  expect(processMediaCover).not.toHaveBeenCalled()
+})
 it('deduplicates IDs and returns successful generated previews', async () => {
   payload.findByID.mockResolvedValueOnce({ filename: 'poster.webp', mimeType: 'image/webp' })
     .mockResolvedValueOnce({ cardCoverJob: { ...job, status: 'ready' }, cardCover: { url: '/cover.webp' } })

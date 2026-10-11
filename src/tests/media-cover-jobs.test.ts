@@ -50,6 +50,7 @@ describe('portrait cover hooks', () => {
   })
   it('makes missing configuration visible without failing uploads', () => {
     vi.stubEnv('ARK_API_KEY', '')
+    vi.stubEnv('ARK_SEA_API_KEY', '')
     expect(newCoverJob('poster.webp').status).toBe('unconfigured')
   })
 })

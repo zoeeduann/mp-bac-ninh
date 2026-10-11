@@ -40,6 +40,7 @@ it('rejects guests before invoking the image provider', async () => {
 })
 it('reports missing configuration without creating a job', async () => {
   vi.stubEnv('ARK_API_KEY', '')
+  vi.stubEnv('ARK_SEA_API_KEY', '')
   expect((await POST(request(), params)).status).toBe(503)
   expect(payload.db.drizzle.execute).not.toHaveBeenCalled()
 })

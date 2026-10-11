@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import type { Payload } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
 import type { Media } from '@/payload-types'
+import { arkTarget } from './ark-config'
 import { generateLandscapeCover } from './generate-landscape-cover'
 import { fetchRetryingNetworkErrors, networkErrorDetail } from './network-retry'
 import { coverFilename, mediaCoverJob, type MediaCoverJob } from './media-cover-state'
@@ -11,7 +12,7 @@ import { coverFilename, mediaCoverJob, type MediaCoverJob } from './media-cover-
 export function newCoverJob(filename: string): MediaCoverJob {
   return {
     token: randomUUID(), sourceFilename: filename,
-    status: process.env.ARK_API_KEY ? 'queued' : 'unconfigured',
+    status: arkTarget() ? 'queued' : 'unconfigured',
     requestedAt: new Date().toISOString(),
   }
 }
@@ -92,6 +93,7 @@ export async function processMediaCover(payload: Payload, id: number): Promise<v
       ? error.message : '图片生成超时，请稍后重试。'
     // Log only a bounded diagnostic; do not expose raw buffers or credentials.
     const failed = { ...job, status: 'failed', error: message.slice(0, 240) }
+    console.error(`[media-cover] media ${id} failed:`, failed.error)
     await payload.db.drizzle.execute(sql`
       UPDATE "media" SET "card_cover_job" = ${JSON.stringify(failed)}::jsonb
       WHERE "id" = ${id} AND "card_cover_job"->>'token' = ${job.token}

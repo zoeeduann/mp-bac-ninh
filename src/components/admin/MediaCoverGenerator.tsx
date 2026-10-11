@@ -57,7 +57,7 @@ export default function MediaCoverGenerator() {
       {!id || modified ? <p>请先保存图片，再生成或重新生成封面。</p> : null}
       <p role="status" aria-live="polite">
         {busy ? '正在生成横版封面，通常需要几分钟；可以继续编辑其他内容。'
-          : job?.status === 'unconfigured' ? '图片生成服务尚未配置，请联系管理员设置 ARK_API_KEY。'
+          : job?.status === 'unconfigured' ? '图片生成服务尚未配置，请联系管理员设置 ARK_SEA_API_KEY（或 ARK_API_KEY）。'
           : job?.status === 'failed' ? job.error || '生成失败，可以重试。'
           : job?.status === 'queued' || job?.status === 'processing' ? '上次生成未完成，可以重试。' : ''}
       </p>

@@ -4,6 +4,7 @@ import { sql } from '@payloadcms/db-postgres'
 import { coverJobIsBusy, isGeneratedCover, mediaCoverJob } from '@/lib/media-cover-state'
 import { newCoverJob, processMediaCover } from '@/lib/media-cover-jobs'
 import { rateLimit } from '@/lib/rate-limit'
+import { ARK_UNCONFIGURED_MESSAGE, arkTarget } from '@/lib/ark-config'
 
 export const maxDuration = 300
 
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({ headers: request.headers })
   if (!user || !['admin', 'staff'].includes(user.role)) return Response.json({ error: '请先登录后台。' }, { status: 403 })
-  if (!process.env.ARK_API_KEY) return Response.json({ error: '请先配置 ARK_API_KEY。' }, { status: 503 })
+  if (!arkTarget()) return Response.json({ error: ARK_UNCONFIGURED_MESSAGE }, { status: 503 })
   const body = await request.json().catch(() => null)
   const ids: unknown = body?.ids
   if (!Array.isArray(ids) || ids.length < 1 || ids.length > 3 || ids.some(id => !Number.isSafeInteger(id) || id < 1)) {

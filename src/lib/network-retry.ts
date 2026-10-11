@@ -17,19 +17,21 @@ export function networkErrorDetail(error: unknown): string | undefined {
 }
 
 /**
- * Retry a request once when the connection itself failed. HTTP error
- * responses and timeouts are returned or thrown unchanged, so a slow or
- * refusing provider is never asked twice.
+ * Retry a request when the connection itself failed, up to `attempts` tries in
+ * all. HTTP error responses and timeouts are returned or thrown unchanged, so a
+ * slow or refusing provider is never asked twice.
  */
 export async function fetchRetryingNetworkErrors(
   attempt: () => Promise<Response>,
   delayMs = 2_000,
+  attempts = 2,
 ): Promise<Response> {
-  try {
-    return await attempt()
-  } catch (error) {
-    if (!isNetworkError(error)) throw error
-    await new Promise((resolve) => setTimeout(resolve, delayMs))
-    return attempt()
+  for (let tried = 1; ; tried++) {
+    try {
+      return await attempt()
+    } catch (error) {
+      if (!isNetworkError(error) || tried >= attempts) throw error
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
   }
 }

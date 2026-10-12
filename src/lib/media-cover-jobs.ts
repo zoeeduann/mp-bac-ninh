@@ -7,7 +7,7 @@ import type { Media } from '@/payload-types'
 import { arkTarget } from './ark-config'
 import { generateLandscapeCover } from './generate-landscape-cover'
 import { fetchRetryingNetworkErrors, networkErrorDetail } from './network-retry'
-import { coverFilename, mediaCoverJob, type MediaCoverJob } from './media-cover-state'
+import { coverFilename, isGeneratedCover, mediaCoverJob, type MediaCoverJob } from './media-cover-state'
 
 export function newCoverJob(filename: string): MediaCoverJob {
   return {
@@ -15,6 +15,27 @@ export function newCoverJob(filename: string): MediaCoverJob {
     status: arkTarget() ? 'queued' : 'unconfigured',
     requestedAt: new Date().toISOString(),
   }
+}
+
+/** Queue a cover for an activity hero image that never got one, e.g. a
+ * landscape or square upload, which the upload hook skips. Failed jobs for the
+ * same file are left for a manual retry so a re-save never bills twice. */
+export async function queueMissingCover(payload: Payload, id: number): Promise<boolean> {
+  if (!arkTarget()) return false
+  const media = await payload.findByID({ collection: 'media', id, depth: 0, overrideAccess: true })
+  if (!media.filename || !media.mimeType?.startsWith('image/')) return false
+  // A generated cover picked directly as the hero image is already the artwork.
+  if (isGeneratedCover(media.filename)) return false
+  const oldJob = mediaCoverJob(media.cardCoverJob)
+  if (oldJob?.sourceFilename === media.filename && oldJob.status !== 'unconfigured') return false
+  const job = newCoverJob(media.filename)
+  const queued = await payload.db.drizzle.execute(sql`
+    UPDATE "media" SET "card_cover_job" = ${JSON.stringify(job)}::jsonb
+    WHERE "id" = ${id} AND "filename" = ${media.filename}
+      AND ("card_cover_job"->>'token') IS NOT DISTINCT FROM ${oldJob?.token ?? null}
+    RETURNING "id"
+  `)
+  return queued.rows.length > 0
 }
 
 async function originalImage(payload: Payload, media: Media): Promise<Buffer> {

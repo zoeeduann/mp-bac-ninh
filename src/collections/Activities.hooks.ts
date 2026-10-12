@@ -7,6 +7,7 @@
 import { after } from 'next/server'
 import { translateText, translateRichText } from '../lib/translate'
 import { notifyIndexNowForActivity } from '../lib/indexnow-content'
+import { processMediaCover, queueMissingCover } from '../lib/media-cover-jobs'
 
 /**
  * Publish-time validator.
@@ -315,6 +316,25 @@ export async function activitiesDeletedIndexNow({
     await notifyIndexNowForActivity({ doc, req })
   } catch (e) {
     console.error(`[indexnow] deleted activity hook failed for ${doc?.id ?? 'unknown'}:`, e)
+  }
+  return doc
+}
+
+/** Upload hooks only queue portrait posters, but the public card never shows a
+ * source image, so any hero image without a cover would render blank. */
+export async function activitiesQueueHeroCover({ doc, req }: { doc: any; req: any }): Promise<any> {
+  const id = typeof doc?.heroImage === 'object' ? doc.heroImage?.id : doc?.heroImage
+  if (!Number.isSafeInteger(id)) return doc
+  try {
+    after(async () => {
+      try {
+        if (await queueMissingCover(req.payload, id)) await processMediaCover(req.payload, id)
+      } catch (e) {
+        console.error(`[media-cover] hero cover for activity ${doc.id} failed:`, e)
+      }
+    })
+  } catch {
+    // Scripts lack Next's after() context; the batch action in Media covers it.
   }
   return doc
 }

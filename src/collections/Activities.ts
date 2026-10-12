@@ -7,6 +7,7 @@ import {
   activitiesAutoTranslate,
   activitiesIndexNow,
   activitiesDeletedIndexNow,
+  activitiesQueueHeroCover,
 } from './Activities.hooks'
 
 export const Activities: CollectionConfig = {
@@ -19,6 +20,9 @@ export const Activities: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'status', 'category'],
   },
+  // Postgres sorts the status enum in declaration order (draft, published,
+  // archived), so archived activities sink to the bottom; newest first within.
+  defaultSort: 'status,-createdAt',
   access: {
     // Guests: only published activities (any academy).
     // Admin: everything.
@@ -111,8 +115,8 @@ export const Activities: CollectionConfig = {
       required: true,
       admin: {
         description: {
-          zh: '可直接上传竖版海报。系统自动重排为 3:2 横版封面，保留主题和主要文字，去掉二维码。前台只展示横版封面，原图仅作生成素材。在媒体页面可预览和重新生成。',
-          en: 'Portrait posters are automatically recomposed into 3:2 landscape covers, preserving the theme and main text while removing QR codes. Public pages show only the cover; the original is kept as source material. Preview or regenerate in Media.',
+          zh: '可直接上传竖版海报或横版图片。系统自动重排为 3:2 横版封面，保留主题和主要文字，去掉二维码。前台只展示横版封面，原图仅作生成素材。在媒体页面可预览和重新生成。',
+          en: 'Posters and photos of any orientation are automatically recomposed into 3:2 landscape covers, preserving the theme and main text while removing QR codes. Public pages show only the cover; the original is kept as source material. Preview or regenerate in Media.',
         },
       },
     },
@@ -318,7 +322,7 @@ export const Activities: CollectionConfig = {
       (async ({ req, data }: any) => forceStaffLocation({ req, data })) as any,
       activitiesBeforeChange as any,
     ],
-    afterChange: [activitiesAutoTranslate as any, activitiesIndexNow as any],
+    afterChange: [activitiesAutoTranslate as any, activitiesIndexNow as any, activitiesQueueHeroCover as any],
     afterDelete: [activitiesDeletedIndexNow as any],
     beforeDelete: [
       /**

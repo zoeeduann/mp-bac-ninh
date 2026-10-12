@@ -5,7 +5,7 @@ import type { Payload } from 'payload'
 vi.mock('node:fs/promises', () => ({ readFile: vi.fn().mockResolvedValue(Buffer.from('source')) }))
 vi.mock('@/lib/generate-landscape-cover', () => ({ generateLandscapeCover: vi.fn().mockResolvedValue(Buffer.from('cover')) }))
 vi.mock('next/server', () => ({ after: vi.fn() }))
-import { processMediaCover, newCoverJob } from '@/lib/media-cover-jobs'
+import { processMediaCover, newCoverJob, queueMissingCover } from '@/lib/media-cover-jobs'
 import { prepareMediaCover, scheduleMediaCover } from '@/collections/Media.cover-hooks'
 import { generateLandscapeCover } from '@/lib/generate-landscape-cover'
 import { after } from 'next/server'
@@ -85,5 +85,41 @@ describe('cover generation worker', () => {
     await processMediaCover(payload as unknown as Payload, 1)
     expect(payload.create).not.toHaveBeenCalled()
     expect(payload.db.drizzle.execute).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('missing hero covers', () => {
+  const landscape = { id: 1, filename: 'wide.webp', mimeType: 'image/webp', cardCoverJob: null }
+  it('queues a landscape hero image the upload hook skipped', async () => {
+    vi.stubEnv('ARK_API_KEY', 'test')
+    const payload = makePayload()
+    payload.findByID.mockResolvedValue(landscape)
+    expect(await queueMissingCover(payload as unknown as Payload, 1)).toBe(true)
+    expect(payload.db.drizzle.execute).toHaveBeenCalledOnce()
+  })
+  it('leaves covered, in-flight and failed files alone', async () => {
+    vi.stubEnv('ARK_API_KEY', 'test')
+    const payload = makePayload()
+    for (const status of ['ready', 'queued', 'failed']) {
+      payload.findByID.mockResolvedValue({ ...landscape, cardCoverJob: { ...job, sourceFilename: 'wide.webp', status } })
+      expect(await queueMissingCover(payload as unknown as Payload, 1)).toBe(false)
+    }
+    expect(payload.db.drizzle.execute).not.toHaveBeenCalled()
+  })
+  it('never regenerates a generated cover picked as the hero image', async () => {
+    vi.stubEnv('ARK_API_KEY', 'test')
+    const payload = makePayload()
+    payload.findByID.mockResolvedValue({ ...landscape, filename: 'cover-12-3f2b8c1e-0d4a-4b6e-9c7d-1a2b3c4d5e6f.webp' })
+    expect(await queueMissingCover(payload as unknown as Payload, 1)).toBe(false)
+    expect(payload.db.drizzle.execute).not.toHaveBeenCalled()
+  })
+  it('requeues once the generation service is configured', async () => {
+    const payload = makePayload()
+    payload.findByID.mockResolvedValue({ ...landscape, cardCoverJob: { ...job, sourceFilename: 'wide.webp', status: 'unconfigured' } })
+    vi.stubEnv('ARK_API_KEY', '')
+    vi.stubEnv('ARK_SEA_API_KEY', '')
+    expect(await queueMissingCover(payload as unknown as Payload, 1)).toBe(false)
+    vi.stubEnv('ARK_API_KEY', 'test')
+    expect(await queueMissingCover(payload as unknown as Payload, 1)).toBe(true)
   })
 })

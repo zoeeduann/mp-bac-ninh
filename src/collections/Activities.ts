@@ -54,8 +54,10 @@ export const Activities: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
-      // Trimmed and regenerated when blank; a whitespace-only slug is rejected.
-      validate: (value: unknown) => validateActivitySlug(value),
+      // Trimmed and regenerated when blank. Blank passes validation as long as
+      // there is a title, since the admin form validates before the hook runs.
+      validate: (value: unknown, { data }: { data?: unknown }) =>
+        validateActivitySlug(value, data),
       hooks: {
         beforeValidate: [({ value, data }) => normalizeActivitySlug(value, data)],
       },

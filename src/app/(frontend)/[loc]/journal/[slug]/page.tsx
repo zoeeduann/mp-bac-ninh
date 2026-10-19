@@ -23,6 +23,7 @@ import { JsonLd } from '@/components/JsonLd'
 import { articleJsonLd, breadcrumbJsonLd } from '@/lib/jsonld'
 import { fillDescription, locationSeoKeywords } from '@/lib/seo'
 import { mediaDimensions } from '@/lib/media-dimensions'
+import { justifiedRows } from '@/lib/justified-rows'
 import type { Journal, Media, Activity, Location } from '@/payload-types'
 import { RichText } from '@/components/RichText'
 import { BAC_NINH_SLUG, bacNinhDetailTitle } from '@/lib/bac-ninh-seo'
@@ -97,6 +98,11 @@ export async function generateMetadata({
 }
 
 const TZ = 'Asia/Bangkok'
+
+// Gallery rows aim for this width:height ratio (about three 3:4 phone photos)
+// and never grow taller than the max height on wide screens.
+const GALLERY_ROW_RATIO = 2.3
+const GALLERY_ROW_MAX_HEIGHT = 640
 
 function mediaUrl(img: number | Media | null | undefined): string | null {
   if (!img || typeof img === 'number') return null
@@ -187,6 +193,27 @@ export default async function JournalDetailPage({
   const coverDimensions = mediaDimensions(entry.coverImage, { width: 1200, height: 800 })
   const academyDisplayName = academyName(location.city, location.name)
 
+  const galleryPhotos = (entry.photos ?? []).flatMap((photo, i) => {
+    const url = mediaUrl(photo.image)
+    if (!url) return []
+    const { width, height } = mediaDimensions(photo.image, { width: 900, height: 600 })
+    return [
+      {
+        key: photo.id ?? String(i),
+        url,
+        alt: photo.alt?.trim() || mediaAlt(photo.image, entry.title),
+        caption: photo.caption,
+        width,
+        height,
+        ratio: width / height,
+      },
+    ]
+  })
+  const galleryRows = justifiedRows(
+    galleryPhotos.map((photo) => photo.ratio),
+    GALLERY_ROW_RATIO,
+  ).map((row) => row.map((i) => galleryPhotos[i]))
+
   const breadcrumb = breadcrumbJsonLd([
     ...(isThailandNetworkLocation(location)
       ? [{ name: isZh ? '总门户' : 'Network', url: locationUrl(locale, locSlug) }]
@@ -228,103 +255,111 @@ export default async function JournalDetailPage({
   return (
     <div>
       <JsonLd data={[breadcrumb, article]} />
-      {/* ─── PAGE HEADER (no full-bleed hero — journal pages are quieter) ─── */}
+      {/* ─── HEADER + BODY | COVER ───────────────────────────────── */}
+      {/* Desktop: title and body share the left column; the cover sits in the
+          right column and stays in view while a long body scrolls past.
+          Mobile: header, cover, body in one column. */}
       <div
-        className="px-[6vw] border-b border-hairline"
+        className="px-[6vw] grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:gap-x-14"
         style={{ paddingTop: '8rem', paddingBottom: '4rem' }}
       >
-        {/* Eyebrow */}
-        <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-5">
-          {isZh
-            ? `${location.name} · ${t(locale, 'eyebrow.journal')}`
-            : `${academyDisplayName} · ${t(locale, 'eyebrow.journal')}`}
-        </p>
-
-        {/* Title */}
-        <h1
-          className="font-serif font-normal text-ink leading-[1.2] mb-4"
-          style={{ fontSize: 'clamp(26px, 3.5vw, 44px)' }}
-        >
-          {entry.title}
-        </h1>
-
-        {/* Date */}
-        {entry.date && (
-          <p className="font-sans text-[12px] font-semibold tracking-[0.12em] text-ink-soft mb-4">
-            {formatFullDate(entry.date, isZh)}
+        <header className="lg:col-span-7 lg:row-start-1">
+          {/* Eyebrow */}
+          <p className="font-sans text-[12px] font-semibold tracking-[0.18em] uppercase text-ink-soft mb-5">
+            {isZh
+              ? `${location.name} · ${t(locale, 'eyebrow.journal')}`
+              : `${academyDisplayName} · ${t(locale, 'eyebrow.journal')}`}
           </p>
-        )}
 
-        {/* Related activity link */}
-        {relatedActivity && hasUsableSlug(relatedActivity) && (
-          <p className="font-sans text-[13px] text-ink-soft">
-            {t(locale, 'meta.related_activity')}{' '}
-            <Link
-              href={locationPath(locale, locSlug, `/activities/${relatedActivity.slug}`)}
-              className="inline-flex min-h-11 items-center text-blue-deep no-underline hover:text-ink transition-colors font-semibold md:min-h-0"
-            >
-              {relatedActivity.title} →
-            </Link>
-          </p>
-        )}
-      </div>
+          {/* Title */}
+          <h1
+            className="font-serif font-normal text-ink leading-[1.2] mb-4"
+            style={{ fontSize: 'clamp(26px, 3.5vw, 44px)' }}
+          >
+            {entry.title}
+          </h1>
 
-      {/* ─── COVER PHOTO ──────────────────────────────────────────── */}
-      {coverUrl && (
-        <div className="px-[6vw] pt-12">
-          <div className="relative w-full" style={{ maxWidth: '1200px' }}>
+          {/* Date */}
+          {entry.date && (
+            <p className="font-sans text-[12px] font-semibold tracking-[0.12em] text-ink-soft mb-4">
+              {formatFullDate(entry.date, isZh)}
+            </p>
+          )}
+
+          {/* Related activity link */}
+          {relatedActivity && hasUsableSlug(relatedActivity) && (
+            <p className="font-sans text-[13px] text-ink-soft">
+              {t(locale, 'meta.related_activity')}{' '}
+              <Link
+                href={locationPath(locale, locSlug, `/activities/${relatedActivity.slug}`)}
+                className="inline-flex min-h-11 items-center text-blue-deep no-underline hover:text-ink transition-colors font-semibold md:min-h-0"
+              >
+                {relatedActivity.title} →
+              </Link>
+            </p>
+          )}
+        </header>
+
+        {/* Cover keeps its own ratio (no crop, no letterbox) and is capped to
+            the viewport so a tall phone photo never outgrows the screen. */}
+        {coverUrl && (
+          <div className="mt-10 lg:mt-0 lg:col-start-8 lg:col-span-5 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24 lg:self-start">
             <Image
               src={coverUrl}
               alt={coverAlt}
               width={coverDimensions.width}
               height={coverDimensions.height}
               priority
-              className="w-full h-auto object-contain saturate-[0.88] block"
+              sizes="(min-width: 1024px) 40vw, 88vw"
+              className="mx-auto lg:mr-0 block h-auto w-auto max-w-full max-h-[78vh] lg:max-h-[calc(100dvh-10rem)] saturate-[0.88]"
             />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ─── BODY TEXT ────────────────────────────────────────────── */}
-      {entry.body && (
-        <div className="px-[6vw] py-14">
-          <div
-            className="max-w-prose font-sans text-[15px] text-ink leading-[1.85]"
-          >
-            <RichText data={entry.body} />
+        {entry.body && (
+          <div className="lg:col-span-7 lg:row-start-2 mt-10 pt-10 border-t border-hairline">
+            <div className="max-w-prose font-sans text-[15px] text-ink leading-[1.85]">
+              <RichText data={entry.body} />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ─── PHOTO GALLERY ────────────────────────────────────────── */}
-      {entry.photos && entry.photos.length > 0 && (
-        <div className="px-[6vw] pb-20 border-t border-hairline pt-10">
-          <div className="flex flex-col gap-10" style={{ maxWidth: '900px' }}>
-            {entry.photos.map((photo, i) => {
-              const pUrl = mediaUrl(photo.image)
-              const pAlt = photo.alt?.trim() || mediaAlt(photo.image, entry.title)
-              const dimensions = mediaDimensions(photo.image, { width: 900, height: 600 })
-
-              // Pair photos: even index = full-width; odd index = paired with previous
-              // For simplicity render each full-width or in pairs of 2
+      {/* Justified rows: each photo gets a column proportional to its width
+          ratio, so photos in a row share one height and none is cropped.
+          Mobile stacks them one per line. */}
+      {galleryRows.length > 0 && (
+        <div className="px-[6vw] pb-20 border-t border-hairline pt-12">
+          <div className="flex flex-col gap-10 md:gap-4">
+            {galleryRows.map((row, r) => {
+              const rowRatio = row.reduce((sum, item) => sum + item.ratio, 0)
               return (
-                <div key={photo.id ?? i} className="flex flex-col gap-2">
-                  {pUrl ? (
-                    <Image
-                      src={pUrl}
-                      alt={pAlt}
-                      width={dimensions.width}
-                      height={dimensions.height}
-                      className="w-full h-auto object-contain saturate-[0.88] block"
-                    />
-                  ) : (
-                    <div className="w-full aspect-[3/2] bg-ink/15" />
-                  )}
-                  {photo.caption && (
-                    <p className="font-serif text-[14px] text-ink-soft leading-[1.5]">
-                      {photo.caption}
-                    </p>
-                  )}
+                <div
+                  key={r}
+                  className="flex flex-col gap-10 md:grid md:gap-4 w-full"
+                  style={{
+                    gridTemplateColumns: row.map((item) => `${item.ratio}fr`).join(' '),
+                    maxWidth: `${Math.round(rowRatio * GALLERY_ROW_MAX_HEIGHT)}px`,
+                  }}
+                >
+                  {row.map((item) => (
+                    <figure key={item.key} className="m-0 flex flex-col gap-2">
+                      <Image
+                        src={item.url}
+                        alt={item.alt}
+                        width={item.width}
+                        height={item.height}
+                        sizes={`(min-width: 768px) ${Math.ceil((item.ratio / rowRatio) * 88)}vw, 88vw`}
+                        className="mx-auto block h-auto w-auto max-w-full max-h-[80vh] md:w-full md:max-h-none saturate-[0.88]"
+                      />
+                      {item.caption && (
+                        <figcaption className="font-serif text-[14px] text-ink-soft leading-[1.5]">
+                          {item.caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  ))}
                 </div>
               )
             })}

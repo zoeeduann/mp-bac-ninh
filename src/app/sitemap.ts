@@ -1,4 +1,5 @@
-import { hasUsableSlug } from '@/lib/activity-list'
+import { endedLongAgo, hasUsableSlug } from '@/lib/activity-list'
+import { MERGED_ACTIVITY_PATHS } from '@/lib/merged-activities'
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload'
 import { hasUsableLocalizedTitle } from '@/lib/public-locale'
@@ -120,6 +121,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       has(locale === 'zh-CN' ? zhDocs : enDocs, locale),
     )
   }
+
+  const seriesPaths = new Set(Object.values(MERGED_ACTIVITY_PATHS))
 
   const locationDates = new Map<string, Date>()
   const activityDates = new Map<string, Date>()
@@ -263,9 +266,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!locSlug) continue
     if (SITE_LOCATION_SLUG && locSlug !== SITE_LOCATION_SLUG) continue
     if (!hasUsableSlug(act)) continue
+    // One-off activities that ended weeks ago are thin pages; list only current
+    // ones. Series pages that merged duplicates redirect to stay listed.
+    const path = locationPublicPath(locSlug, `/activities/${act.slug}`)
+    if (endedLongAgo(act) && !seriesPaths.has(path)) continue
     entries.push(
       ...localizedEntries(
-        locationPublicPath(locSlug, `/activities/${act.slug}`),
+        path,
         {
           lastModified: validDate(act.updatedAt, fallbackDate),
           changeFrequency: 'weekly',

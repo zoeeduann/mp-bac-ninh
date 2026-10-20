@@ -13,7 +13,7 @@ import { getLocale, t } from '@/lib/i18n'
 import { getRecentJournalForLocation } from '@/lib/content'
 import { academyName } from '@/lib/short-name'
 import { toZonedTime, format as fmtTz } from 'date-fns-tz'
-import { buildMetadata } from '@/lib/metadata'
+import { buildMetadata, listedAlternates } from '@/lib/metadata'
 import { locationPath, locationUrl } from '@/lib/site-config'
 import { locationSeoKeywords } from '@/lib/seo'
 import type { Media, Journal } from '@/payload-types'
@@ -39,7 +39,11 @@ export async function generateMetadata({
     ? `${displayName}的学堂笔记与现场记录：佛学、禅修、正念、禅茶、读书、共修与日常修学。`
     : `Journal entries from ${displayName}: Buddhism, Zen meditation, mindfulness, tea practice, reading, and daily contemplative life.`)
   // No entries yet (in this language): a thin page, kept out of the index.
-  const listed = (await getRecentJournalForLocation(location.id, locale, 1)).length
+  const [zhListed, enListed] = await Promise.all([
+    getRecentJournalForLocation(location.id, 'zh-CN', 1).then((docs) => docs.length),
+    getRecentJournalForLocation(location.id, 'en', 1).then((docs) => docs.length),
+  ])
+  const listed = locale === 'zh-CN' ? zhListed : enListed
 
   return buildMetadata({
     title,
@@ -52,10 +56,9 @@ export async function generateMetadata({
       locale === 'zh-CN' ? '学堂笔记' : 'Buddhist journal',
       locale === 'zh-CN' ? '禅修记录' : 'Zen meditation journal',
     ], inThailandNetwork),
-    alternateLanguages: {
-      'zh-CN': locationUrl('zh-CN', p.loc, '/journal'),
-      en: locationUrl('en', p.loc, '/journal'),
-    },
+    alternateLanguages: listedAlternates({ 'zh-CN': zhListed, en: enListed }, (l) =>
+      locationUrl(l, p.loc, '/journal'),
+    ),
   })
 }
 

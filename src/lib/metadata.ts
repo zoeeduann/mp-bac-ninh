@@ -18,6 +18,20 @@ export interface BuildMetaOptions {
 
 export const BASE = SITE_BASE
 
+/**
+ * hreflang for an academy list page: only languages whose list has entries.
+ * Empty lists carry noindex, so pointing hreflang at them would contradict
+ * the sitemap (which leaves them out by the same rule).
+ */
+export function listedAlternates(
+  counts: Record<Locale, number>,
+  urlFor: (locale: Locale) => string,
+): BuildMetaOptions['alternateLanguages'] {
+  const listed = (Object.keys(counts) as Locale[]).filter((locale) => counts[locale] > 0)
+  if (listed.length === 0) return undefined
+  return Object.fromEntries(listed.map((locale) => [locale, urlFor(locale)]))
+}
+
 /** Courtyard photo (public/og-default.jpg, 1200×630) for pages without artwork. */
 const DEFAULT_SHARE_IMAGE = '/og-default.jpg'
 

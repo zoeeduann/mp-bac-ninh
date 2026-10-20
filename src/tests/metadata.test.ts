@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildMetadata } from '@/lib/metadata'
+import { buildMetadata, listedAlternates } from '@/lib/metadata'
 
 const base = {
   title: '善明静心小院',
@@ -28,5 +28,26 @@ describe('buildMetadata', () => {
     const metadata = buildMetadata({ ...base, imageUrl: 'https://cdn.example.com/hero.jpg' })
     expect(metadata.openGraph).toMatchObject({ images: [{ url: 'https://cdn.example.com/hero.jpg' }] })
     expect(metadata.twitter).toMatchObject({ images: ['https://cdn.example.com/hero.jpg'] })
+  })
+})
+
+describe('listedAlternates', () => {
+  const urlFor = (locale: string) => `https://example.com/${locale}/journal`
+
+  it('declares both languages when both lists have entries', () => {
+    expect(listedAlternates({ 'zh-CN': 3, en: 1 }, urlFor)).toEqual({
+      'zh-CN': 'https://example.com/zh-CN/journal',
+      en: 'https://example.com/en/journal',
+    })
+  })
+
+  it('leaves out a language whose list is empty (noindex)', () => {
+    expect(listedAlternates({ 'zh-CN': 3, en: 0 }, urlFor)).toEqual({
+      'zh-CN': 'https://example.com/zh-CN/journal',
+    })
+  })
+
+  it('declares nothing when every list is empty', () => {
+    expect(listedAlternates({ 'zh-CN': 0, en: 0 }, urlFor)).toBeUndefined()
   })
 })

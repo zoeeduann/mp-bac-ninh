@@ -18,7 +18,7 @@ import {
 } from '@/lib/content'
 import { shortName, academyName } from '@/lib/short-name'
 import { RichText } from '@/components/RichText'
-import { formatDateCompact } from '@/lib/time'
+import { activityDateEyebrow } from '@/lib/activity-list'
 import { buildMetadata } from '@/lib/metadata'
 import {
   locationPath,
@@ -263,7 +263,7 @@ export default async function AcademyHomePage({
                   <div className="flex flex-1 flex-col pt-5 pb-6 pr-6 border-t border-hairline">
                     {upcoming && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
-                        {formatDateCompact(new Date(upcoming), locale)}
+                        {activityDateEyebrow(activity, locale)}
                       </p>
                     )}
                     <h3 className="font-serif text-[20px] font-medium text-ink mb-2">

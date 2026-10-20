@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { activityExcerpt } from '@/lib/activity-text'
-import { hasUsableSlug } from '@/lib/activity-list'
+import { activityDateEyebrow, hasUsableSlug } from '@/lib/activity-list'
 import { remainingSeatsText } from '@/lib/seats'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -17,7 +17,6 @@ import { getPayloadClient } from '@/lib/payload'
 import { getCapacityForOccurrence, hasEnglishVersion } from '@/lib/content'
 import { hasUsableLocalizedTitle, localizedDocsForLocale, publicFallbackLocale } from '@/lib/public-locale'
 import { academyName } from '@/lib/short-name'
-import { formatDateCompact } from '@/lib/time'
 import { isSessionPast } from '@/lib/calendar'
 import { toZonedTime, format as fmtTz } from 'date-fns-tz'
 import { buildMetadata } from '@/lib/metadata'
@@ -747,7 +746,7 @@ export default async function ActivityDetailPage({
                   <div className="flex flex-1 flex-col pt-5 pb-6 pr-6 border-t border-hairline">
                     {upcoming && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
-                        {formatDateCompact(new Date(upcoming), locale)}
+                        {activityDateEyebrow(rel, locale)}
                       </p>
                     )}
                     <h3 className="font-serif text-[20px] font-medium text-ink mb-2">

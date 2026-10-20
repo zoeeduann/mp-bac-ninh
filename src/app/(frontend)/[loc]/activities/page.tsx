@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { activityExcerpt } from '@/lib/activity-text'
-import { PAST_ACTIVITIES_INITIAL, splitUpcomingPast } from '@/lib/activity-list'
+import { PAST_ACTIVITIES_INITIAL, activityDateEyebrow, splitUpcomingPast } from '@/lib/activity-list'
 import { notFound } from 'next/navigation'
 import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
@@ -363,7 +363,7 @@ export default async function ActivitiesPage({
             {upcoming
               ? seriesOccurrences.length > 0
                 ? `${formatDateCompact(new Date(seriesOccurrences[0].startAt), locale)} – ${formatDateCompact(new Date(seriesOccurrences[seriesOccurrences.length - 1].startAt), locale)} · ${isZh ? `${seriesOccurrences.length} 次系列课` : `${seriesOccurrences.length}-session series`}`
-                : formatDateCompact(new Date(upcoming), locale)
+                : activityDateEyebrow(act, locale)
               : t(locale, 'meta.past')}
           </p>
           <h3 className="font-serif text-[20px] font-medium text-ink mb-2">

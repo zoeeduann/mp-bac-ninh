@@ -18,7 +18,8 @@ import {
   isThailandNetworkLocation,
   locationSiteName,
 } from '@/lib/current-location'
-import { getLocale, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import {
   getAllPublishedActivitiesForLocation,
   getCategoriesWithCountsForLocation,
@@ -51,10 +52,10 @@ import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
 }): Promise<Metadata> {
   const p = await params
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
 
@@ -166,14 +167,14 @@ export default async function ActivitiesPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const [p, sp] = await Promise.all([params, searchParams])
 
   const slug = p.loc
 
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
 
   const location = await getLocationBySlug(slug, locale)
@@ -918,3 +919,6 @@ export default async function ActivitiesPage({
     </div>
   )
 }
+
+// Calendar filters and booking context are request-specific; never cache the full page.
+export const dynamic = 'force-dynamic'

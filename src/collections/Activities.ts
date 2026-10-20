@@ -9,6 +9,7 @@ import {
   activitiesDeletedIndexNow,
   activitiesQueueHeroCover,
 } from './Activities.hooks'
+import { invalidatePublicPagesHook } from '../lib/public-cache'
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
@@ -324,8 +325,13 @@ export const Activities: CollectionConfig = {
       (async ({ req, data }: any) => forceStaffLocation({ req, data })) as any,
       activitiesBeforeChange as any,
     ],
-    afterChange: [activitiesAutoTranslate as any, activitiesIndexNow as any, activitiesQueueHeroCover as any],
-    afterDelete: [activitiesDeletedIndexNow as any],
+    afterChange: [
+      activitiesAutoTranslate as any,
+      activitiesIndexNow as any,
+      activitiesQueueHeroCover as any,
+      invalidatePublicPagesHook as any,
+    ],
+    afterDelete: [activitiesDeletedIndexNow as any, invalidatePublicPagesHook as any],
     beforeDelete: [
       /**
        * Hard-delete protection: refuse if active reservations reference this

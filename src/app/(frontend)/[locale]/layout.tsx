@@ -1,8 +1,9 @@
 import React from 'react'
 import Script from 'next/script'
 import { Noto_Sans, Noto_Serif, Noto_Serif_SC } from 'next/font/google'
-import '../../styles/tokens.css'
-import { getLocale } from '@/lib/i18n'
+import '../../../styles/tokens.css'
+import { getLocale } from '@/lib/route-locale'
+import { LOCALES } from '@/lib/i18n'
 import { getAllLocations, isThailandNetworkLocation } from '@/lib/current-location'
 import Header from '@/components/layout/Header'
 import { getZhOnlyDetailPaths } from '@/lib/untranslated-paths'
@@ -55,10 +56,21 @@ export const metadata = {
   title: '越南北宁善明静心小院｜Bac Ninh, Vietnam',
 }
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
+// Pre-render both languages so rewritten Chinese URLs also resolve to an
+// existing ISR entry. Keep each language's HTML separate and refresh it every
+// five minutes (or immediately when a CMS write revalidates the public pages).
+export const revalidate = 300
+export function generateStaticParams(): { locale: string }[] {
+  return LOCALES.map((locale) => ({ locale }))
+}
 
-  const locale = await getLocale()
+export default async function RootLayout(props: {
+  children: React.ReactNode
+  params: Promise<{ locale: string }>
+}) {
+  const { children, params } = props
+
+  const locale = await getLocale(params)
   // Header/Footer derive `currentLocation` client-side from usePathname()
   // (so client navigation refreshes their state). Layout only needs to
   // fetch the full list of academies once.

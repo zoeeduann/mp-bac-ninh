@@ -9,6 +9,7 @@
 import type { CollectionConfig } from 'payload'
 import { byOwnStaffLocation, isAdmin } from '../access'
 import { notifyIndexNowForLocation } from '../lib/indexnow-content'
+import { invalidatePublicPagesHook } from '../lib/public-cache'
 
 export const Locations: CollectionConfig = {
   slug: 'locations',
@@ -41,6 +42,7 @@ export const Locations: CollectionConfig = {
         }
         return doc
       }) as any,
+      invalidatePublicPagesHook as any,
     ],
     afterDelete: [
       (async ({ doc, req }: any) => {
@@ -51,6 +53,7 @@ export const Locations: CollectionConfig = {
         }
         return doc
       }) as any,
+      invalidatePublicPagesHook as any,
     ],
   },
   fields: [

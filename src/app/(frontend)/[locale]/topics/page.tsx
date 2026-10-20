@@ -5,13 +5,15 @@ import BodhiBackdrop from '@/components/brand/BodhiBackdrop'
 import { JsonLd } from '@/components/JsonLd'
 import { buildMetadata, BASE } from '@/lib/metadata'
 import { localePath, localizedUrl } from '@/lib/locale-url'
-import { getLocale } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import { breadcrumbJsonLd, itemListJsonLd } from '@/lib/jsonld'
 import { seoKeywords } from '@/lib/seo'
 import { TOPIC_PAGES, topicPath, topicText } from '@/lib/topic-pages'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale()
+type LocaleParams = { params: Promise<{ locale: string }> }
+
+export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
 
   return buildMetadata({
@@ -33,8 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
   })
 }
 
-export default async function TopicsIndexPage() {
-  const locale = await getLocale()
+export default async function TopicsIndexPage({ params }: LocaleParams) {
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
   const pageUrl = localizedUrl(locale, '/topics', BASE)
 

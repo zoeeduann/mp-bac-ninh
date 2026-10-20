@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation'
 import { JsonLd } from '@/components/JsonLd'
 import { getThailandNetworkLocations } from '@/lib/current-location'
 import { getFeaturedActivitiesForLocation } from '@/lib/content'
-import { getLocale } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import { breadcrumbJsonLd, itemListJsonLd, plainFaqPageJsonLd } from '@/lib/jsonld'
 import { localePath, localizedUrl } from '@/lib/locale-url'
 import { buildMetadata, BASE } from '@/lib/metadata'
@@ -28,9 +28,9 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>
+  params: Promise<{ locale: string; slug: string }>
 }): Promise<Metadata> {
-  const [{ slug }, locale] = await Promise.all([params, getLocale()])
+  const [{ slug }, locale] = await Promise.all([params, getLocale(params)])
   const topic = getTopicPage(slug)
   if (!topic) return {}
 
@@ -82,8 +82,8 @@ function topicWebPageJsonLd(input: {
   }
 }
 
-export default async function TopicDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const [{ slug }, locale] = await Promise.all([params, getLocale()])
+export default async function TopicDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+  const [{ slug }, locale] = await Promise.all([params, getLocale(params)])
   const topic = getTopicPage(slug)
   if (!topic) notFound()
 

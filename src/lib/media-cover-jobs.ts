@@ -8,6 +8,7 @@ import { arkTarget } from './ark-config'
 import { generateLandscapeCover } from './generate-landscape-cover'
 import { fetchRetryingNetworkErrors, networkErrorDetail } from './network-retry'
 import { coverFilename, isGeneratedCover, mediaCoverJob, type MediaCoverJob } from './media-cover-state'
+import { invalidatePublicPages } from './public-cache'
 
 export function newCoverJob(filename: string): MediaCoverJob {
   return {
@@ -119,7 +120,8 @@ export async function processMediaCover(payload: Payload, id: number): Promise<v
       UPDATE "media" SET "card_cover_job" = ${JSON.stringify(failed)}::jsonb
       WHERE "id" = ${id} AND "card_cover_job"->>'token' = ${job.token}
     `)
+  } finally {
+    // The cover is attached with raw SQL, which skips the Media hooks.
+    await invalidatePublicPages()
   }
-  // No cache invalidation: Bac Ninh renders public pages dynamically, and the
-  // campaign page's 60-second fetch cache expires on its own.
 }

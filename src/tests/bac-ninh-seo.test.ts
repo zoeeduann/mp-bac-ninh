@@ -57,6 +57,7 @@ describe('merged duplicate activities', () => {
     expect(MERGED_ACTIVITY_PATHS['/activities/mindfulness-and-food']).toBe('/activities/mindfulness-in-eating')
     expect(MERGED_ACTIVITY_PATHS['/activities/health-circle']).toBe('/activities/healthy-circulation-cycle')
     expect(MERGED_ACTIVITY_PATHS['/activities/tai-chi-mindfulness-ball']).toBe('/activities/mindfulness-badminton')
+    expect(MERGED_ACTIVITY_PATHS['/activities/mindful-tea-reading']).toBe('/activities/dhyana-tea-reading-circle')
   })
 
   it('never redirects a kept page or an unrelated one', () => {

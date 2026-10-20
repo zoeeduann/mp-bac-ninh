@@ -34,6 +34,9 @@ const notoSerifSC = Noto_Serif_SC({
 const notoSans = Noto_Sans({
   subsets: ['latin', 'latin-ext', 'vietnamese'],
   weight: ['300', '400', '500', '600', '700'],
+  // Only English pages use the Latin faces (tokens.css); preloading them made
+  // every Chinese page fetch six font files ahead of the hero image.
+  preload: false,
   variable: '--font-latin-sans',
   display: 'swap',
 })
@@ -41,6 +44,7 @@ const notoSans = Noto_Sans({
 const notoSerif = Noto_Serif({
   subsets: ['latin', 'latin-ext', 'vietnamese'],
   weight: ['400', '500', '700'],
+  preload: false,
   variable: '--font-latin-serif',
   display: 'swap',
 })

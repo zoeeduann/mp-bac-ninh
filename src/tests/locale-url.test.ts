@@ -17,6 +17,11 @@ describe('localizedUrl', () => {
     expect(localizedUrl('en', '/chiangmai', 'https://x.com')).toBe('https://x.com/en/chiangmai')
     expect(localizedUrl('zh-CN', '/chiangmai', 'https://x.com')).toBe('https://x.com/chiangmai')
   })
+  it('returns the bare origin for the zh-CN root, matching the rendered canonical', () => {
+    expect(localizedUrl('zh-CN', '/', 'https://x.com')).toBe('https://x.com')
+    expect(localizedUrl('zh-CN', '/', 'https://x.com/')).toBe('https://x.com')
+    expect(localizedUrl('en', '/', 'https://x.com')).toBe('https://x.com/en')
+  })
 })
 
 describe('stripLocale', () => {

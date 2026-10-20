@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { activityExcerpt } from '@/lib/activity-text'
-import { activityDateEyebrow, hasUsableSlug } from '@/lib/activity-list'
+import { EYEBROW_NOTE_CLASS, activityDateEyebrow, hasUsableSlug } from '@/lib/activity-list'
 import { remainingSeatsText } from '@/lib/seats'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -261,6 +261,9 @@ export default async function ActivityDetailPage({
     .map((x: any) => x.activity)
     .slice(0, 2)
   const relatedActivities = sortedRelated as Activity[]
+  const relatedEyebrows = relatedActivities.map((rel) => activityDateEyebrow(rel, locale))
+  // Keep titles aligned when only some related cards carry a "下一场" note.
+  const reserveRelatedNote = relatedEyebrows.some((e) => e?.note)
 
   // ─ Occurrences (sorted, no deleted) ─────────────────────────────────
   const sortedOccurrences = (activity.occurrences ?? [])
@@ -720,7 +723,8 @@ export default async function ActivityDetailPage({
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[2px]">
-            {relatedActivities.map((rel) => {
+            {relatedActivities.map((rel, index) => {
+              const eyebrow = relatedEyebrows[index]
               const imgUrl = activityImageUrl(rel.heroImage)
               const imgAlt = mediaAlt(rel.heroImage, rel.title)
               const upcoming = nextOccurrenceDate(rel)
@@ -744,9 +748,14 @@ export default async function ActivityDetailPage({
                     <div className="w-full aspect-[3/2] bg-ink/15" />
                   )}
                   <div className="flex flex-1 flex-col pt-5 pb-6 pr-6 border-t border-hairline">
-                    {upcoming && (
+                    {upcoming && eyebrow && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
-                        {activityDateEyebrow(rel, locale)}
+                        {eyebrow.label}
+                      </p>
+                    )}
+                    {eyebrow && (eyebrow.note || reserveRelatedNote) && (
+                      <p className={EYEBROW_NOTE_CLASS} aria-hidden={eyebrow.note ? undefined : true}>
+                        {eyebrow.note || '\u00a0'}
                       </p>
                     )}
                     <h3 className="font-serif text-[20px] font-medium text-ink mb-2">

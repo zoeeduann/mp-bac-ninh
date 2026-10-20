@@ -14,22 +14,22 @@ describe('activityDateEyebrow', () => {
   }
 
   it('labels a weekly activity with its weekday, time and next date', () => {
-    expect(activityDateEyebrow(weekly, 'zh-CN', now)).toBe('每周三 13:00 ICT · 下一场 10月21日')
-    expect(activityDateEyebrow(weekly, 'en', now)).toBe('EVERY WED 13:00 ICT · NEXT OCT 21')
+    expect(activityDateEyebrow(weekly, 'zh-CN', now)).toEqual({ label: '每周三 13:00 ICT', note: '下一场 10月21日' })
+    expect(activityDateEyebrow(weekly, 'en', now)).toEqual({ label: 'EVERY WED 13:00 ICT', note: 'Next Oct 21' })
   })
 
   it('keeps the weekly label when one week is cancelled', () => {
     const withCancelled = {
       occurrences: weekly.occurrences.map((o, i) => (i === 1 ? { ...o, status: 'cancelled' } : o)),
     }
-    expect(activityDateEyebrow(withCancelled, 'zh-CN', now)).toBe('每周三 13:00 ICT · 下一场 10月28日')
+    expect(activityDateEyebrow(withCancelled, 'zh-CN', now)).toEqual({ label: '每周三 13:00 ICT', note: '下一场 10月28日' })
   })
 
   it('ignores deleted sessions', () => {
     const withDeleted = {
       occurrences: [...weekly.occurrences, { startAt: '2026-10-23T06:00:00.000Z', status: 'deleted' }],
     }
-    expect(activityDateEyebrow(withDeleted, 'zh-CN', now)).toBe('每周三 13:00 ICT · 下一场 10月21日')
+    expect(activityDateEyebrow(withDeleted, 'zh-CN', now)).toEqual({ label: '每周三 13:00 ICT', note: '下一场 10月21日' })
   })
 
   it('lists several weekdays in week order', () => {
@@ -42,27 +42,27 @@ describe('activityDateEyebrow', () => {
         '2026-10-29T02:30:00.000Z',
       ].map((startAt) => ({ startAt, status: 'open' })),
     }
-    expect(activityDateEyebrow(activity, 'zh-CN', now)).toBe('每周二、四 09:30 ICT · 下一场 10月20日')
-    expect(activityDateEyebrow(activity, 'en', now)).toBe('EVERY TUE & THU 09:30 ICT · NEXT OCT 20')
+    expect(activityDateEyebrow(activity, 'zh-CN', now)).toEqual({ label: '每周二、四 09:30 ICT', note: '下一场 10月20日' })
+    expect(activityDateEyebrow(activity, 'en', now)).toEqual({ label: 'EVERY TUE & THU 09:30 ICT', note: 'Next Oct 20' })
   })
 
   it('falls back to the next session date when there is no weekly pattern', () => {
     const single = { occurrences: [{ startAt: '2026-10-25T08:00:00.000Z', status: 'open' }] }
-    expect(activityDateEyebrow(single, 'zh-CN', now)).toBe('10月 25日 · 15:00 ICT')
+    expect(activityDateEyebrow(single, 'zh-CN', now)).toEqual({ label: '10月 25日 · 15:00 ICT', note: null })
     const differentTimes = {
       occurrences: [
         { startAt: '2026-10-21T06:00:00.000Z', status: 'open' },
         { startAt: '2026-10-28T07:00:00.000Z', status: 'open' },
       ],
     }
-    expect(activityDateEyebrow(differentTimes, 'zh-CN', now)).toBe('10月 21日 · 13:00 ICT')
+    expect(activityDateEyebrow(differentTimes, 'zh-CN', now)).toEqual({ label: '10月 21日 · 13:00 ICT', note: null })
     const twoWeeksApart = {
       occurrences: [
         { startAt: '2026-10-21T06:00:00.000Z', status: 'open' },
         { startAt: '2026-11-04T06:00:00.000Z', status: 'open' },
       ],
     }
-    expect(activityDateEyebrow(twoWeeksApart, 'zh-CN', now)).toBe('10月 21日 · 13:00 ICT')
+    expect(activityDateEyebrow(twoWeeksApart, 'zh-CN', now)).toEqual({ label: '10月 21日 · 13:00 ICT', note: null })
   })
 
   it('returns null when nothing is coming up', () => {

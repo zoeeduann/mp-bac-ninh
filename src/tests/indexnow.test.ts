@@ -90,7 +90,7 @@ describe('IndexNow content URL builders', () => {
 
   it('builds all public location URLs in both locales', () => {
     expect(indexNowUrlsForLocationSlug('chiangmai', base)).toEqual([
-      'https://mindfulpeaceth.com/',
+      'https://mindfulpeaceth.com',
       'https://mindfulpeaceth.com/en',
       'https://mindfulpeaceth.com/chiangmai',
       'https://mindfulpeaceth.com/en/chiangmai',

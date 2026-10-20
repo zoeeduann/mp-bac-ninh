@@ -16,9 +16,14 @@ export function localePath(locale: Locale, path: string): string {
   return p === '/' ? EN_PREFIX : `${EN_PREFIX}${p}`
 }
 
-/** Absolute URL for canonical / hreflang / sitemap / JSON-LD. */
+/**
+ * Absolute URL for canonical / hreflang / sitemap / JSON-LD. The zh-CN root is
+ * the bare origin (no trailing slash): Next renders canonical and hreflang that
+ * way, so the sitemap and IndexNow must match it.
+ */
 export function localizedUrl(locale: Locale, path: string, base: string): string {
-  return `${base}${localePath(locale, path)}`
+  const localized = localePath(locale, path)
+  return localized === '/' ? base.replace(/\/$/, '') : `${base}${localized}`
 }
 
 /** Remove a leading /en segment. Used by client components reading usePathname(). */

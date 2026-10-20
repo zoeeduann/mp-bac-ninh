@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { activityExcerpt } from '@/lib/activity-text'
-import { PAST_ACTIVITIES_INITIAL, splitUpcomingPast } from '@/lib/activity-list'
+import {
+  EYEBROW_NOTE_CLASS,
+  PAST_ACTIVITIES_INITIAL,
+  activityDateEyebrow,
+  splitUpcomingPast,
+} from '@/lib/activity-list'
 import { notFound } from 'next/navigation'
 import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
@@ -214,6 +219,11 @@ export default async function ActivitiesPage({
     ? pastActivities
     : pastActivities.slice(0, PAST_ACTIVITIES_INITIAL)
   const sortedActivities = [...upcomingActivities, ...pastActivities]
+  // Keep titles aligned when only some upcoming cards carry a "下一场" note
+  // (series courses keep their own range label and never have one).
+  const reserveUpcomingNote = upcomingActivities.some(
+    (a) => a.registrationMode !== 'series' && activityDateEyebrow(a, locale)?.note,
+  )
   const morePastHref = (() => {
     const params = new URLSearchParams()
     if (activeCat) params.set('cat', activeCat)
@@ -312,6 +322,7 @@ export default async function ActivitiesPage({
     const imgUrl = activityImageUrl(act.heroImage)
     const imgAlt = mediaAlt(act.heroImage, act.title)
     const upcoming = nextOccurrenceDate(act)
+    const eyebrow = isPast ? null : activityDateEyebrow(act, locale)
     const excerpt = activityExcerpt(act.shortDesc, act.title)
     const seriesOccurrences = act.registrationMode === 'series'
       ? (act.occurrences ?? [])
@@ -363,9 +374,14 @@ export default async function ActivitiesPage({
             {upcoming
               ? seriesOccurrences.length > 0
                 ? `${formatDateCompact(new Date(seriesOccurrences[0].startAt), locale)} – ${formatDateCompact(new Date(seriesOccurrences[seriesOccurrences.length - 1].startAt), locale)} · ${isZh ? `${seriesOccurrences.length} 次系列课` : `${seriesOccurrences.length}-session series`}`
-                : formatDateCompact(new Date(upcoming), locale)
+                : eyebrow?.label
               : t(locale, 'meta.past')}
           </p>
+          {upcoming && seriesOccurrences.length === 0 && eyebrow && (eyebrow.note || reserveUpcomingNote) && (
+            <p className={EYEBROW_NOTE_CLASS} aria-hidden={eyebrow.note ? undefined : true}>
+              {eyebrow.note || '\u00a0'}
+            </p>
+          )}
           <h3 className="font-serif text-[20px] font-medium text-ink mb-2">
             {act.title}
           </h3>

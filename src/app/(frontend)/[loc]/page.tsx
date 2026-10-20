@@ -18,7 +18,7 @@ import {
 } from '@/lib/content'
 import { shortName, academyName } from '@/lib/short-name'
 import { RichText } from '@/components/RichText'
-import { formatDateCompact } from '@/lib/time'
+import { EYEBROW_NOTE_CLASS, activityDateEyebrow } from '@/lib/activity-list'
 import { buildMetadata } from '@/lib/metadata'
 import {
   locationPath,
@@ -130,6 +130,9 @@ export default async function AcademyHomePage({
     getFeaturedActivitiesForLocation(location.id, locale, 3),
     getRecentJournalForLocation(location.id, locale, 3),
   ])
+  const activityEyebrows = (activities as Activity[]).map((a) => activityDateEyebrow(a, locale))
+  // Keep titles aligned when only some cards carry a "下一场" note.
+  const reserveNoteLine = activityEyebrows.some((e) => e?.note)
 
   const heroImgUrl = mediaUrl(location.heroImage as any)
   const heroImgAlt = mediaAlt(location.heroImage as any, location.name)
@@ -236,8 +239,9 @@ export default async function AcademyHomePage({
 
         {activities.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] mb-14">
-            {activities.map((activityDoc) => {
+            {activities.map((activityDoc, index) => {
               const activity = activityDoc as Activity & { heroImage: Media | number }
+              const eyebrow = activityEyebrows[index]
               const imgUrl = activityImageUrl(activity.heroImage)
               const imgAlt = mediaAlt(activity.heroImage, activity.title)
               const upcoming = nextOccurrence(activity)
@@ -261,9 +265,14 @@ export default async function AcademyHomePage({
                     <div className="w-full aspect-[3/2] bg-ink/15" />
                   )}
                   <div className="flex flex-1 flex-col pt-5 pb-6 pr-6 border-t border-hairline">
-                    {upcoming && (
+                    {upcoming && eyebrow && (
                       <p className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-ink-soft mb-2">
-                        {formatDateCompact(new Date(upcoming), locale)}
+                        {eyebrow.label}
+                      </p>
+                    )}
+                    {eyebrow && (eyebrow.note || reserveNoteLine) && (
+                      <p className={EYEBROW_NOTE_CLASS} aria-hidden={eyebrow.note ? undefined : true}>
+                        {eyebrow.note || '\u00a0'}
                       </p>
                     )}
                     <h3 className="font-serif text-[20px] font-medium text-ink mb-2">

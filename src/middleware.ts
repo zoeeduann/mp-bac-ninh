@@ -13,22 +13,21 @@ export function isStandaloneVietnamesePath(
 }
 
 /**
- * Pure decision for a request path: which locale, whether to rewrite away an
- * `/en` prefix, and the `x-pathname` value (always the stripped path so
- * server-side location derivation is locale-independent). Extracted for unit
- * testing without constructing a NextRequest.
+ * Split the language off a public URL. zh-CN stays unprefixed and English
+ * carries /en; direct visits to the internal /zh-CN segment are sent back to
+ * the clean URL (middleware is not re-entered for its own rewrite).
  */
 export function resolveLocaleRewrite(pathname: string): {
   locale: Locale
-  rewritePath: string | null
-  xPathname: string
+  publicPath: string
+  redirectPath: string | null
 } {
-  const isEn = pathname === '/en' || pathname.startsWith('/en/')
-  if (isEn) {
-    const stripped = stripLocale(pathname)
-    return { locale: 'en', rewritePath: stripped, xPathname: stripped }
+  if (pathname === '/zh-CN' || pathname.startsWith('/zh-CN/')) {
+    const publicPath = stripLocale(pathname)
+    return { locale: 'zh-CN', publicPath, redirectPath: publicPath }
   }
-  return { locale: 'zh-CN', rewritePath: null, xPathname: pathname }
+  const isEn = pathname === '/en' || pathname.startsWith('/en/')
+  return { locale: isEn ? 'en' : 'zh-CN', publicPath: stripLocale(pathname), redirectPath: null }
 }
 
 export function resolveSingleLocationRewrite(
@@ -57,57 +56,55 @@ export function resolveSingleLocationRewrite(
   }
 }
 
-export function middleware(req: NextRequest) {
-  if (isStandaloneVietnamesePath(req.nextUrl.pathname, SITE_LOCATION_SLUG)) {
-    const requestHeaders = new Headers(req.headers)
-    requestHeaders.set('x-locale', 'zh-CN')
-    requestHeaders.set('x-pathname', req.nextUrl.pathname)
-    return NextResponse.next({ request: { headers: requestHeaders } })
-  }
+export type MiddlewareDecision =
+  | { action: 'next' }
+  | { action: 'rewrite'; pathname: string }
+  | { action: 'redirect'; pathname: string }
 
-  const { locale, rewritePath, xPathname } = resolveLocaleRewrite(req.nextUrl.pathname)
+/**
+ * Pure routing decision for a request path, extracted for unit testing.
+ * Public pages render under an internal [locale] segment (and, on a
+ * single-location site, its /[loc] segment), so each language is its own ISR
+ * entry and no page has to read request headers.
+ */
+export function resolveRequest(
+  pathname: string,
+  siteLocationSlug: string | null,
+): MiddlewareDecision {
+  if (isStandaloneVietnamesePath(pathname, siteLocationSlug)) return { action: 'next' }
+
+  const { locale, publicPath, redirectPath } = resolveLocaleRewrite(pathname)
+  if (redirectPath) {
+    // Follow on to the final clean URL in one hop (e.g. /zh-CN/bac-ninh -> /).
+    const next = resolveRequest(redirectPath, siteLocationSlug)
+    return { action: 'redirect', pathname: next.action === 'redirect' ? next.pathname : redirectPath }
+  }
 
   // Duplicate activity pages merged into one per series keep working.
-  const merged = SITE_LOCATION_SLUG ? MERGED_ACTIVITY_PATHS[xPathname] : undefined
-  if (merged) {
-    const url = req.nextUrl.clone()
-    url.pathname = localePath(locale, merged)
-    return NextResponse.redirect(url, 308)
-  }
+  const merged = siteLocationSlug ? MERGED_ACTIVITY_PATHS[publicPath] : undefined
+  if (merged) return { action: 'redirect', pathname: localePath(locale, merged) }
 
-  const requestHeaders = new Headers(req.headers)
-  requestHeaders.set('x-locale', locale)
-
-  if (SITE_LOCATION_SLUG) {
-    const siteRewrite = resolveSingleLocationRewrite(
-      xPathname,
-      locale,
-      SITE_LOCATION_SLUG,
-    )
-
+  let internalPath = publicPath
+  if (siteLocationSlug) {
+    const siteRewrite = resolveSingleLocationRewrite(publicPath, locale, siteLocationSlug)
     // Keep the public URL clean when an old/internal /bac-ninh link is opened.
-    if (siteRewrite.redirectPath) {
-      const url = req.nextUrl.clone()
-      url.pathname = siteRewrite.redirectPath
-      return NextResponse.redirect(url, 308)
-    }
-
-    const internalPath = siteRewrite.internalPath as string
-    requestHeaders.set('x-pathname', internalPath)
-
-    const url = req.nextUrl.clone()
-    url.pathname = internalPath
-    return NextResponse.rewrite(url, { request: { headers: requestHeaders } })
+    if (siteRewrite.redirectPath) return { action: 'redirect', pathname: siteRewrite.redirectPath }
+    internalPath = siteRewrite.internalPath as string
   }
 
-  requestHeaders.set('x-pathname', xPathname)
+  const target = `/${locale}${internalPath === '/' ? '' : internalPath}`
+  return target === pathname ? { action: 'next' } : { action: 'rewrite', pathname: target }
+}
 
-  if (rewritePath) {
-    const url = req.nextUrl.clone()
-    url.pathname = rewritePath // query string is preserved by clone()
-    return NextResponse.rewrite(url, { request: { headers: requestHeaders } })
-  }
-  return NextResponse.next({ request: { headers: requestHeaders } })
+export function middleware(req: NextRequest) {
+  const decision = resolveRequest(req.nextUrl.pathname, SITE_LOCATION_SLUG)
+  if (decision.action === 'next') return NextResponse.next()
+
+  const url = req.nextUrl.clone()
+  url.pathname = decision.pathname // query string is preserved by clone()
+  return decision.action === 'redirect'
+    ? NextResponse.redirect(url, 308)
+    : NextResponse.rewrite(url)
 }
 
 export const config = {

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getLocale, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import { getThailandNetworkLocations } from '@/lib/current-location'
 import {
   getPortalHome,
@@ -20,8 +21,10 @@ import { organizationJsonLd, websiteJsonLd } from '@/lib/jsonld'
 import { networkSeoDescription, seoKeywords } from '@/lib/seo'
 import type { Media, Location, Journal } from '@/payload-types'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale()
+type LocaleParams = { params: Promise<{ locale: string }> }
+
+export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
 
   const portalHome = await getPortalHome(locale)
@@ -59,8 +62,8 @@ function mediaAlt(img: number | Media | null | undefined, fallback = ''): string
   return (img as Media).alt ?? fallback
 }
 
-export default async function PortalHomePage() {
-  const locale = await getLocale()
+export default async function PortalHomePage({ params }: LocaleParams) {
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
 
   const [portalHome, locations] = await Promise.all([

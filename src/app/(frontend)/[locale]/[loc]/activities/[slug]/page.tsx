@@ -1,3 +1,7 @@
+// Detail pages keep live CMS reads (seat counts); only index and landing pages
+// use ISR.
+export const dynamic = 'force-dynamic'
+
 import type { Metadata } from 'next'
 import { pageTitle, splitPlaceName } from '@/lib/page-title'
 import { activityExcerpt } from '@/lib/activity-text'
@@ -11,7 +15,8 @@ import {
   isThailandNetworkLocation,
   locationSiteName,
 } from '@/lib/current-location'
-import { getLocale, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import { getRouteParams } from '@/lib/route-params'
 import { getPayloadClient } from '@/lib/payload'
 import { getCapacityForOccurrence, hasEnglishVersion } from '@/lib/content'
@@ -39,10 +44,10 @@ import { BAC_NINH_SLUG, bacNinhDetailTitle } from '@/lib/bac-ninh-seo'
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ loc: string; slug: string }>
+  params: Promise<{ locale: string; loc: string; slug: string }>
 }): Promise<Metadata> {
   const p = await getRouteParams(params)
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
 
@@ -164,14 +169,14 @@ export default async function ActivityDetailPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ loc: string; slug: string }>
+  params: Promise<{ locale: string; loc: string; slug: string }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const [p, sp] = await Promise.all([getRouteParams(params), searchParams])
 
   const locSlug = p.loc
 
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
 
   const location = await getLocationBySlug(locSlug, locale)

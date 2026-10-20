@@ -1,10 +1,15 @@
+// Detail pages keep live CMS reads (seat counts); only index and landing pages
+// use ISR.
+export const dynamic = 'force-dynamic'
+
 /* eslint-disable @next/next/no-img-element */
 import { pageTitle } from '@/lib/page-title'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { getLocationBySlug, locationSiteName } from '@/lib/current-location'
-import { getLocale, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import { getRouteParams } from '@/lib/route-params'
 import { getPayloadClient } from '@/lib/payload'
 import { getCapacityForOccurrence } from '@/lib/content'
@@ -84,10 +89,10 @@ async function fetchActivity(locId: number, slug: string, locale: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ loc: string; slug: string }>
+  params: Promise<{ locale: string; loc: string; slug: string }>
 }): Promise<Metadata> {
   const p = await getRouteParams(params)
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
   const activity = await fetchActivity(location.id, p.slug, locale)
@@ -119,12 +124,12 @@ export async function generateMetadata({
 export default async function ActivityPosterPage({
   params,
 }: {
-  params: Promise<{ loc: string; slug: string }>
+  params: Promise<{ locale: string; loc: string; slug: string }>
 }) {
   const p = await getRouteParams(params)
   const locSlug = p.loc
 
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
 
   const location = await getLocationBySlug(locSlug, locale)

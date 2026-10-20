@@ -4,6 +4,7 @@ import { slugify } from '../lib/slugify'
 import { translateForSlug } from '../lib/translate'
 import { notifyIndexNowForJournal } from '../lib/indexnow-content'
 import { autoGenerateJournalAltAfterChange } from './Journal.hooks'
+import { invalidatePublicPagesHook } from '../lib/public-cache'
 
 export const Journal: CollectionConfig = {
   slug: 'journal',
@@ -40,6 +41,7 @@ export const Journal: CollectionConfig = {
         }
         return doc
       }) as any,
+      invalidatePublicPagesHook as any,
     ],
     afterDelete: [
       (async ({ doc, req }: any) => {
@@ -50,6 +52,7 @@ export const Journal: CollectionConfig = {
         }
         return doc
       }) as any,
+      invalidatePublicPagesHook as any,
     ],
   },
   fields: [

@@ -10,14 +10,6 @@ export function extractLocationSlug(pathname: string): LocationSlug | null {
   return LOCATION_SLUGS.includes(first as LocationSlug) ? (first as LocationSlug) : null
 }
 
-/** Server-component helper: read current location from request headers */
-export async function getCurrentLocationSlug(): Promise<LocationSlug | null> {
-  const { headers } = await import('next/headers')
-  const h = await headers()
-  const pathname = h.get('x-pathname') || h.get('x-invoke-path') || '/'
-  return extractLocationSlug(pathname)
-}
-
 /** Fetch the Location doc for a given slug. Returns null if not found. */
 export async function getLocationBySlug(slug: LocationSlug, locale: Locale = 'zh-CN') {
   const { getPayloadClient } = await import('./payload')

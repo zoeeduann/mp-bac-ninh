@@ -11,7 +11,7 @@ import {
 import { locationPath, locationUrl } from '@/lib/site-config'
 import CampaignLeadForm from '@/components/campaigns/CampaignLeadForm'
 
-type Props = { params: Promise<{ loc: string; focus: string }> }
+type Props = { params: Promise<{ locale: string; loc: string; focus: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { loc, focus } = await params

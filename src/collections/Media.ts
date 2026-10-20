@@ -3,6 +3,7 @@ import { isAdminOrStaff } from '../access'
 import { autoGenerateMediaAltAfterChange, syncMediaUrlAfterChange } from './Media.hooks'
 import { activityImageSizes } from '../lib/activity-image'
 import { prepareMediaCover, scheduleMediaCover } from './Media.cover-hooks'
+import { invalidatePublicPagesHook } from '../lib/public-cache'
 
 // Rewrites Payload's default /api/media/file/<name> URLs to the R2 public
 // hostname when S3_PUBLIC_HOSTNAME is set. Two reasons we do this here
@@ -50,7 +51,9 @@ export const Media: CollectionConfig = {
       scheduleMediaCover,
       syncMediaUrlAfterChange,
       autoGenerateMediaAltAfterChange,
+      invalidatePublicPagesHook,
     ],
+    afterDelete: [invalidatePublicPagesHook],
   },
   upload: {
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],

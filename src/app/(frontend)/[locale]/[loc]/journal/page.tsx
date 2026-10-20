@@ -9,7 +9,8 @@ import {
   isThailandNetworkLocation,
   locationSiteName,
 } from '@/lib/current-location'
-import { getLocale, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import { getRecentJournalForLocation } from '@/lib/content'
 import { academyName } from '@/lib/short-name'
 import { toZonedTime, format as fmtTz } from 'date-fns-tz'
@@ -24,10 +25,10 @@ import { placePageBreadcrumbJsonLd } from '@/lib/jsonld'
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
 }): Promise<Metadata> {
   const p = await params
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
 
@@ -87,13 +88,13 @@ const ASPECT_CLASSES = ['aspect-[3/4]', 'aspect-[4/5]', 'aspect-[16/10]']
 export default async function JournalPage({
   params,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
 }) {
   const p = await params
 
   const slug = p.loc
 
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
 
   const location = await getLocationBySlug(slug, locale)

@@ -12,6 +12,7 @@
  */
 import type { GlobalConfig } from 'payload'
 import { isAdmin } from '../access'
+import { invalidatePublicPagesHook } from '../lib/public-cache'
 
 export const PortalHome: GlobalConfig = {
   slug: 'portal-home',
@@ -24,6 +25,9 @@ export const PortalHome: GlobalConfig = {
   access: {
     read: () => true,
     update: isAdmin,
+  },
+  hooks: {
+    afterChange: [invalidatePublicPagesHook],
   },
   fields: [
     {

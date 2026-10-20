@@ -6,7 +6,8 @@ import ActivityImage from '@/components/activities/ActivityImage'
 import { activityImageUrl } from '@/lib/activity-image'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getLocale, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import {
   getLocationBySlug,
   isThailandNetworkLocation,
@@ -38,10 +39,10 @@ import { placeBusinessJsonLd } from '@/lib/place-jsonld'
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
 }): Promise<Metadata> {
   const p = await params
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
 
@@ -116,10 +117,10 @@ function nextOccurrence(activity: Activity): string | null {
 export default async function AcademyHomePage({
   params,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
 }) {
   const p = await params
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
   const slug = p.loc
 

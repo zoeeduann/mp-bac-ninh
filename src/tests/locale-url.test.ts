@@ -34,6 +34,10 @@ describe('stripLocale', () => {
   it('does not strip a location that merely starts with "en"', () => {
     expect(stripLocale('/enclave')).toBe('/enclave')
   })
+  it('removes the internal /zh-CN segment seen while prerendering', () => {
+    expect(stripLocale('/zh-CN/bac-ninh/about')).toBe('/bac-ninh/about')
+    expect(stripLocale('/zh-CN')).toBe('/')
+  })
 })
 
 describe('swapLocalePath', () => {

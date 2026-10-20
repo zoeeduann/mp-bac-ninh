@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import CampaignPage, { generateMetadata } from '@/app/(campaigns)/[loc]/discover/[focus]/page'
+import CampaignPage, { generateMetadata } from '@/app/(campaigns)/[locale]/[loc]/discover/[focus]/page'
 
 vi.mock('@/lib/campaign-content', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/campaign-content')>()
@@ -30,7 +30,7 @@ describe('campaign routes', () => {
   it.each(['mindfulness', 'buddhism'])(
     'renders %s with a single same-page name and Zalo form and no invented schedule',
     async (focus) => {
-      const element = await CampaignPage({ params: Promise.resolve({ loc: 'bac-ninh', focus }) })
+      const element = await CampaignPage({ params: Promise.resolve({ locale: 'zh-CN', loc: 'bac-ninh', focus }) })
       const html = renderToStaticMarkup(element)
       expect(html.match(/<form\b/g)).toHaveLength(1)
       expect(html).toContain('name="zalo"')
@@ -48,14 +48,14 @@ describe('campaign routes', () => {
   )
   it('sets distinct canonical metadata without advertising a non-existent English translation', async () => {
     const meta = await generateMetadata({
-      params: Promise.resolve({ loc: 'bac-ninh', focus: 'buddhism' }),
+      params: Promise.resolve({ locale: 'zh-CN', loc: 'bac-ninh', focus: 'buddhism' }),
     })
     expect(meta.alternates?.canonical).toBe('https://mindfulpeacebacninh.com/discover/buddhism')
     expect(meta.alternates?.languages).toBeUndefined()
   })
   it('rejects unsupported locations instead of showing Bac Ninh content on another academy', async () => {
     await expect(
-      CampaignPage({ params: Promise.resolve({ loc: 'phuket', focus: 'buddhism' }) }),
+      CampaignPage({ params: Promise.resolve({ locale: 'zh-CN', loc: 'phuket', focus: 'buddhism' }) }),
     ).rejects.toThrow()
   })
 })

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { isAdminOrStaff } from '../access'
 import { slugify } from '../lib/slugify'
+import { invalidatePublicPagesHook } from '../lib/public-cache'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -54,6 +55,8 @@ export const Categories: CollectionConfig = {
     },
   ],
   hooks: {
+    afterChange: [invalidatePublicPagesHook],
+    afterDelete: [invalidatePublicPagesHook],
     beforeDelete: [
       async ({ req, id }) => {
         // Guard: the Activities collection may not be registered yet during bootstrap.

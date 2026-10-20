@@ -5,7 +5,8 @@ import ContactList from '@/components/layout/ContactList'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import { getLocale, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { getLocale } from '@/lib/route-locale'
 import {
   getLocationBySlug,
   isThailandNetworkLocation,
@@ -27,10 +28,10 @@ import { placeBusinessJsonLd } from '@/lib/place-jsonld'
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
 }): Promise<Metadata> {
   const p = await params
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const location = await getLocationBySlug(p.loc, locale)
   if (!location) return {}
 
@@ -78,10 +79,10 @@ function mediaAlt(img: number | Media | null | undefined, fallback = ''): string
 export default async function ContactPage({
   params,
 }: {
-  params: Promise<{ loc: string }>
+  params: Promise<{ locale: string; loc: string }>
 }) {
   const p = await params
-  const locale = await getLocale()
+  const locale = await getLocale(params)
   const isZh = locale === 'zh-CN'
   const slug = p.loc
 

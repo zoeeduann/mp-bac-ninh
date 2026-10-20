@@ -26,10 +26,12 @@ export function localizedUrl(locale: Locale, path: string, base: string): string
   return localized === '/' ? base.replace(/\/$/, '') : `${base}${localized}`
 }
 
-/** Remove a leading /en segment. Used by client components reading usePathname(). */
+/** Normalize both public /en and the internal /zh-CN rewrite during prerendering. */
 export function stripLocale(pathname: string): string {
-  if (pathname === EN_PREFIX) return '/'
-  if (pathname.startsWith(`${EN_PREFIX}/`)) return pathname.slice(EN_PREFIX.length)
+  for (const prefix of [EN_PREFIX, '/zh-CN']) {
+    if (pathname === prefix) return '/'
+    if (pathname.startsWith(`${prefix}/`)) return pathname.slice(prefix.length)
+  }
   return pathname
 }
 

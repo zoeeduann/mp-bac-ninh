@@ -2,15 +2,8 @@ export type Locale = 'zh-CN' | 'en'
 export const LOCALES: Locale[] = ['zh-CN', 'en']
 export const DEFAULT_LOCALE: Locale = 'zh-CN'
 
-// Locale is decided by the URL (see middleware.ts): the `/en` prefix sets the
-// `x-locale` request header; everything else is zh-CN. URL is the single
-// source of truth — no cookie.
-export async function getLocale(): Promise<Locale> {
-  const { headers } = await import('next/headers')
-  const h = await headers()
-  const v = h.get('x-locale') as Locale | undefined
-  return LOCALES.includes(v as Locale) ? (v as Locale) : DEFAULT_LOCALE
-}
+// URL is the single locale source of truth. Server pages read their [locale]
+// params through route-locale.ts; this module stays safe for client components.
 
 export const DICT = {
   'zh-CN': {

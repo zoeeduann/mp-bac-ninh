@@ -52,6 +52,20 @@ export function lastSessionStart(activity: ActivityLike): string | null {
   return last?.startAt ?? null
 }
 
+/** Days after its last session that an activity stays in the sitemap. */
+export const SITEMAP_ENDED_GRACE_DAYS = 14
+
+/**
+ * Whether every session started more than SITEMAP_ENDED_GRACE_DAYS ago. Such
+ * one-off pages stay reachable but are left out of the sitemap. An activity
+ * with no live session (a standing introduction page) never counts as ended.
+ */
+export function endedLongAgo(activity: ActivityLike, now: Date = new Date()): boolean {
+  const last = lastSessionStart(activity)
+  if (!last) return false
+  return now.getTime() - new Date(last).getTime() > SITEMAP_ENDED_GRACE_DAYS * 24 * 60 * 60 * 1000
+}
+
 /**
  * Split into upcoming (soonest first) and past (most recent first). Activities
  * without any live session count as past. Blank-slug records are dropped.

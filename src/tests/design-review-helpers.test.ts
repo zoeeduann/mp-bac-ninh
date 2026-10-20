@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { activityExcerpt, stripExcerptNoise } from '@/lib/activity-text'
 import {
+  endedLongAgo,
   hasUsableSlug,
   nextUpcomingStart,
   splitUpcomingPast,
@@ -87,6 +88,14 @@ describe('activity list helpers', () => {
         now,
       ),
     ).toBe('2026-09-22T00:00:00Z')
+  })
+
+  it('counts an activity as ended once its last live session is over 14 days old', () => {
+    expect(endedLongAgo(act('old', ['2026-08-01T00:00:00Z', '2026-09-03T00:00:00Z']), now)).toBe(true)
+    expect(endedLongAgo(act('recent', ['2026-08-01T00:00:00Z', '2026-09-05T00:00:00Z']), now)).toBe(false)
+    expect(endedLongAgo(act('soon', ['2026-08-01T00:00:00Z', '2026-09-20T00:00:00Z']), now)).toBe(false)
+    expect(endedLongAgo(act('none', []), now)).toBe(false)
+    expect(endedLongAgo(act('cancelled', ['2026-08-01T00:00:00Z'], 'cancelled'), now)).toBe(false)
   })
 })
 

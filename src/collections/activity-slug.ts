@@ -32,11 +32,20 @@ export async function normalizeActivitySlug(
   } catch {
     // swallow — fall through to plain slugify(title)
   }
-  return slugify(enTitle || title)
+  // Never return '' while a title exists: a punctuation-only title slugifies
+  // to nothing, so fall back to a unique placeholder instead.
+  return slugify(enTitle || '') || slugify(title) || `activity-${Date.now().toString(36)}`
 }
 
-/** Reject slugs that are empty after trimming (they cannot form a URL). */
-export function validateActivitySlug(value: unknown): true | string {
+/**
+ * Accept a blank slug when there is a title to generate one from. Payload's
+ * admin form validates fields before the beforeValidate hook runs, so the old
+ * "slug must be non-blank" check blocked saving with the slug left empty even
+ * though normalizeActivitySlug would have filled it in on the server.
+ */
+export function validateActivitySlug(value: unknown, data?: unknown): true | string {
   if (typeof value === 'string' && value.trim().length > 0) return true
-  return 'Slug 不能为空或只含空格 / Slug cannot be empty or whitespace'
+  const title = (data as { title?: unknown } | undefined)?.title
+  if (typeof title === 'string' && title.trim().length > 0) return true
+  return '请填写 slug,或先填写标题以自动生成 / Enter a slug, or a title to generate one'
 }

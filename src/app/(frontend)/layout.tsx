@@ -1,6 +1,6 @@
 import React from 'react'
 import Script from 'next/script'
-import { Noto_Sans, Noto_Sans_SC, Noto_Serif, Noto_Serif_SC } from 'next/font/google'
+import { Noto_Sans, Noto_Serif, Noto_Serif_SC } from 'next/font/google'
 import '../../styles/tokens.css'
 import { getLocale } from '@/lib/i18n'
 import { getAllLocations, isThailandNetworkLocation } from '@/lib/current-location'
@@ -16,17 +16,11 @@ import {
 } from '@/lib/site-config'
 
 // VI A-15 specifies HarmonyOS Sans SC ("端庄") for body / formal sans. That face is
-// not on Google Fonts; Noto Sans SC is the closest open-source alternative with
-// full CJK coverage and a similar humanist-geometric feel. The Tailwind stack
-// below prefers HarmonyOS Sans SC if installed locally (e.g. on Huawei devices),
-// then falls back to Noto Sans SC, then OS Chinese sans, then system-ui.
-const notoSansSC = Noto_Sans_SC({
-  preload: false, // CJK fonts shouldn't preload — Latin subset is small but full CJK is huge
-  weight: ['300', '400', '500', '700'],
-  variable: '--font-sans',
-  display: 'swap',
-})
-
+// not on Google Fonts, and we no longer ship a CJK sans webfont: Noto Sans SC
+// alone cost ~18 unicode-range files (~1 MB) per Chinese page on mobile. With
+// --font-sans unset here, tokens.css falls back to HarmonyOS Sans SC if
+// installed, else the OS Chinese sans (PingFang SC / Noto Sans CJK on Android /
+// Microsoft YaHei). The serif below stays: no OS ships it reliably.
 const notoSerifSC = Noto_Serif_SC({
   // next/font 15 does not expose 'chinese-simplified' in the type union;
   // omitting subsets + preload:false is the correct pattern for CJK fonts.
@@ -115,7 +109,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
       lang={locale}
-      className={`${notoSansSC.variable} ${notoSerifSC.variable} ${notoSans.variable} ${notoSerif.variable}`}
+      className={`${notoSerifSC.variable} ${notoSans.variable} ${notoSerif.variable}`}
     >
       <body>
         {GOOGLE_ANALYTICS_ID && (

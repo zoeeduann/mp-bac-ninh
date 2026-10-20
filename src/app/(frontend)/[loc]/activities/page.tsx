@@ -36,7 +36,7 @@ import {
   isSessionPast,
 } from '@/lib/calendar'
 import { toZonedTime } from 'date-fns-tz'
-import { buildMetadata } from '@/lib/metadata'
+import { buildMetadata, listedAlternates } from '@/lib/metadata'
 import { locationPath, locationUrl } from '@/lib/site-config'
 import { JsonLd } from '@/components/JsonLd'
 import { itemListJsonLd } from '@/lib/jsonld'
@@ -66,7 +66,11 @@ export async function generateMetadata({
     ? `${displayName}的全部活动：佛学、禅修、正念、静坐、工作坊、茶会与共修。查看日程并预约。`
     : `All activities at ${displayName}: Buddhism, Zen meditation, mindfulness, workshops, tea gatherings, and community sits.`)
   // An empty list (e.g. English with nothing translated yet) is a thin page.
-  const listed = (await getAllPublishedActivitiesForLocation(location.id, locale)).length
+  const [zhListed, enListed] = await Promise.all([
+    getAllPublishedActivitiesForLocation(location.id, 'zh-CN').then((docs) => docs.length),
+    getAllPublishedActivitiesForLocation(location.id, 'en').then((docs) => docs.length),
+  ])
+  const listed = locale === 'zh-CN' ? zhListed : enListed
 
   return buildMetadata({
     title,
@@ -80,10 +84,9 @@ export async function generateMetadata({
       locale === 'zh-CN' ? '佛学活动' : 'Buddhist practice',
       locale === 'zh-CN' ? '正念课程' : 'mindfulness classes',
     ], inThailandNetwork),
-    alternateLanguages: {
-      'zh-CN': locationUrl('zh-CN', p.loc, '/activities'),
-      en: locationUrl('en', p.loc, '/activities'),
-    },
+    alternateLanguages: listedAlternates({ 'zh-CN': zhListed, en: enListed }, (l) =>
+      locationUrl(l, p.loc, '/activities'),
+    ),
   })
 }
 

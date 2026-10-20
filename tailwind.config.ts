@@ -23,14 +23,15 @@ const config: Config = {
         // first on English pages (see tokens.css) so Latin punctuation never
         // renders with full-width CJK glyphs.
         serif: ['var(--font-ui-serif)', '"Noto Serif SC"', '"Source Han Serif SC"', 'serif'],
-        // VI A-15: 端庄 (HarmonyOS Sans SC) for body/formal sans. Prefer the
-        // brand-spec face if locally installed, fall back to Noto Sans SC
-        // (loaded via next/font), then OS Chinese sans, then system-ui.
+        // VI A-15: 端庄 (HarmonyOS Sans SC) for body/formal sans. No CJK sans
+        // webfont is loaded on the Chinese site (see tokens.css): prefer the
+        // brand-spec face if locally installed, then OS Chinese sans, then system-ui.
         sans: [
           'var(--font-ui-sans)',
           '"HarmonyOS Sans SC"',
-          '"Noto Sans SC"',
           '"PingFang SC"',
+          '"Noto Sans SC"',
+          '"Noto Sans CJK SC"',
           '"Microsoft YaHei"',
           'system-ui',
           'sans-serif',

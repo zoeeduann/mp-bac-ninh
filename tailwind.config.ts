@@ -21,8 +21,11 @@ const config: Config = {
         // VI A-15: 宋雅 (Source Han Serif = Noto Serif SC) for formal headings.
         // --font-ui-* is --font-serif/--font-sans, with a Latin face placed
         // first on English pages (see tokens.css) so Latin punctuation never
-        // renders with full-width CJK glyphs.
-        serif: ['var(--font-ui-serif)', '"Noto Serif SC"', '"Source Han Serif SC"', 'serif'],
+        // renders with full-width CJK glyphs. --font-serif is only set once
+        // the webfont is enabled (tokens.css); until then the OS serif renders.
+        // Don't name "Noto Serif SC" here: that matches the webfont's
+        // @font-face and starts the download early.
+        serif: ['var(--font-ui-serif, "Source Han Serif SC")', '"Source Han Serif SC"', 'serif'],
         // VI A-15: 端庄 (HarmonyOS Sans SC) for body/formal sans. No CJK sans
         // webfont is loaded on the Chinese site (see tokens.css): prefer the
         // brand-spec face if locally installed, then OS Chinese sans, then system-ui.

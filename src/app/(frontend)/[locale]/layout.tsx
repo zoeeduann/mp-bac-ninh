@@ -27,9 +27,19 @@ const notoSerifSC = Noto_Serif_SC({
   // omitting subsets + preload:false is the correct pattern for CJK fonts.
   preload: false,
   weight: ['400', '500', '700'],
-  variable: '--font-serif',
+  // Not --font-serif directly: the webfont is switched on after page load
+  // (see DEFER_SERIF_WEBFONT below and tokens.css).
+  variable: '--font-serif-web',
   display: 'swap',
 })
+
+// A Chinese page needs ~19 unicode-range slices of Noto Serif SC (~1.4 MB).
+// Downloaded at first paint they share bandwidth with the hero image, which
+// on a slow phone connection doubled its load time. So the serif stack starts
+// on the OS serif and the webfont is enabled only once the page has loaded.
+// After one visit the slices are likely in the HTTP cache, so later visits
+// enable it right away instead of swapping fonts every time.
+const DEFER_SERIF_WEBFONT = `(function(){var d=document.documentElement,k='mp-webfonts';function on(){d.setAttribute('data-webfonts','');try{localStorage.setItem(k,'1')}catch(e){}}try{if(localStorage.getItem(k)){on();return}}catch(e){}if(document.readyState==='complete')on();else addEventListener('load',on)})()`
 
 // Latin faces placed ahead of the CJK faces on English pages (tokens.css).
 const notoSans = Noto_Sans({
@@ -126,7 +136,12 @@ export default async function RootLayout(props: {
     <html
       lang={locale}
       className={`${notoSerifSC.variable} ${notoSans.variable} ${notoSerif.variable}`}
+      // data-webfonts is set by DEFER_SERIF_WEBFONT before hydration.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: DEFER_SERIF_WEBFONT }} />
+      </head>
       <body>
         {GOOGLE_ANALYTICS_ID && (
           <>

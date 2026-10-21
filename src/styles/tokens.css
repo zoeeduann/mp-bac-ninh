@@ -26,15 +26,22 @@
       'Microsoft YaHei'
     );
     --font-ui-sans: var(--font-cjk-sans);
-    --font-ui-serif: var(--font-serif);
+    --font-ui-serif: var(--font-serif, 'Source Han Serif SC');
   }
   html:lang(en) {
     --font-ui-sans: var(--font-latin-sans), var(--font-cjk-sans);
-    --font-ui-serif: var(--font-latin-serif), var(--font-serif);
+    --font-ui-serif: var(--font-latin-serif), var(--font-serif, 'Source Han Serif SC');
   }
   html:lang(en) [lang|='zh'] {
     --font-ui-sans: var(--font-cjk-sans);
-    --font-ui-serif: var(--font-serif);
+    --font-ui-serif: var(--font-serif, 'Source Han Serif SC');
+  }
+  /* Enable the Noto Serif SC webfont after page load (frontend layout). Until
+     then --font-serif is unset on Chinese/English pages and the fallbacks
+     above apply. Only the frontend layout sets data-webfonts; the Vietnamese
+     layout sets --font-serif itself (Noto Serif) and never gets here. */
+  html[data-webfonts] {
+    --font-serif: var(--font-serif-web);
   }
 
   html {

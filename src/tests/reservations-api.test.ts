@@ -33,6 +33,15 @@ const makeReq = (body: any, ip = '1.1.1.1') =>
     body: JSON.stringify(body),
   }) as any
 
+/** Sorted recipients of the staff notification (not the booker's receipt). */
+const adminRecipients = (
+  enqueueMock: { mock: { calls: ReadonlyArray<readonly [unknown, { to: string; subject: string }]> } },
+) =>
+  enqueueMock.mock.calls
+    .filter((c) => /预约通知|自由咨询/.test(c[1].subject))
+    .map((c) => c[1].to)
+    .sort()
+
 const validInquiry = {
   name: 'Test User',
   phone: '+66 99 000 0000',
@@ -423,6 +432,123 @@ describe('POST /api/reservations', () => {
     expect(recipients).toContain('admin@test.com')
     expect(recipients).toContain('bangkok@mindfulpeaceth.com')
     expect(adminCalls.every((call) => call[1].fromName === '曼谷如如学堂')).toBe(true)
+  })
+
+  it('links the admin notification to the reservation with a full URL', async () => {
+    const { enqueueEmail } = await import('../lib/email-jobs')
+    vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://mindfulpeacebacninh.com/')
+    mockPayload.findByID.mockResolvedValueOnce({
+      id: 4,
+      slug: 'bac-ninh',
+      name: '越南北宁善明静心小院',
+    })
+    mockPayload.create.mockResolvedValueOnce({ id: 'r_link' })
+
+    await POST(makeReq({ ...validInquiry, location: 4 }, '4.4.4.6'))
+
+    const notification = vi.mocked(enqueueEmail).mock.calls
+      .map((c) => c[1])
+      .find((m) => m.to === 'admin@test.com')
+    expect(notification?.body).toContain(
+      '请到后台查看: https://mindfulpeacebacninh.com/admin/collections/reservations/r_link',
+    )
+    vi.unstubAllEnvs()
+  })
+
+  it("notifies the activity's organizer about a new booking", async () => {
+    const { enqueueEmail } = await import('../lib/email-jobs')
+    mockPayload.findByID.mockResolvedValueOnce({
+      id: 'a_org',
+      title: '安心禅茶',
+      status: 'published',
+      capacity: 10,
+      organizerEmail: ' organizer@test.com ',
+      occurrences: [{ id: 'o1', capacityOverride: null, status: 'open' }],
+    })
+    mockPayload.find.mockResolvedValueOnce({ docs: [] })
+    mockPayload.create.mockResolvedValueOnce({ id: 'r_org', status: 'confirmed' })
+
+    await POST(makeReq({
+      name: 'C', phone: '123', email: 'c@d.com',
+      turnstileToken: 't', honeypot: '',
+      activity: 'a_org', occurrenceId: 'o1',
+      guests: 2,
+      source: 'activity_detail',
+    }, '4.4.4.5'))
+
+    expect(adminRecipients(vi.mocked(enqueueEmail))).toEqual(['admin@test.com', 'organizer@test.com'])
+  })
+
+  describe('long-term volunteer copies', () => {
+    it('copies Bac Ninh booking notifications to its volunteers', async () => {
+      const { enqueueEmail } = await import('../lib/email-jobs')
+      mockPayload.findByID.mockResolvedValueOnce({
+        id: 4,
+        slug: 'bac-ninh',
+        name: '越南北宁善明静心小院',
+        email: 'bacninh@test.com',
+      })
+      mockPayload.create.mockResolvedValueOnce({ id: 'r_bn_cc' })
+
+      await POST(makeReq({ ...validInquiry, location: 4 }, '5.5.5.7'))
+
+      expect(adminRecipients(vi.mocked(enqueueEmail))).toEqual([
+        '123308668@qq.com',
+        'admin@test.com',
+        'bacninh@test.com',
+      ])
+    })
+
+    it('does not copy other academies to the Bac Ninh volunteers', async () => {
+      const { enqueueEmail } = await import('../lib/email-jobs')
+      mockPayload.findByID.mockResolvedValueOnce({
+        id: 'loc-chiangmai',
+        slug: 'chiangmai',
+        name: '清迈心灯学堂',
+        email: 'chiangmai@mindfulpeaceth.com',
+      })
+      mockPayload.create.mockResolvedValueOnce({ id: 'r_cm_cc' })
+
+      await POST(makeReq({ ...validInquiry, location: 'loc-chiangmai' }, '5.5.5.8'))
+
+      expect(adminRecipients(vi.mocked(enqueueEmail))).toEqual([
+        'admin@test.com',
+        'chiangmai@mindfulpeaceth.com',
+      ])
+    })
+
+    it('sends one notification per address when organizer, volunteers and mailboxes overlap', async () => {
+      const { enqueueEmail } = await import('../lib/email-jobs')
+      mockPayload.findByID
+        .mockResolvedValueOnce({
+          id: 'a_overlap',
+          title: '安心禅茶',
+          status: 'published',
+          capacity: 10,
+          location: 4,
+          organizerEmail: '123308668@qq.com',
+          occurrences: [{ id: 'o1', capacityOverride: null, status: 'open' }],
+        })
+        .mockResolvedValueOnce({
+          id: 4,
+          slug: 'bac-ninh',
+          name: '越南北宁善明静心小院',
+          email: 'admin@test.com',
+        })
+      mockPayload.find.mockResolvedValueOnce({ docs: [] })
+      mockPayload.create.mockResolvedValueOnce({ id: 'r_overlap' })
+
+      await POST(makeReq({
+        name: 'C', phone: '123', email: 'c@d.com',
+        turnstileToken: 't', honeypot: '',
+        activity: 'a_overlap', occurrenceId: 'o1',
+        guests: 1,
+        source: 'activity_detail',
+      }, '5.5.5.9'))
+
+      const recipients = adminRecipients(vi.mocked(enqueueEmail))
+      expect(recipients).toEqual(['123308668@qq.com', 'admin@test.com'])
+    })
   })
 
   it('only sends one admin notification when location.email == settings.adminEmail (dedupe)', async () => {

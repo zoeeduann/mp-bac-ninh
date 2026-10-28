@@ -427,11 +427,12 @@ async function sendNotifications(
 
   const notificationBrand = location.brandName
 
-  // 3. Admin notification — goes to BOTH the central admin mailbox AND
-  //    the academy's own mailbox (locations.email). Deduped via Set so we
-  //    don't double-send when they happen to be the same address. This way
-  //    each academy's staff sees their own bookings without waiting for
-  //    the central team to forward.
+  // 3. Admin notification — goes to the central admin mailbox, the academy's
+  //    own mailbox (locations.email), the activity's organizer (so they know
+  //    who is coming) and any long-term volunteers listed for that academy in
+  //    BOOKING_NOTIFY_CC. Deduped via Set so we don't double-send when
+  //    addresses overlap. This way each academy's staff sees their own
+  //    bookings without waiting for the central team to forward.
   const adminBody = [
     `地点: ${notificationBrand}`,
     ...(activityTitleStr ? [`活动: ${activityTitleStr}`] : []),
@@ -454,12 +455,18 @@ async function sendNotifications(
     `人数: ${body.guests}`,
     `备注: ${body.notes ?? '-'}`,
     ``,
-    `请到后台查看: /admin/collections/reservations/${reservationId}`,
+    // Absolute so the link is clickable in mail clients; falls back to the
+    // bare path when the server URL is not configured.
+    `请到后台查看: ${(process.env.NEXT_PUBLIC_SERVER_URL ?? '').replace(/\/$/, '')}/admin/collections/reservations/${reservationId}`,
   ].join('\n')
 
   const adminRecipients = new Set<string>()
   if (adminEmail) adminRecipients.add(adminEmail)
   if (location.email) adminRecipients.add(location.email)
+  const organizerEmail =
+    typeof activity?.organizerEmail === 'string' ? activity.organizerEmail.trim() : ''
+  if (organizerEmail) adminRecipients.add(organizerEmail)
+  for (const cc of location.notifyCc) adminRecipients.add(cc)
 
   for (const recipient of adminRecipients) {
     try {

@@ -12,6 +12,8 @@ import * as shanmingNames from './20260920_150000_shanming_names'
 import * as mergeDuplicateActivities from './20260920_151000_merge_duplicate_activities'
 import * as bacNinhFaq from './20260920_160000_bac_ninh_faq'
 import * as mergeDuplicateTeaReading from './20261020_120000_merge_duplicate_tea_reading'
+// Shared with the Thailand site under the same name; additive and idempotent.
+import * as activityOrganizerEmail from './20261028_120000_activity_organizer_email'
 
 export const migrations = [
   {
@@ -73,5 +75,10 @@ export const migrations = [
     name: '20261020_120000_merge_duplicate_tea_reading',
     up: mergeDuplicateTeaReading.up,
     down: mergeDuplicateTeaReading.down,
+  },
+  {
+    name: '20261028_120000_activity_organizer_email',
+    up: activityOrganizerEmail.up,
+    down: activityOrganizerEmail.down,
   },
 ]

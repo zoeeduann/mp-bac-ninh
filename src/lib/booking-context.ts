@@ -13,7 +13,7 @@ export const DEFAULT_BOOKING_TIME_ZONE =
  * staff's request; edit this list to add or remove someone.
  */
 export const BOOKING_NOTIFY_CC: Readonly<Record<string, readonly string[]>> = {
-  'bac-ninh': [],
+  'bac-ninh': ['123308668@qq.com'],
 }
 
 export interface BookingLocationContext {

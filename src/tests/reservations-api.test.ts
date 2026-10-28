@@ -459,23 +459,6 @@ describe('POST /api/reservations', () => {
   })
 
   describe('long-term volunteer copies', () => {
-    let saved: readonly string[] | undefined
-
-    beforeEach(async () => {
-      const { BOOKING_NOTIFY_CC } = await import('../lib/booking-context')
-      saved = BOOKING_NOTIFY_CC['bac-ninh']
-      // The real list starts empty; give it entries so the copy path is exercised.
-      ;(BOOKING_NOTIFY_CC as Record<string, readonly string[]>)['bac-ninh'] = [
-        'volunteer1@test.com',
-        'volunteer2@test.com',
-      ]
-    })
-
-    afterEach(async () => {
-      const { BOOKING_NOTIFY_CC } = await import('../lib/booking-context')
-      ;(BOOKING_NOTIFY_CC as Record<string, readonly string[]>)['bac-ninh'] = saved ?? []
-    })
-
     it('copies Bac Ninh booking notifications to its volunteers', async () => {
       const { enqueueEmail } = await import('../lib/email-jobs')
       mockPayload.findByID.mockResolvedValueOnce({
@@ -489,10 +472,9 @@ describe('POST /api/reservations', () => {
       await POST(makeReq({ ...validInquiry, location: 4 }, '5.5.5.7'))
 
       expect(adminRecipients(vi.mocked(enqueueEmail))).toEqual([
+        '123308668@qq.com',
         'admin@test.com',
         'bacninh@test.com',
-        'volunteer1@test.com',
-        'volunteer2@test.com',
       ])
     })
 
@@ -523,7 +505,7 @@ describe('POST /api/reservations', () => {
           status: 'published',
           capacity: 10,
           location: 4,
-          organizerEmail: 'volunteer1@test.com',
+          organizerEmail: '123308668@qq.com',
           occurrences: [{ id: 'o1', capacityOverride: null, status: 'open' }],
         })
         .mockResolvedValueOnce({
@@ -544,7 +526,7 @@ describe('POST /api/reservations', () => {
       }, '5.5.5.9'))
 
       const recipients = adminRecipients(vi.mocked(enqueueEmail))
-      expect(recipients).toEqual(['admin@test.com', 'volunteer1@test.com', 'volunteer2@test.com'])
+      expect(recipients).toEqual(['123308668@qq.com', 'admin@test.com'])
     })
   })
 

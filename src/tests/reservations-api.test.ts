@@ -434,6 +434,27 @@ describe('POST /api/reservations', () => {
     expect(adminCalls.every((call) => call[1].fromName === '曼谷如如学堂')).toBe(true)
   })
 
+  it('links the admin notification to the reservation with a full URL', async () => {
+    const { enqueueEmail } = await import('../lib/email-jobs')
+    vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://mindfulpeacebacninh.com/')
+    mockPayload.findByID.mockResolvedValueOnce({
+      id: 4,
+      slug: 'bac-ninh',
+      name: '越南北宁善明静心小院',
+    })
+    mockPayload.create.mockResolvedValueOnce({ id: 'r_link' })
+
+    await POST(makeReq({ ...validInquiry, location: 4 }, '4.4.4.6'))
+
+    const notification = vi.mocked(enqueueEmail).mock.calls
+      .map((c) => c[1])
+      .find((m) => m.to === 'admin@test.com')
+    expect(notification?.body).toContain(
+      '请到后台查看: https://mindfulpeacebacninh.com/admin/collections/reservations/r_link',
+    )
+    vi.unstubAllEnvs()
+  })
+
   it("notifies the activity's organizer about a new booking", async () => {
     const { enqueueEmail } = await import('../lib/email-jobs')
     mockPayload.findByID.mockResolvedValueOnce({

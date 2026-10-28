@@ -455,7 +455,9 @@ async function sendNotifications(
     `人数: ${body.guests}`,
     `备注: ${body.notes ?? '-'}`,
     ``,
-    `请到后台查看: /admin/collections/reservations/${reservationId}`,
+    // Absolute so the link is clickable in mail clients; falls back to the
+    // bare path when the server URL is not configured.
+    `请到后台查看: ${(process.env.NEXT_PUBLIC_SERVER_URL ?? '').replace(/\/$/, '')}/admin/collections/reservations/${reservationId}`,
   ].join('\n')
 
   const adminRecipients = new Set<string>()

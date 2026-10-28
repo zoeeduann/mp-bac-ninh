@@ -174,6 +174,22 @@ export const Activities: CollectionConfig = {
       min: 1,
     },
     {
+      name: 'organizerEmail',
+      type: 'email',
+      label: { zh: '召集人邮箱', en: 'Organizer email' },
+      // Guests can read published activities through the REST/GraphQL API,
+      // so keep the organizer's address to signed-in admins and staff.
+      access: {
+        read: ({ req }) => req.user?.role === 'admin' || req.user?.role === 'staff',
+      },
+      admin: {
+        description: {
+          zh: '选填。填写后，这个活动的每条新预约都会发邮件通知召集人。',
+          en: 'Optional. The organizer is emailed about every new booking for this activity.',
+        },
+      },
+    },
+    {
       name: 'registrationMode',
       type: 'select',
       label: { zh: '报名方式', en: 'Registration mode' },

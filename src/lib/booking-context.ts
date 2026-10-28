@@ -6,9 +6,21 @@ export const DEFAULT_BOOKING_TIME_ZONE =
     ? 'Asia/Ho_Chi_Minh'
     : 'Asia/Bangkok'
 
+/**
+ * Extra inboxes, keyed by academy slug, that get a copy of every new booking
+ * notification on top of the academy's own mailbox (e.g. volunteers who
+ * follow up with visitors). Kept in code rather than as an admin field at
+ * staff's request; edit this list to add or remove someone.
+ */
+export const BOOKING_NOTIFY_CC: Readonly<Record<string, readonly string[]>> = {
+  'bac-ninh': [],
+}
+
 export interface BookingLocationContext {
   brandName: string
   email?: string
+  /** BOOKING_NOTIFY_CC entries for this academy; empty when it has none. */
+  notifyCc: string[]
   timeZone: string
   address?: string
   mapEmbedUrl?: string
@@ -58,6 +70,7 @@ export async function resolveBookingLocation(
   return {
     brandName: emailBrandName(doc?.name, locale === 'zh-CN' ? 'zh' : 'en'),
     email: doc?.email?.trim() || undefined,
+    notifyCc: [...(BOOKING_NOTIFY_CC[doc?.slug] ?? [])],
     timeZone: validTimeZone(doc?.timeZone),
     address: doc?.address?.trim() || undefined,
     mapEmbedUrl: doc?.mapEmbedUrl?.trim() || undefined,

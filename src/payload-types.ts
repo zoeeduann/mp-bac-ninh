@@ -428,6 +428,10 @@ export interface Activity {
   venueNote?: string | null;
   capacity: number;
   /**
+   * 选填。填写后，这个活动的每条新预约都会发邮件通知召集人。
+   */
+  organizerEmail?: string | null;
+  /**
    * A course series is presented and booked as one complete course, with full-attendance confirmation required.
    */
   registrationMode: 'per_occurrence' | 'series';
@@ -903,6 +907,7 @@ export interface ActivitiesSelect<T extends boolean = true> {
   description?: T;
   venueNote?: T;
   capacity?: T;
+  organizerEmail?: T;
   registrationMode?: T;
   requiresChineseProficiency?: T;
   notes?: T;
